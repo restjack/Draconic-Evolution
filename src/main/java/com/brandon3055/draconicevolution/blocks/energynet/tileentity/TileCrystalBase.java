@@ -88,9 +88,7 @@ import net.minecraft.world.phys.AABB;
 
 import net.minecraft.world.phys.BlockHitResult;
 
-
-
-
+import com.brandon3055.draconicevolution.lib.LoadedLookup;
 
 
 /**
@@ -162,18 +160,18 @@ public abstract class TileCrystalBase extends TileBCore implements ITilePlaceLis
             return;
         }
         for (BlockPos linkedPos : getLinks()) {
-            BlockEntity linkedTile = level.getBlockEntity(linkedPos);
+            // Check the chunk first and look up without a chunk ticket: getBlockEntity on a server level (re)tickets the
+            // chunk on a cache miss, so a link out of the loaded area kept that chunk loaded for as long as it existed.
+            if (!LoadedLookup.isLoaded(level, linkedPos)) {
+                continue;
+            }
+            BlockEntity linkedTile = LoadedLookup.blockEntity(level, linkedPos);
 
-            if (!(linkedTile instanceof ICrystalLink)) {
-                if (level.hasChunkAt(linkedPos)) {
-                    breakLink(linkedPos);
-                    return;
-                } else {
-                    continue;
-                }
+            if (!(linkedTile instanceof ICrystalLink linkedCrystal)) {
+                breakLink(linkedPos);
+                return;
             }
 
-            ICrystalLink linkedCrystal = (ICrystalLink) linkedTile;
             double thisCap = (double) getEnergyStored() / (double) getMaxEnergyStored();
             double thatCap = (double) linkedCrystal.getEnergyStored() / (double) linkedCrystal.getMaxEnergyStored();
             double diff = thisCap - thatCap;

@@ -226,6 +226,7 @@ public abstract class TileReactorComponent extends TileBCore {
             return null;
         }
 
+        if (!com.brandon3055.draconicevolution.lib.LoadedLookup.isLoaded(level, getCorePos())) return null; // don't load the core's chunk, and don't invalidate
         BlockEntity tile = level.getBlockEntity(getCorePos());
         if (tile instanceof TileReactorCore) {
             return (TileReactorCore) tile;
@@ -244,6 +245,7 @@ public abstract class TileReactorComponent extends TileBCore {
             return null;
         }
 
+        if (!com.brandon3055.draconicevolution.lib.LoadedLookup.isLoaded(level, getCorePos())) return null;
         BlockEntity tile = level.getBlockEntity(getCorePos());
         if (tile instanceof TileReactorCore) {
             return (TileReactorCore) tile;
@@ -254,8 +256,9 @@ public abstract class TileReactorComponent extends TileBCore {
     public TileReactorCore getCachedCore() {
         if (!isBound.get() || level == null) return null;
         BlockPos corePos = getCorePos();
-        if (!level.isLoaded(corePos)) return null;
-        BlockEntity entity = level.getBlockEntity(corePos);
+        // LoadedLookup never adds a chunk ticket; level.getBlockEntity did on every call, pinning the core's chunk.
+        if (!com.brandon3055.draconicevolution.lib.LoadedLookup.isLoaded(level, corePos)) return null;
+        BlockEntity entity = com.brandon3055.draconicevolution.lib.LoadedLookup.blockEntity(level, corePos);
         if (entity instanceof TileReactorCore reactor) return reactor;
         if (!level.isClientSide()) isBound.set(false);
         return null;

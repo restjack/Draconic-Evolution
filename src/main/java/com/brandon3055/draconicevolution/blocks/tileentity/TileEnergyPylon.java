@@ -262,8 +262,14 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
         BlockPos offset = coreOffset.get();
         if (offset == null || level == null) return null;
         BlockPos pos = worldPosition.subtract(offset);
+        // Check before any lookup: level.getBlockEntity adds a chunk ticket on every call and kept the core's chunk loaded.
+        if (!com.brandon3055.draconicevolution.lib.LoadedLookup.isLoaded(level, pos)) {
+            core = null;
+            return null;
+        }
+        if (core != null && !core.isRemoved() && core.getBlockPos().equals(pos)) return core;
         if (!level.isAreaLoaded(pos, 16)) return null;
-        BlockEntity entity = level.getBlockEntity(pos);
+        BlockEntity entity = com.brandon3055.draconicevolution.lib.LoadedLookup.blockEntity(level, pos);
         core = entity instanceof TileEnergyCore energyCore ? energyCore : null;
         if (core == null && !level.isClientSide()) coreOffset.set(null);
         return core;
