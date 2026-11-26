@@ -61,7 +61,7 @@ public class DEJeiPlugin implements IModPlugin {
 
     /** Layout follows upstream's 1.21 category: catalyst above the output in the middle, injector items in side columns. */
     static class FusionCategory implements IRecipeCategory<RecipeHolder<IFusionRecipe>> {
-        private static final int W = 164, H = 111;
+        private static final int W = 164, H = 136; // eli.8: room for a text line above and below the ingredient columns
         private final IDrawable icon;
 
         FusionCategory(IDrawable icon) {
@@ -96,18 +96,21 @@ public class DEJeiPlugin implements IModPlugin {
         @Override
         public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<IFusionRecipe> holder, IFocusGroup focuses) {
             IFusionRecipe recipe = holder.value();
-            builder.addSlot(RecipeIngredientRole.INPUT, W / 2 - 8, H / 2 - 8 - 23).setStandardSlotBackground().addIngredients(recipe.getCatalyst());
-            builder.addSlot(RecipeIngredientRole.OUTPUT, W / 2 - 8, H / 2 - 8 + 15).setOutputSlotBackground()
+            // Text lines take y 0-10 and H-11..H; ingredients and the centre slots stay between them.
+            int top = 14, bottom = H - 14 - 18;
+            builder.addSlot(RecipeIngredientRole.INPUT, W / 2 - 8, H / 2 - 8 - 16).setStandardSlotBackground().addIngredients(recipe.getCatalyst());
+            builder.addSlot(RecipeIngredientRole.OUTPUT, W / 2 - 8, H / 2 - 8 + 16).setOutputSlotBackground()
                     .addItemStack(recipe.getResultItem(Minecraft.getInstance().level.registryAccess()));
             List<Ingredient> ingredients = recipe.fusionIngredients().stream().map(i -> i.get()).toList();
-            int columns = ingredients.size() > 16 ? 4 : 2;
+            int columns = ingredients.size() > 12 ? 4 : 2;
             int rows = (int) Math.ceil(ingredients.size() / (double) columns);
             for (int i = 0; i < ingredients.size(); i++) {
                 int side = (i % columns) >= columns / 2 ? 1 : -1;
                 int offset = columns == 2 ? 0 : i % 2 == 0 ? -1 : 1;
                 int x = W / 2 - 8 + side * (60 + offset * 10);
-                int y = rows > 1 ? (H / 2 - 42) + (84 / (rows - 1)) * (i / columns) : H / 2;
-                builder.addSlot(RecipeIngredientRole.INPUT, x, y - 8).setStandardSlotBackground().addIngredients(ingredients.get(i));
+                int row = i / columns;
+                int y = rows > 1 ? top + (bottom - top) * row / (rows - 1) : H / 2 - 8;
+                builder.addSlot(RecipeIngredientRole.INPUT, x, y).setStandardSlotBackground().addIngredients(ingredients.get(i));
             }
         }
 
@@ -115,9 +118,9 @@ public class DEJeiPlugin implements IModPlugin {
         public void createRecipeExtras(IRecipeExtrasBuilder builder, RecipeHolder<IFusionRecipe> holder, IFocusGroup focuses) {
             IFusionRecipe recipe = holder.value();
             builder.addText(Component.translatable("gui.draconicevolution.fusion_craft.tier." + recipe.getRecipeTier().name().toLowerCase(Locale.ROOT)), W, 10)
-                    .setPosition(0, 0, W, 10, HorizontalAlignment.CENTER, VerticalAlignment.TOP).setColor(0xFF8000FF);
-            builder.addText(Component.literal(String.format(Locale.ROOT, "%,d OP", recipe.getEnergyCost())), W, 10)
-                    .setPosition(0, H - 10, W, 10, HorizontalAlignment.CENTER, VerticalAlignment.TOP).setColor(0xFF4466FF);
+                    .setTextAlignment(HorizontalAlignment.CENTER).setPosition(0, 0).setColor(0xFF8000FF);
+            builder.addText(Component.literal(String.format(Locale.ROOT, "%,d %s", recipe.getEnergyCost(), com.brandon3055.draconicevolution.DEConfig.energyUnit())), W, 10)
+                    .setTextAlignment(HorizontalAlignment.CENTER).setPosition(0, H - 10).setColor(0xFF4466FF);
         }
     }
 }
