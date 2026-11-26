@@ -30,6 +30,7 @@ public class DEDamage {
 //    public static ResourceKey<DamageType> ADMIN_KILL = ResourceKey.create(Registries.DAMAGE_TYPE, new Identifier(MODID, "admin_kill"));
     public static ResourceKey<DamageType> KILL = DamageTypes.GENERIC_KILL;
     public static ResourceKey<DamageType> CRYSTAL_MOVE = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MODID, "crystal_move"));
+    public static ResourceKey<DamageType> CORE_BEAM = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MODID, "core_beam")); // eli.8
     public static ResourceKey<DamageType> CHAOS_IMPLOSION = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MODID, "chaos_implosion"));
     public static ResourceKey<DamageType> GUARDIAN = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MODID, "guardian"));
     public static ResourceKey<DamageType> GUARDIAN_PROJECTILE = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MODID, "guardian_projectile"));
@@ -55,6 +56,10 @@ public class DEDamage {
 
     public static DamageSource crystalMove(Level level) {
         return getSource(level, CRYSTAL_MOVE);
+    }
+
+    public static DamageSource coreBeam(Level level) {
+        return getSource(level, CORE_BEAM);
     }
 
     public static DamageSource chaosImplosion(Level level) {

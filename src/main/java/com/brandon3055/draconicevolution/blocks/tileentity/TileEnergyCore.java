@@ -176,6 +176,46 @@ public class TileEnergyCore extends TileBCore implements MenuProvider, IInteract
                 fillPercent.set(((float) energy.getOPStored() / (float) energy.getMaxOPStored()));
             }
             sampleRateHistory();
+            if (++beamTick >= 10) {
+                beamTick = 0;
+                beamForceField();
+            }
+        }
+    }
+
+    // ### Beam force field (eli.8, Extras switch beamForceField): every half second, living entities inside a stabilizer
+    // beam are pushed out sideways and take beamDamage. Creative/spectator players are never affected; items are ignored.
+    private int beamTick;
+
+    private void beamForceField() {
+        if (!active.get() || !stabilizersValid.get() || !DEConfig.extra("beamForceField")) return;
+        double half = tier.get() >= ADV_STABILIZER_TIER ? 1.2 : 0.4; // advanced (3x3) stabilizers have a thicker beam
+        net.minecraft.world.phys.Vec3 core = net.minecraft.world.phys.Vec3.atCenterOf(worldPosition);
+        for (ManagedPos offset : stabilizerPositions) {
+            BlockPos off = offset.get();
+            if (off == null) continue;
+            net.minecraft.world.phys.Vec3 stab = net.minecraft.world.phys.Vec3.atCenterOf(worldPosition.subtract(off));
+            Direction.Axis axis = Direction.getNearest(off, Direction.NORTH).getAxis();
+            net.minecraft.world.phys.AABB box = new net.minecraft.world.phys.AABB(stab, core)
+                    .inflate(axis == Direction.Axis.X ? 0 : half, axis == Direction.Axis.Y ? 0 : half, axis == Direction.Axis.Z ? 0 : half);
+            for (net.minecraft.world.entity.LivingEntity e : level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, box)) {
+                if (e instanceof Player p) {
+                    if (!DEConfig.beamAffectsPlayers || p.isCreative() || p.isSpectator()) continue;
+                } else if (!DEConfig.beamAffectsMobs) continue;
+                if (DEConfig.beamPush) {
+                    // Away from the beam's centre line, on the two axes across the beam.
+                    double dx = axis == Direction.Axis.X ? 0 : e.getX() - core.x;
+                    double dy = axis == Direction.Axis.Y ? 0 : e.getY() + e.getBbHeight() / 2 - core.y;
+                    double dz = axis == Direction.Axis.Z ? 0 : e.getZ() - core.z;
+                    double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (len < 1.0E-3) { dx = axis == Direction.Axis.X ? 0 : 1; dz = axis == Direction.Axis.Z ? 0 : 1; len = Math.sqrt(dx * dx + dz * dz); }
+                    e.push(dx / len * 0.6, Math.max(0.15, dy / len * 0.6), dz / len * 0.6);
+                    e.hurtMarked = true; // sends the new velocity to players
+                }
+                if (DEConfig.beamDamage > 0 && level instanceof net.minecraft.server.level.ServerLevel sl) {
+                    e.hurtServer(sl, com.brandon3055.draconicevolution.init.DEDamage.coreBeam(level), (float) DEConfig.beamDamage);
+                }
+            }
         }
     }
 

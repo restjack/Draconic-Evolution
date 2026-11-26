@@ -17,3 +17,9 @@ From tier 5 up each of the four must be an **advanced stabilizer**: nine Stabili
 <Recipe id="draconicevolution:machines/energy_core_stabilizer" />
 
 Right-clicking a linked Stabilizer opens the core's screen, which tells you if the structure or the stabilizers are wrong.
+
+## Beams
+
+While the core is active, its stabilizer beams act as a force field: anything living that walks into one is pushed out sideways and takes half a heart every half second. Creative and spectator players pass through.
+
+Servers can change the damage, turn the push off, or limit it to players or mobs in the config (**beamForceField** and the **beam** settings).
