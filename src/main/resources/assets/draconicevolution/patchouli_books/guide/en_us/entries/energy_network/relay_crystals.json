@@ -32,7 +32,22 @@
       "i5": "draconicevolution:wyvern_energy_core",
       "i6": "tag:c:gems/diamond",
       "i7": "tag:c:gems/diamond",
-      "i8": "draconicevolution:wyvern_energy_core"
+      "i8": "draconicevolution:wyvern_energy_core",
+      "has_i0": true,
+      "has_i1": true,
+      "has_i2": true,
+      "has_i3": true,
+      "has_i4": true,
+      "has_i5": true,
+      "has_i6": true,
+      "has_i7": true,
+      "has_i8": true,
+      "has_i9": false,
+      "i9": "minecraft:barrier",
+      "has_i10": false,
+      "i10": "minecraft:barrier",
+      "has_i11": false,
+      "i11": "minecraft:barrier"
     }
   ]
 }

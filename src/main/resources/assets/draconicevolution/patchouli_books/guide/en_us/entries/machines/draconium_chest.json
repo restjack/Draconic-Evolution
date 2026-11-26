@@ -32,7 +32,21 @@
       "i6": "minecraft:furnace",
       "i7": "tag:c:storage_blocks/draconium",
       "i8": "minecraft:furnace",
-      "i9": "minecraft:crafting_table"
+      "i9": "minecraft:crafting_table",
+      "has_i0": true,
+      "has_i1": true,
+      "has_i2": true,
+      "has_i3": true,
+      "has_i4": true,
+      "has_i5": true,
+      "has_i6": true,
+      "has_i7": true,
+      "has_i8": true,
+      "has_i9": true,
+      "has_i10": false,
+      "i10": "minecraft:barrier",
+      "has_i11": false,
+      "i11": "minecraft:barrier"
     }
   ]
 }

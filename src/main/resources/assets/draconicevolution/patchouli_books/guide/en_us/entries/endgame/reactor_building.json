@@ -52,7 +52,23 @@
       "i4": "tag:c:ingots/draconium_awakened",
       "i5": "draconicevolution:chaotic_core",
       "i6": "tag:c:ingots/draconium_awakened",
-      "i7": "draconicevolution:large_chaos_frag"
+      "i7": "draconicevolution:large_chaos_frag",
+      "has_i0": true,
+      "has_i1": true,
+      "has_i2": true,
+      "has_i3": true,
+      "has_i4": true,
+      "has_i5": true,
+      "has_i6": true,
+      "has_i7": true,
+      "has_i8": false,
+      "i8": "minecraft:barrier",
+      "has_i9": false,
+      "i9": "minecraft:barrier",
+      "has_i10": false,
+      "i10": "minecraft:barrier",
+      "has_i11": false,
+      "i11": "minecraft:barrier"
     },
     {
       "type": "draconicevolution:fusion",
@@ -69,7 +85,21 @@
       "i6": "tag:c:ingots/iron",
       "i7": "draconicevolution:reactor_prt_in_rotor",
       "i8": "tag:c:ingots/iron",
-      "i9": "tag:c:ingots/draconium"
+      "i9": "tag:c:ingots/draconium",
+      "has_i0": true,
+      "has_i1": true,
+      "has_i2": true,
+      "has_i3": true,
+      "has_i4": true,
+      "has_i5": true,
+      "has_i6": true,
+      "has_i7": true,
+      "has_i8": true,
+      "has_i9": true,
+      "has_i10": false,
+      "i10": "minecraft:barrier",
+      "has_i11": false,
+      "i11": "minecraft:barrier"
     }
   ]
 }
