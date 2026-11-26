@@ -1,34 +1,65 @@
 # Draconic Evolution for Minecraft 26.1.2 — restjack fork (`eli/upstream-fixes`)
 
-> **This branch** = [TasteFu1's unofficial 26.1.2 port](https://github.com/TasteFu1/Draconic-Evolution/tree/port/26.1.2-neoforge) **plus bug fixes** found while running it on a dedicated server (FTB Evolution 2).
+> **This branch** = [TasteFu1's unofficial 26.1.2 port](https://github.com/TasteFu1/Draconic-Evolution/tree/port/26.1.2-neoforge) **plus bug fixes and optional extras** found and built while running it on a dedicated server (FTB Evolution 2).
 > Our own fixes are also offered upstream as [TasteFu1/Draconic-Evolution#1](https://github.com/TasteFu1/Draconic-Evolution/pull/1).
 > Not affiliated with or endorsed by brandon3055. All credit for Draconic Evolution goes to him; the port itself is TasteFu1's and MehanikTMYT's work.
 
+Current build: **`3.1.4-unofficial-1.0`** (jar `Draconic-Evolution-26.1.2-3.1.4-unofficial-1.0.jar`; earlier builds were named `port.3-eli.N`).
+
+## A look at it
+
+| Core Monitor (3×3, with the live core picture) | Energy core screen |
+| --- | --- |
+| ![Core Monitor 3x3 screen with core picture, stats and graph](docs/images/core-monitor-3x3.png) | ![Energy core screen with stored, in, out, net and time to empty](docs/images/core-screen.png) |
+
+| Core Monitor settings: Control | Core Monitor settings: Stats |
+| --- | --- |
+| ![Control tab: core power and next tier preview](docs/images/monitor-settings-control.png) | ![Stats tab: net flow chart and averages](docs/images/monitor-settings-stats.png) |
+
+| In-game guide (Patchouli; also GuideME, hold G) |
+| --- |
+| ![Guide book page about Draconium](docs/images/guide-book.png) |
+
+More: [Display tab](docs/images/monitor-settings-display.png) · [Pylons tab](docs/images/monitor-settings-pylons.png) · [Options tab](docs/images/monitor-settings-options.png) · [core picture close-up](docs/images/core-monitor-core-picture.png)
+
 ## What this branch adds
+
+### Fixes (always on)
 
 | Fix | Effect in game |
 | --- | --- |
 | Stabilizer beam direction | Energy core stabilizer beams point into the core (were all pointing north). |
 | `ModelMat` shader fix | Stabilizer orbs, pylon shells and the legacy core shell render on the block (they were floating around the camera, often seen as big cyan shapes in four directions). |
 | Live machine screens | The energy core screen (and every DE machine screen) updates stored OP and I/O while open. |
-| Block effects switch | Client option `blockEffectRendering` in `config/brandon3055/DraconicEvolution.cfg`, or the **eye button** on the energy core screen. Hides energy core, stabilizer, pylon and reactor visuals **for that player only**; the blocks keep working. A safety valve if they render wrong or crash your graphics. |
-| Powah / zero-buffer cables | Pylons and other DE machines push energy straight into cables that store nothing (e.g. Powah). Brandon's Core trusted NeoForge 26.1's capacity-based `canReceive` guess, which says "no" for such cables (change in `gradle/brandonscore-26.1.2.patch`, Brandon's Core `port.2`). |
+| Block effects switch | Client option `blockEffectRendering`, or the **eye button** on the energy core screen. Hides core, stabilizer, pylon and reactor visuals **for that player only**; the blocks keep working, and the structure blocks show as plain blocks. A safety valve if they render wrong or crash your graphics. |
+| Powah / zero-buffer cables | Pylons and other DE machines push energy straight into cables that store nothing (e.g. Powah) (Brandon's Core `port.2`). |
 | JEI fusion recipes | The port only had EMI support. The server now sends fusion recipes to clients (needed since MC 1.21.2) and a JEI category shows them. Needs this build on the server too. |
-| Energy core quality of life | Jade tooltips for the core, pylons and stabilizers (Shift for in/out and time to full/empty). The core screen shows stored / capacity, In, Out, Net and time to full or empty. Pylons name their mode on the action bar when toggled and are green (input) or red (output). Labelled colour pickers. Client option `blockEffectRenderDistance` limits how far core effects are drawn. Core blocks are tagged `c:relocation_not_supported`, so AE2 Spatial IO won't move them (upstream crash #1931). |
-| In-game guide | A Patchouli book, *Draconic Evolution Guide* (39 entries: getting started, fusion crafting, energy core, energy transport, gear and modules, machines, endgame, this port). Crafted from a Book and Draconium Dust; the Information Tablet opens it too. Written fresh for this port from the facts in the old Project Intelligence docs. |
-| More upstream bug fixes | Crafted modular items (e.g. capacitors from AE2 automation) now stack: no random hidden id until a module screen needs one (upstream #2040). Auto-Feed no longer eats infinite foods (durability foods, plus item tag `draconicevolution:auto_feed_blacklist`; #2017). The Mob Grinder's stored XP can be piped out as any `c:experience` liquid XP at 20 mB per point (#1955). |
-| Energy core screen extras | Graph button: net OP/t over the last 5 minutes. A core that isn't built right shows how many blocks are wrong; hover for positions and what each spot needs. |
+| Crystal Binder crash | Holding a bound binder no longer crashes the game (26.1 line vertices need a line width). |
+| Quantum Energy Tunnel | A capacitor's energy-link module no longer sticks at "0% linking" after a disconnect when the capacitor is empty; the core pays the re-link charge (upstream #1968). |
+| More upstream bug fixes | Crafted modular items stack (#2040). Auto-Feed no longer eats infinite foods (#2017). Mob Grinder XP can be piped out as any `c:experience` liquid (#1955). Core blocks are tagged `c:relocation_not_supported`, so AE2 Spatial IO won't move them (#1931). |
 | Upstream 1.21 fixes (open PRs [#2044](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2044), [#2046](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2046), [#2050](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2050), [#2051](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2051), [#2052](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2052), [#2053](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2053)) | Stabilizer disintegration, Draconium Chest losing shift-clicked items, constant module re-saves, night-vision packet spam, crystals/pylons/reactors keeping far chunks loaded, crystal network spam, dislocator limits. #2052 is adapted to the port; #2053's arena-check commit is left out on purpose (it can stop the guardian spawning on servers with view distance < 8). |
 
-Mod version string: `3.1.4-port.3-eli.8` (Brandon's Core `3.2.1+26.1.2-port.2`). Needs NeoForge **26.1.2.126 or newer** (below 26.2), Minecraft 26.1.2, Java 25.
+### Extras (each can be switched off, see below)
+
+| Extra | What it does |
+| --- | --- |
+| **Core Monitor** block | A screen for an energy core, readable from anywhere (even another dimension; never force-loads chunks). Panels facing the same way join into one screen up to **4×4**; bigger screens show more: graph from 3×2, stat cards and an animated picture of the core from 3×3. Link with a Crystal Binder (Shift-click the core, then a panel). Right-click for settings: what to show, OP/RF/FE/J, warning and alarm levels; turn the core on/off and preview the next tier; every pylon with its rate, a remote INPUT/OUTPUT switch and a **locate pin** that outlines it through walls; core-wide input/output limits and a reserve; alerts (chat, toast, sound, FTB Teams party); redstone output; a CC: Tweaked peripheral `draconic_monitor`; stats and graphs over 5 min / 1 h / 24 h. Only the player who linked it (and operators) can change it. |
+| Energy core screen | Stored / capacity, In, Out, Net and time to full or empty; short numbers (271.781M); OP/RF button; a 5-minute rate graph; a broken structure says how many blocks are wrong and where. |
+| Pylons | Green (input) or red (output) textures and particles, and the new mode named on the action bar when toggled. |
+| Stabilizer beam force field | Living things in a stabilizer beam are pushed out and take half a heart (server options: damage, push, players, mobs). |
+| Jade tooltips | Core, pylons and stabilizers (Shift for in/out and time to full/empty). |
+| In-game guide | A Patchouli book (*Draconic Evolution Guide*, 41 entries) and the same guide for GuideME (hold **G** over an item). Crafted from a Book and Draconium Dust; the Information Tablet opens it too. |
+| HD textures | Two built-in resource packs, *Draconic Evolution: core & pylons 32×* and *64×*, plus *Classic 16×16*. |
+
+Mod version string: `3.1.4-unofficial-1.0` (Brandon's Core `3.2.1+26.1.2-port.2`). Needs NeoForge **26.1.2.126 or newer** (below 26.2), Minecraft 26.1.2, Java 25.
 
 ## Installing
 
-There are **no prebuilt downloads**. Draconic Evolution's licence does not allow redistributing the mod, so build it yourself (below). Put the three jars in `mods/` on **every client and the server**. Optional on clients: Jade (tooltips), JEI (fusion recipes), Patchouli (guide).
+There are **no prebuilt downloads**. Draconic Evolution's licence does not allow redistributing the mod, so build it yourself (below). Put the three jars in `mods/` on **every client and the server**, and remove any older Draconic Evolution jar first (two copies crash the game). Optional on clients: Jade (tooltips), JEI (fusion recipes), Patchouli or GuideME (guide), CC: Tweaked (monitor peripheral).
 
 | File (from the build) | Provides |
 | --- | --- |
-| `Draconic-Evolution-26.1.2-3.1.4-port.3-eli.8.jar` | Draconic Evolution |
+| `Draconic-Evolution-26.1.2-3.1.4-unofficial-1.0.jar` | Draconic Evolution |
 | `BrandonsCore-3.2.1+26.1.2-port.2.jar` | Brandon's Core |
 | `codechickenlib-4.7.0+26.1.2-port.2.jar` | CodeChickenLib |
 
@@ -59,9 +90,11 @@ Output: `.gradle/port-work/Draconic-Evolution/build/libs/` (the mod) and `.gradl
 ## Optional extras (and turning them off)
 
 Our own features (not the bug fixes) each have a switch in `config/brandon3055/DraconicEvolution.cfg`, section `Extras`:
-a `Client` part (per player: core screen details, graph, OP/RF button, structure hints, pylon colours) and a `Server`
-part (grinder XP piping, guide book recipe, core rate history, pylon mode message). Each part has a master `extras`
-switch; off gives the official mod's behaviour. Server values are synced to joining clients.
+
+- `Client` (per player): `extras` (master), `coreScreenDetails`, `coreGraph`, `coreUnitToggle` (OP/RF button), `structureHints`, `pylonModeColours`.
+- `Server` (synced to joining clients): `extras` (master), `grinderXpPiping`, `guideBookRecipe`, `coreRateHistory`, `pylonModeMessage`, `coreMonitor` (block, recipe and everything it does), `beamForceField` with `beamPush`, `beamAffectsPlayers`, `beamAffectsMobs` and `beamDamage` (damage points: 1 = half a heart, 0 = none).
+
+Each part's master `extras` switch off gives the official mod's behaviour.
 
 **Modpack defaults:** this file is not a NeoForge config, so NeoForge's `defaultconfigs/` does not seed it. Use a
 config-seeding mod such as Configured Defaults (FTB packs ship it): put your `DraconicEvolution.cfg` at
@@ -78,9 +111,9 @@ and missing values are filled with the defaults, so a file holding only the `Ext
 
 ## Known issues (upstream, not fixed here)
 
-- Chaos Guardian fight: upstream reports a crash on right-clicking a guardian crystal, an invulnerable crystal after the kill, double spawns and a stuck gravity well. Back up before fighting.
-- Never move an Energy Core with AE2 Spatial IO (upstream server-crash report).
-- The core screen shows **net** I/O; hold **Shift** for separate in/out (same as upstream).
+- Chaos Guardian fight: upstream reports it getting stuck in one attack mode, double spawns and an invulnerable crystal after a mid-fight restart. Back up before fighting. (The "crash on right-clicking a guardian crystal" report was caused by another mod, Cognition, and does not apply to this port.)
+- Reactor: upstream reports it sometimes jumping straight to 2,500 °C on start-up. Test a reactor in a copy of your world first.
+- Ender Collection module: bound to an EnderStorage chest, it still sends to the default one (upstream #1996). Without EnderStorage it uses the vanilla ender chest as intended.
 - The Information Tablet has no recipe (also true in official 1.21.1; it needs Project Intelligence).
 
 ---
