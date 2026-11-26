@@ -381,8 +381,14 @@ public class DEConfig {
 //    public static boolean reactorShaders;
     public static boolean guardianShaders;
     public static boolean blockEffectRendering;
+    public static int blockEffectRenderDistance;
     //    public static boolean otherShaders;
     public static boolean itemDislocatorSound;
+
+    /** eli.7: render distance for core/stabilizer/pylon effects, capped by blockEffectRenderDistance when set. */
+    public static int effectViewDistance(int defaultDistance) {
+        return blockEffectRenderDistance > 0 ? Math.min(defaultDistance, blockEffectRenderDistance) : defaultDistance;
+    }
 
     private static void loadClient() {
         clientTag = config.getCategory("Client");
@@ -413,6 +419,11 @@ public class DEConfig {
                         + "The blocks keep working; only their visuals are hidden. A safety switch for the unofficial 26.1.2 port if these render wrong or crash your graphics.")
                 .setDefaultBoolean(true)
                 .onSync((tag, type) -> blockEffectRendering = tag.getBoolean());
+        clientTag.getValue("blockEffectRenderDistance")
+                .setComment("Energy core, stabilizer and pylon effects are not drawn beyond this many blocks. "
+                        + "0 = DE's defaults (core 256, stabilizers and pylons 64). Lower it to save frames near big bases.")
+                .setDefaultInt(0)
+                .onSync((tag, type) -> blockEffectRenderDistance = tag.getInt());
 //        clientTag.getValue("otherShaders")
 //                .setComment("Set this to false to disable all other shaders.")
 //                .setDefaultBoolean(true)

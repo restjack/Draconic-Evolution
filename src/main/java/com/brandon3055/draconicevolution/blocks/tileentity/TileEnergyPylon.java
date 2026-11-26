@@ -253,8 +253,21 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
         if (!level.isClientSide()) {
             ioMode.set(ioMode.get().reverse());
             level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyPylon.MODE, ioMode.get()));
+            // eli.7: say which way energy now flows; "input/output" alone reads ambiguously.
+            player.sendOverlayMessage(modeText(ioMode.get()));
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /** Particle tint for undyed pylons (eli.7). Keep in step with the energy_pylon_input/output textures. */
+    public static final int INPUT_RGB = 0x3CE65A;
+    public static final int OUTPUT_RGB = 0xFF5A32;
+
+    /** "Pylon: INPUT (charging core)" / "Pylon: OUTPUT (draining core)", coloured to match the textures. */
+    public static net.minecraft.network.chat.Component modeText(Mode mode) {
+        boolean in = mode == Mode.INPUT;
+        return net.minecraft.network.chat.Component.literal("Pylon: " + (in ? "INPUT (charging core)" : "OUTPUT (draining core)"))
+                .withColor(in ? INPUT_RGB : OUTPUT_RGB);
     }
 
     @Nullable
@@ -413,9 +426,11 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
         Vec3D spawn;
         Vec3D dest;
 
-        int r = 0;
-        int g = 200;
-        int b = 255;
+        // eli.7: undyed pylons tint their particles by mode (matches the side textures).
+        int rgb = ioMode.get() == Mode.INPUT ? INPUT_RGB : OUTPUT_RGB;
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = rgb & 0xFF;
 
         if (colour.notNull()) {
             r = (int) (colour.get().rF() * 255);

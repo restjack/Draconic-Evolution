@@ -55,6 +55,7 @@ import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 import net.minecraft.world.entity.player.Inventory;
 
@@ -197,37 +198,37 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
         Constraints.size(opLabel, display.xSize(), 9);
         Constraints.placeInside(opLabel, display, Constraints.LayoutPos.TOP_CENTER, 0, 5);
 
+        // eli.7: six lines, same spacing as upstream: stored / capacity, then In and Out, Net, and time to full/empty.
         GuiText energy = new GuiText(display)
-                .setTextSupplier(() -> Component.empty().append(tile.energy.getReadable()).append((tile.energy.getEnergyStored() < 1000000 ? " " : ""))
-                        .append(Component.translatable("mod_gui.brandonscore.energy_bar.op"))
-                        .withStyle(GOLD)
-                );
+                .setTextSupplier(() -> {
+                    // getReadable()/getReadableCapacity() end in " Giga " etc.; trim so the joins don't double-space.
+                    MutableComponent c = Component.literal(tile.energy.getReadable().getString().trim()).withStyle(GOLD);
+                    if (!tile.energy.isUnlimited()) c.append(Component.literal(" / " + tile.energy.getReadableCapacity().getString().replace(" OP", "").trim()).withStyle(GRAY));
+                    return c.append(Component.literal(" ").append(Component.translatable("mod_gui.brandonscore.energy_bar.op")).withStyle(tile.energy.isUnlimited() ? GOLD : GRAY));
+                });
         Constraints.size(energy, display.xSize(), 9);
         Constraints.placeOutside(energy, opLabel, Constraints.LayoutPos.BOTTOM_CENTER, 0, 2);
 
-        GuiText capLabel = new GuiText(display, Component.translatable("mod_gui.brandonscore.energy_bar.capacity").withStyle(DARK_AQUA))
-                .setEnabled(() -> !tile.energy.isUnlimited());
-        Constraints.size(capLabel, display.xSize(), 9);
-        Constraints.placeOutside(capLabel, energy, Constraints.LayoutPos.BOTTOM_CENTER, 0, 3);
-
-        GuiText capacity = new GuiText(display)
-                .setTextSupplier(() -> Component.empty().append(tile.energy.getReadableCapacity())
-                        .append(Component.translatable("mod_gui.brandonscore.energy_bar.op"))
-                        .withStyle(GOLD)
-                )
-                .setEnabled(() -> !tile.energy.isUnlimited());
-        Constraints.size(capacity, display.xSize(), 9);
-        Constraints.placeOutside(capacity, capLabel, Constraints.LayoutPos.BOTTOM_CENTER, 0, 2);
-
         GuiText ioLabel = new GuiText(display, Component.translatable("mod_gui.brandonscore.energy_bar.io").withStyle(DARK_AQUA));
         Constraints.size(ioLabel, display.xSize(), 9);
-        Constraints.placeOutside(ioLabel, capacity, Constraints.LayoutPos.BOTTOM_CENTER, 0, 3);
-        ioLabel.constrain(TOP, dynamic(() -> (tile.energy.isUnlimited() ? energy : capacity).yMax() + 3));
+        Constraints.placeOutside(ioLabel, energy, Constraints.LayoutPos.BOTTOM_CENTER, 0, 3);
 
-        GuiText io = new GuiText(display)
-                .setTextSupplier(() -> genIOText(tile));
-        Constraints.size(io, display.xSize(), 9);
-        Constraints.placeOutside(io, ioLabel, Constraints.LayoutPos.BOTTOM_CENTER, 0, 2);
+        GuiText inOut = new GuiText(display)
+                .setTextSupplier(() -> tile.energy.isUnlimited() ? genNetText(tile) : genInOutText(tile));
+        Constraints.size(inOut, display.xSize(), 9);
+        Constraints.placeOutside(inOut, ioLabel, Constraints.LayoutPos.BOTTOM_CENTER, 0, 2);
+
+        GuiText net = new GuiText(display)
+                .setTextSupplier(() -> genNetText(tile))
+                .setEnabled(() -> !tile.energy.isUnlimited());
+        Constraints.size(net, display.xSize(), 9);
+        Constraints.placeOutside(net, inOut, Constraints.LayoutPos.BOTTOM_CENTER, 0, 3);
+
+        GuiText eta = new GuiText(display)
+                .setTextSupplier(() -> genEtaText(tile))
+                .setEnabled(() -> !tile.energy.isUnlimited());
+        Constraints.size(eta, display.xSize(), 9);
+        Constraints.placeOutside(eta, net, Constraints.LayoutPos.BOTTOM_CENTER, 0, 2);
 
         var target = GuiTextField.create(display, 0xF0300000, 0xFFa8a8a8, 0xe1e3e5);
         target.container().setEnabled(() -> tile.energy.isUnlimited());
@@ -320,37 +321,59 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
         return MathHelper.clip(val, 0, 1);
     }
 
-    private Component genIOText(TileEnergyCore tile) {
-        IOInfo ioInfo = tile.energy.getIOInfo();
-        if (ioInfo == null) return Component.literal("[Not Available]"); //Should never hit this
-        String pfx = "mod_gui.brandonscore.energy_bar.";
+    private static final String OP = "mod_gui.brandonscore.energy_bar.op";
 
-        if (Minecraft.getInstance().hasShiftDown()) {
-            return Component.empty().copy()
-                    .append(Component.literal("+")
-                            .withStyle(GREEN)
-                            .append(Utils.formatNumber(ioInfo.currentInput()))
-                            .append(" ")
-                            .append(Component.translatable(pfx + "op"))
-                            .append("/t, ")
-                    )
-                    .append(Component.literal("-")
-                            .withStyle(RED)
-                            .append(Utils.formatNumber(ioInfo.currentOutput()))
-                            .append(" ")
-                            .append(Component.translatable(pfx + "op"))
-                            .append("/t, ")
-                    );
-        } else {
-            long io = ioInfo.currentInput() - ioInfo.currentOutput();
-            return Component.empty().copy()
-                    .append(io > 0 ? "+" : "")
-                    .append(Component.literal(Utils.formatNumber(io)))
-                    .append(" ")
-                    .append(Component.translatable(pfx + "op"))
-                    .append("/t")
-                    .withStyle(io > 0 ? GREEN : io < 0 ? RED : GRAY);
+    /** "+1,234 / -567 OP/t" with input green and output red. */
+    private Component genInOutText(TileEnergyCore tile) {
+        IOInfo io = tile.energy.getIOInfo();
+        if (io == null) return Component.literal("[Not Available]");
+        return Component.empty()
+                .append(Component.literal("+" + Utils.formatNumber(io.currentInput())).withStyle(GREEN))
+                .append(Component.literal(" / ").withStyle(GRAY))
+                .append(Component.literal("-" + Utils.formatNumber(io.currentOutput())).withStyle(RED))
+                .append(Component.literal(" ").append(Component.translatable(OP)).append("/t").withStyle(GRAY));
+    }
+
+    /** "Net: +766 OP/t", green when filling, red when draining. */
+    private Component genNetText(TileEnergyCore tile) {
+        IOInfo io = tile.energy.getIOInfo();
+        if (io == null) return Component.literal("[Not Available]");
+        long net = io.currentInput() - io.currentOutput();
+        return Component.literal("Net: ").withStyle(GRAY)
+                .append(Component.literal((net > 0 ? "+" : "") + Utils.formatNumber(net) + " ")
+                        .append(Component.translatable(OP)).append("/t")
+                        .withStyle(net > 0 ? GREEN : net < 0 ? RED : GRAY));
+    }
+
+    /** "Full in 3h 12m" / "Empty in 5m 2s" / "Full" / "Empty" / "Steady", from the 1 s average rate. */
+    private Component genEtaText(TileEnergyCore tile) {
+        IOInfo io = tile.energy.getIOInfo();
+        if (io == null) return Component.empty();
+        long net = io.currentInput() - io.currentOutput();
+        long stored = tile.energy.getOPStored();
+        long max = tile.energy.getMaxOPStored();
+        if (net > 0) {
+            return stored >= max ? Component.literal("Full").withStyle(GREEN)
+                    : Component.literal("Full in " + formatDuration((max - stored) / (double) net / 20D)).withStyle(GRAY);
         }
+        if (net < 0) {
+            return stored <= 0 ? Component.literal("Empty").withStyle(RED)
+                    : Component.literal("Empty in " + formatDuration(stored / (double) -net / 20D)).withStyle(GRAY);
+        }
+        return Component.literal(stored >= max ? "Full" : stored <= 0 ? "Empty" : "Steady").withStyle(GRAY);
+    }
+
+    /** Two largest units: "2y 41d", "3d 4h", "3h 12m", "12m 5s", "45s". */
+    public static String formatDuration(double seconds) {
+        if (seconds < 1) return "<1s";
+        if (seconds > 999L * 365 * 86400) return "999y+";
+        long s = (long) Math.ceil(seconds);
+        long y = s / (365L * 86400), d = s / 86400 % 365, h = s / 3600 % 24, m = s / 60 % 60, sec = s % 60;
+        if (y > 0) return y + "y " + d + "d";
+        if (d > 0) return d + "d " + h + "h";
+        if (h > 0) return h + "h " + m + "m";
+        if (m > 0) return m + "m " + sec + "s";
+        return sec + "s";
     }
 
     /**

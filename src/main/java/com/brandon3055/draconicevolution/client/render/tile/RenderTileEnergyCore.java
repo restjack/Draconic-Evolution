@@ -362,7 +362,7 @@ public class RenderTileEnergyCore implements BlockEntityRenderer<TileEnergyCore,
 
     @Override
     public int getViewDistance() {
-        return 256;
+        return com.brandon3055.draconicevolution.DEConfig.effectViewDistance(256);
     }
 
     @Override

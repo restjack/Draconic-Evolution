@@ -101,6 +101,11 @@ public class RenderEnergyCoreStabilizer implements BlockEntityRenderer<TileEnerg
     }
 
     @Override
+    public int getViewDistance() {
+        return com.brandon3055.draconicevolution.DEConfig.effectViewDistance(64); // eli.7
+    }
+
+    @Override
     public AABB getRenderBoundingBox(TileEnergyCoreStabilizer blockEntity) {
         return BlockEntityRenderer.super.getRenderBoundingBox(blockEntity).inflate(1);
     }
