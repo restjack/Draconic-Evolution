@@ -90,7 +90,9 @@ public class RenderTileEnergyCore implements BlockEntityRenderer<TileEnergyCore,
     public static class State extends BlockEntityRenderState {
         ExtractedModel geometry;
         ExtractedBuildGuide guide;
+        net.minecraft.client.renderer.block.BlockModelRenderState plainCore; // eli.8: effects off -> the plain core block
     }
+    private static final net.minecraft.client.renderer.block.model.BlockDisplayContext PLAIN = net.minecraft.client.renderer.block.model.BlockDisplayContext.create();
 
     @Override
     public State createRenderState() { return new State(); }
@@ -105,10 +107,18 @@ public class RenderTileEnergyCore implements BlockEntityRenderer<TileEnergyCore,
         extractGeometry(tile, partialTicks, new PoseStack(), capture, state.lightCoords,
                 net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
         state.geometry = capture.finish();
+        state.plainCore = null;
+        if (!com.brandon3055.draconicevolution.DEConfig.blockEffectRendering && tile.active.get()) {
+            // An active core block is invisible (RenderShape); with effects off draw its inactive model so the block stays visible.
+            state.plainCore = new net.minecraft.client.renderer.block.BlockModelRenderState();
+            net.minecraft.client.Minecraft.getInstance().getBlockModelResolver().update(state.plainCore,
+                    tile.getBlockState().setValue(com.brandon3055.draconicevolution.blocks.machines.EnergyCore.ACTIVE, false), PLAIN);
+        }
     }
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
+        if (state.plainCore != null) state.plainCore.submitMultiLayer(poseStack, collector, state.lightCoords, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, 0);
         if (state.guide != null) state.guide.submit(poseStack, collector);
         if (state.geometry != null) state.geometry.submit(poseStack, collector);
     }
