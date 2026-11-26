@@ -72,6 +72,10 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
     public final ManagedByte bgAlpha = register(new ManagedByte("bg_alpha", DataFlags.SAVE_NBT_SYNC_TILE)); // 0 solid, 1 75%, 2 50%
     public final ManagedInt alerts = register(new ManagedInt("alerts", ALERT_CHAT | ALERT_TOAST, DataFlags.SAVE_NBT_SYNC_TILE));
     public final ManagedByte redstoneMode = register(new ManagedByte("redstone_mode", DataFlags.SAVE_NBT_SYNC_TILE));
+    // Screen redo (2026-11-26): graph range on the in-world screen, pylon count, and a one-time upgrade of the show bits.
+    public final ManagedByte screenRange = register(new ManagedByte("screen_range", DataFlags.SAVE_NBT_SYNC_TILE)); // 0 5 min, 1 1 h, 2 24 h
+    public final ManagedByte pylonCount = register(new ManagedByte("pylon_count", DataFlags.SAVE_NBT_SYNC_TILE));
+    public final ManagedByte showVersion = register(new ManagedByte("show_version", DataFlags.SAVE_NBT));
     private int redstoneOut;
     private boolean primed, wasLow, wasStabOk, wasActive;
 
@@ -87,7 +91,8 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
     public long[][] statSeries = {new long[0], new long[0], new long[0]};
 
     public static final int SHOW_HEADER = 1, SHOW_STATUS = 2, SHOW_PERCENT = 4, SHOW_BAR = 8, SHOW_STORED = 16,
-            SHOW_INOUT = 32, SHOW_NET = 64, SHOW_ETA = 128, SHOW_FRAME = 256, SHOW_RENDER = 512, SHOW_ALL = 1023;
+            SHOW_INOUT = 32, SHOW_NET = 64, SHOW_ETA = 128, SHOW_FRAME = 256, SHOW_RENDER = 512, SHOW_GRAPH = 1024, SHOW_STATS = 2048, SHOW_ALL = 4095;
+    public static final int MSG_SCREEN_RANGE = 12;
     public static final int MSG_SHOW = 1, MSG_TOGGLE_CORE = 2, MSG_PYLONS = 3, MSG_PYLON_FLIP = 4, MSG_LIMITS = 5, MSG_PYLON_LIST = 10;
 
     /** Client copy of the linked core's pylons, filled when the settings screen asks. */
@@ -107,8 +112,14 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
     @Override
     public void tick() {
         super.tick();
-        if (level == null || level.isClientSide() || !isLinked() || tick++ % 20 != 0) return;
-        if (!DEConfig.extra("coreMonitor")) return;
+        if (level == null || level.isClientSide() || tick++ % 20 != 0) return;
+        if (showVersion.get() < 1) { // panels placed before the graph/stats bits existed: switch them on once
+            show.set(show.get() | SHOW_GRAPH | SHOW_STATS);
+            showVersion.set((byte) 1);
+        }
+        if (!isLinked()) adoptNeighbour();
+        if (!isLinked() || !DEConfig.extra("coreMonitor")) return;
+        if (tick % 100 == 1 && isOriginPanel()) pushStatsToNearby();
         TileEnergyCore core = findCore();
         if (core == null) {
             loaded.set(false);
@@ -129,8 +140,59 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
         limIn.set(core.limitIn.get());
         limOut.set(core.limitOut.get());
         limReserve.set(core.reserve.get());
+        prunePylons(core);
+        pylonCount.set((byte) Math.min(127, core.pylons.size()));
         if (isOriginPanel()) checkAlerts(core);
         updateRedstone();
+    }
+
+    /** A panel added to an existing screen takes the screen's link and settings from a linked neighbour. */
+    private void adoptNeighbour() {
+        Direction facing = getBlockState().getValue(CoreMonitor.FACING);
+        for (Direction d : new Direction[]{Direction.UP, Direction.DOWN, facing.getClockWise(), facing.getCounterClockWise()}) {
+            if (level.getBlockEntity(worldPosition.relative(d)) instanceof TileCoreMonitor o && o.isLinked()
+                    && o.getBlockState().getValue(CoreMonitor.FACING) == facing) {
+                copyFrom(o);
+                return;
+            }
+        }
+    }
+
+    private void copyFrom(TileCoreMonitor o) {
+        linkDim.set(o.linkDim.get());
+        linkPos.set(o.linkPos.get());
+        owner.set(o.owner.get());
+        ownerName.set(o.ownerName.get());
+        show.set(o.show.get());
+        name.set(o.name.get());
+        unit.set(o.unit.get());
+        warnAt.set(o.warnAt.get());
+        alarmAt.set(o.alarmAt.get());
+        target.set(o.target.get());
+        bgAlpha.set(o.bgAlpha.get());
+        alerts.set(o.alerts.get());
+        redstoneMode.set(o.redstoneMode.get());
+        screenRange.set(o.screenRange.get());
+        tick = 0;
+    }
+
+    /** The panel that draws this screen (bottom-left); the settings screen always edits that one. */
+    public TileCoreMonitor originPanel() {
+        for (TileCoreMonitor p : connectedPanels(level, worldPosition)) if (p.isOriginPanel()) return p;
+        return this;
+    }
+
+    private static void prunePylons(TileEnergyCore core) {
+        Level cl = core.getLevel();
+        core.pylons.removeIf(pos -> !(LoadedLookup.isLoaded(cl, pos)
+                && LoadedLookup.blockEntity(cl, pos) instanceof TileEnergyPylon p && p.getCore() == core));
+    }
+
+    /** Graph and stat cards on the in-world screen: players near the screen get the stats every 5 seconds. */
+    private void pushStatsToNearby() {
+        for (var p : level.players()) {
+            if (p instanceof ServerPlayer sp && p.distanceToSqr(worldPosition.getCenter()) < 64 * 64) sendStats(sp);
+        }
     }
 
     /** Unit label for this monitor. */
@@ -364,6 +426,10 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
                     p.redstoneMode.set(rm);
                 }
             }
+            case MSG_SCREEN_RANGE -> {
+                byte r = (byte) Math.max(0, Math.min(2, data.readByte()));
+                for (TileCoreMonitor p : connectedPanels(level, worldPosition)) p.screenRange.set(r);
+            }
             case MSG_SHOW -> {
                 int v = data.readInt() & SHOW_ALL;
                 for (TileCoreMonitor p : connectedPanels(level, worldPosition)) p.show.set(v);
@@ -405,8 +471,7 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
         List<PylonRow> rows = new ArrayList<>();
         if (core != null) {
             Level cl = core.getLevel();
-            core.pylons.removeIf(pos -> !(LoadedLookup.isLoaded(cl, pos)
-                    && LoadedLookup.blockEntity(cl, pos) instanceof TileEnergyPylon p && p.getCore() == core));
+            prunePylons(core);
             for (BlockPos pos : core.pylons) {
                 if (LoadedLookup.blockEntity(cl, pos) instanceof TileEnergyPylon p) {
                     rows.add(new PylonRow(pos, p.ioMode.get().canReceive(), p.lastTickRate()));
@@ -444,7 +509,10 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
     public InteractionResult onBlockUse(BlockState state, Player player, InteractionHand hand, BlockHitResult hit) {
         // Holding a block: place it (building a bigger screen against this one), don't open the settings.
         if (hand != InteractionHand.MAIN_HAND || player.getItemInHand(hand).getItem() instanceof net.minecraft.world.item.BlockItem) return InteractionResult.PASS;
-        if (player instanceof ServerPlayer sp) sp.openMenu(this, worldPosition);
+        if (player instanceof ServerPlayer sp) {
+            TileCoreMonitor target = originPanel();
+            sp.openMenu(target, target.getBlockPos());
+        }
         return InteractionResult.SUCCESS;
     }
 

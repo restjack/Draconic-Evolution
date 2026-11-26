@@ -130,8 +130,16 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
             Constraints.size(b, 110, 14);
             Constraints.placeInside(b, root, Constraints.LayoutPos.TOP_LEFT, 6 + (i % 2) * 114, 38 + (i / 2) * 17);
         }
-        text(root, 6, 110, 0, () -> Component.literal("Applies to every panel of this screen.").withStyle(GRAY));
-        text(root, 6, 122, 0, () -> Component.literal("A 1x1 panel only shows status, percent, bar and net.").withStyle(GRAY));
+        toggle(root, "Graph (3x3)", TileCoreMonitor.SHOW_GRAPH, 6, 106, 0);
+        toggle(root, "Stat cards (3x3)", TileCoreMonitor.SHOW_STATS, W / 2 - 2, 106, 0);
+        String[] ranges = {"5 minutes", "1 hour", "24 hours"};
+        GuiButton range = TOOLKIT.createFlat3DButton(root, () -> Component.literal("Screen graph: " + ranges[Math.max(0, Math.min(2, tile.screenRange.get()))]))
+                .onPress(() -> tile.sendPacketToServer(o -> o.writeByte((tile.screenRange.get() + 1) % 3), TileCoreMonitor.MSG_SCREEN_RANGE))
+                .setEnabled(() -> tab == 0);
+        Constraints.size(range, W - 12, 14);
+        Constraints.placeInside(range, root, Constraints.LayoutPos.TOP_LEFT, 6, 123);
+        text(root, 6, 144, 0, () -> Component.literal("Applies to every panel of this screen.").withStyle(GRAY));
+        text(root, 6, 156, 0, () -> Component.literal("Small screens show fewer lines.").withStyle(GRAY));
     }
 
     // ### Control
@@ -297,7 +305,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
         var f = GuiTextField.create(root, 0xFF000000, 0xFFA0A0A0, 0xE0E0E0);
         f.container().setEnabled(() -> tab == onTab);
         f.field().setMaxLength(19).setFilter(s -> s.chars().allMatch(c -> Character.isDigit(c) || c == ','))
-                .setValue(value > 0 ? Long.toString(value) : "");
+                .setTextState(com.brandon3055.brandonscore.client.gui.modular.lib.TextState.simpleState(value > 0 ? Long.toString(value) : ""));
         Constraints.size(f.container(), 70, 12);
         Constraints.placeInside(f.container(), root, Constraints.LayoutPos.TOP_LEFT, W - 76, y);
         return f.field();
@@ -311,7 +319,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
         text(root, 6, 42, 4, () -> Component.literal("Monitor name").withStyle(GRAY));
         var nameField = GuiTextField.create(root, 0xFF000000, 0xFFA0A0A0, 0xE0E0E0);
         nameField.container().setEnabled(() -> tab == 4);
-        nameField.field().setMaxLength(32).setValue(tile.name.get());
+        nameField.field().setMaxLength(32).setTextState(com.brandon3055.brandonscore.client.gui.modular.lib.TextState.simpleState(tile.name.get()));
         Constraints.size(nameField.container(), 130, 12);
         Constraints.placeInside(nameField.container(), root, Constraints.LayoutPos.TOP_LEFT, W - 136, 40);
 
