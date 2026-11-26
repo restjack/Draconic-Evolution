@@ -52,7 +52,7 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
 
     private record CoreOp(float cx, float cy, float k) {}
 
-    private record GraphOp(float x0, float y0, float x1, float y1, long[] data, boolean line) {}
+    private record GraphOp(float x0, float y0, float x1, float y1, long[] data, float unitScale) {}
 
     public static class State extends BlockEntityRenderState {
         boolean draw;
@@ -197,6 +197,10 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
 
         boolean show(int flag) {
             return t.isShown(flag);
+        }
+
+        float us() {
+            return t.unit.get() == 4 ? 2.5F : 1F;
         }
 
         int range() {
@@ -376,8 +380,7 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
                 long[] data = t.statSeries[range()];
                 float gy = y0 + (show(TileCoreMonitor.SHOW_HEADER) || show(TileCoreMonitor.SHOW_STATUS) ? 24 + gap : 0);
                 text("Net " + unit + "/t \u00B7 " + RANGE_NAMES[range()], split + 18, gy, fit("Net " + unit + "/t \u00B7 " + RANGE_NAMES[range()], 20, x1 - split - 18), CYAN);
-                ops.add(new GraphOp(split + 18, gy + 24, x1, y1 - 24, data, false));
-                textRight("\u00B1" + num(max(data)), x1, y1 - 20, 20, GRAY);
+                ops.add(new GraphOp(split + 18, gy + 24, x1, y1, data, us()));
             }
             if (show(TileCoreMonitor.SHOW_HEADER) || show(TileCoreMonitor.SHOW_STATUS)) {
                 header(y, 24, show(TileCoreMonitor.SHOW_HEADER) ? title : "", show(TileCoreMonitor.SHOW_STATUS) ? word : "", CYAN);
@@ -416,7 +419,7 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
             if (!sideGraph && s.h >= 3 && show(TileCoreMonitor.SHOW_GRAPH) && y1 - y > 70) {
                 long[] data = t.statSeries[range()];
                 text("Net " + unit + "/t \u00B7 last " + RANGE_NAMES[range()], x0, y, 22, CYAN);
-                ops.add(new GraphOp(x0, y + 26, x1, y1, data, false));
+                ops.add(new GraphOp(x0, y + 26, x1, y1, data, us()));
             }
         }
 
@@ -461,13 +464,12 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
             float footY = y1 - 26;
             long[] data = t.statSeries[range()];
             if (show(TileCoreMonitor.SHOW_GRAPH) && (footer ? footY - gap : y1) - y > 50) {
-                text("Net " + unit + "/t · last " + RANGE_NAMES[range()], x0, y, 22, CYAN);
-                ops.add(new GraphOp(x0, y + 26, x1, footer ? footY - gap : y1, data, false));
+                text("Net " + unit + "/t \u00B7 last " + RANGE_NAMES[range()], x0, y, 22, CYAN);
+                ops.add(new GraphOp(x0, y + 26, x1, footer ? footY - gap : y1, data, us()));
             }
             if (footer) {
                 String f = eta.isEmpty() ? targetEta : eta;
                 text(f, x0, footY, fit(f, 26, mw * 0.65F), eta.isEmpty() ? YELLOW : WHITE);
-                if (show(TileCoreMonitor.SHOW_GRAPH)) textRight("±" + num(max(data)), x1, footY, 26, GRAY);
             }
         }
 
@@ -475,7 +477,7 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
         void renderBoard() {
             float y = y0, gap = 10;
             if (show(TileCoreMonitor.SHOW_HEADER) || show(TileCoreMonitor.SHOW_STATUS)) {
-                String right = show(TileCoreMonitor.SHOW_STATUS) ? word + (live ? " · " + (t.stabilizersOk.get() ? "STABILIZERS OK" : "STABILIZER MISSING") : "") : "";
+                String right = show(TileCoreMonitor.SHOW_STATUS) ? word + (live ? " \u00B7 " + (t.stabilizersOk.get() ? "STABILIZERS OK" : "STABILIZER MISSING") : "") : "";
                 String left = show(TileCoreMonitor.SHOW_HEADER) ? (t.name.get().isEmpty() ? "ENERGY CORE" : t.name.get().toUpperCase(Locale.ROOT)) : "";
                 header(y, 26, left, right, LILAC);
                 y += 26 + gap;
@@ -496,7 +498,7 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
             if (show(TileCoreMonitor.SHOW_BAR) && pct >= 0) { bar(cx, ly, x1, ly + 12); ly += 18; }
             if (show(TileCoreMonitor.SHOW_NET)) {
                 int n = t.pylonCount.get();
-                pieces(cx, ly, 19.5F, cw, "Net ", GRAY, signed(net) + " " + unit + "/t", signColour(net), " · " + n + (n == 1 ? " pylon" : " pylons"), GRAY);
+                pieces(cx, ly, 19.5F, cw, "Net ", GRAY, signed(net) + " " + unit + "/t", signColour(net), " \u00B7 " + n + (n == 1 ? " pylon" : " pylons"), GRAY);
                 ly += 23;
             } else if (show(TileCoreMonitor.SHOW_INOUT)) {
                 pieces(cx, ly, 19.5F, cw, "+" + num(in), GREEN, " / ", GRAY, "-" + num(out), RED, " " + unit + "/t", GRAY);
@@ -514,7 +516,7 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
                     textRight(chip, rx, y, 16.5F, i == range() ? WHITE : 0xFF6A6A78);
                     rx -= width(chip, 16.5F) + 6;
                 }
-                ops.add(new GraphOp(x0, y + 20, x1, y1, t.statSeries[range()], true));
+                ops.add(new GraphOp(x0, y + 20, x1, y1, t.statSeries[range()], us()));
             }
         }
 
@@ -551,14 +553,7 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
             if (op instanceof Rect r) {
                 quad(pose, collector, r.x0, r.y0, r.x1, r.y1, r.z, r.colour);
             } else if (op instanceof Txt tx) {
-                float sc = tx.size / 12F; // MC glyphs are 8 px tall; size/12 matches the mockup font's visible height
-                pose.pushPose();
-                pose.translate(tx.x, tx.y + tx.size * 0.17F, Z_TEXT);
-                pose.scale(sc, sc, sc);
-                // Argument order: ..., displayMode, light, colour, background, outline (light first; swapped = invisible text).
-                collector.submitText(pose, 0, 0, Component.literal(tx.text).getVisualOrderText(), false, Font.DisplayMode.POLYGON_OFFSET,
-                        FULL_BRIGHT, tx.colour, 0, 0);
-                pose.popPose();
+                text(pose, collector, tx.text, tx.x, tx.y, tx.size, tx.colour);
             } else if (op instanceof CoreOp c) {
                 drawCore(pose, collector, c.cx, c.cy, c.k, state.time);
             } else if (op instanceof GraphOp g) {
@@ -568,7 +563,26 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
         pose.popPose();
     }
 
-    // ### Graph
+    private static void text(PoseStack pose, SubmitNodeCollector collector, String s, float x, float y, float size, int colour) {
+        float sc = size / 12F; // MC glyphs are 8 px tall; size/12 matches the mockup font's visible height
+        pose.pushPose();
+        pose.translate(x, y + size * 0.17F, Z_TEXT);
+        pose.scale(sc, sc, sc);
+        // Argument order: ..., displayMode, light, colour, background, outline (light first; swapped = invisible text).
+        collector.submitText(pose, 0, 0, Component.literal(s).getVisualOrderText(), false, Font.DisplayMode.POLYGON_OFFSET,
+                FULL_BRIGHT, colour, 0, 0);
+        pose.popPose();
+    }
+
+    /** 1234 -> "1.2k", 999 -> "999", millions and up like the rest of the screen (271.781M). */
+    private static String compact(long v) {
+        long a = Math.abs(v);
+        if (a < 1000) return Long.toString(v);
+        if (a < 1_000_000) return String.format(Locale.ROOT, "%.1fk", v / 1000D).replace(".0k", "k");
+        return EnergyCoreGui.shortNumber(v);
+    }
+
+    // ### Graph: bars (green in, red out) with 15 % headroom and the scale written on the left
 
     private static void drawGraph(PoseStack pose, SubmitNodeCollector c, GraphOp g) {
         quad(pose, c, g.x0, g.y0, g.x1, g.y1, Z_BOX, 0xFF3A2450);
@@ -576,29 +590,38 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
         long[] d = g.data;
         long maxPos = 0, maxNeg = 0;
         for (long v : d) { maxPos = Math.max(maxPos, v); maxNeg = Math.max(maxNeg, -v); }
-        float top = g.y0 + 3, bottom = g.y1 - 3, hgt = bottom - top;
-        float zero = maxPos + maxNeg == 0 ? (top + bottom) / 2 : top + hgt * maxPos / (float) (maxPos + maxNeg);
-        quad(pose, c, g.x0 + 1, zero, g.x1 - 1, zero + 1, Z_CORE - 0.2F, 0xFF5A5A66);
+        // Headroom, and a little room on the empty side so a one-way flow doesn't glue the zero line to the edge.
+        double up = maxPos > 0 ? maxPos * 1.15 : maxNeg > 0 ? maxNeg * 0.15 : 1;
+        double down = maxNeg > 0 ? maxNeg * 1.15 : maxPos > 0 ? maxPos * 0.15 : 1;
+        float labelSize = Math.max(12, Math.min(16, (g.y1 - g.y0) / 6));
+        Font font = Minecraft.getInstance().font;
+        float gut = 6 + font.width("-888.8k") * labelSize / 12F;
+        float gx0 = g.x0 + gut, top = g.y0 + 4, bottom = g.y1 - 4, hgt = bottom - top;
+        float zero = (float) (top + hgt * up / (up + down));
+        quad(pose, c, gx0, zero, g.x1 - 2, zero + 1, Z_CORE - 0.2F, 0xFF5A5A66);
+        quad(pose, c, gx0 - 1, top, gx0, bottom, Z_CORE - 0.2F, 0xFF3A2450);
+        // scale labels: the largest value each way and zero
+        text(pose, c, "0", gx0 - 4 - font.width("0") * labelSize / 12F, zero - labelSize / 2, labelSize, GRAY);
+        if (maxPos > 0) {
+            String s = compact((long) (maxPos * g.unitScale));
+            float y = (float) (zero - maxPos / (up + down) * hgt);
+            text(pose, c, s, gx0 - 4 - font.width(s) * labelSize / 12F, Math.max(g.y0 + 1, y - labelSize / 2), labelSize, GREEN);
+        }
+        if (maxNeg > 0) {
+            String s = compact((long) (-maxNeg * g.unitScale));
+            float y = (float) (zero + maxNeg / (up + down) * hgt);
+            text(pose, c, s, gx0 - 4 - font.width(s) * labelSize / 12F, Math.min(g.y1 - labelSize - 1, y - labelSize / 2), labelSize, RED);
+        }
         if (d.length == 0) return;
-        long scale = Math.max(1, maxPos + maxNeg);
         int slots = 60;
-        float bw = (g.x1 - g.x0 - 4) / slots;
+        float bw = (g.x1 - gx0 - 4) / slots;
         int n = Math.min(slots, d.length), off = slots - n;
-        float prevX = 0, prevY = 0;
         for (int i = 0; i < n; i++) {
             long v = d[d.length - n + i];
-            float bx = g.x0 + 2 + (off + i) * bw;
-            float vy = zero - v / (float) scale * hgt;
-            if (!g.line) {
-                if (v > 0) quad(pose, c, bx, vy, bx + bw * 0.7F, zero, Z_CORE, 0xFF55FF55);
-                else if (v < 0) quad(pose, c, bx, zero + 1, bx + bw * 0.7F, vy + 1, Z_CORE, 0xFFFF5555);
-            } else {
-                float mx = bx + bw / 2;
-                quad(pose, c, bx, Math.min(vy, zero), bx + bw, Math.max(vy, zero), Z_LINE, mix(0x120A18, v >= 0 ? 0x55FF55 : 0xFF5555, 0.35F));
-                if (i > 0) line(pose, c, prevX, prevY, mx, vy, 2F, Z_CORE, 0xFFFFAA00);
-                prevX = mx;
-                prevY = vy;
-            }
+            float bx = gx0 + 2 + (off + i) * bw;
+            float bh = (float) (Math.abs(v) / (up + down) * hgt);
+            if (v > 0) quad(pose, c, bx, zero - bh, bx + bw * 0.72F, zero, Z_CORE, 0xFF55FF55);
+            else if (v < 0) quad(pose, c, bx, zero + 1, bx + bw * 0.72F, zero + 1 + bh, Z_CORE, 0xFFFF5555);
         }
     }
 

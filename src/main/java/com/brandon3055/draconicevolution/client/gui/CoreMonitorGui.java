@@ -23,6 +23,7 @@ import com.brandon3055.draconicevolution.blocks.machines.CoreMonitor;
 import com.brandon3055.draconicevolution.blocks.tileentity.TileCoreMonitor;
 import com.brandon3055.draconicevolution.blocks.tileentity.TileEnergyCore;
 import com.brandon3055.draconicevolution.init.DEContent;
+import com.brandon3055.draconicevolution.client.render.MonitorHighlight;
 import com.brandon3055.draconicevolution.inventory.CoreMonitorMenu;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -96,7 +97,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
         root = gui.getRoot();
 
         int[] size = screenSize();
-        paint(8, 6, 250, 10, -1, (r, x, y, w, h, hov) -> r.drawString(Component.literal("Core Monitor (" + size[0] + "×" + size[1] + ")").withStyle(s -> s.withBold(true)), x, y, head(), false));
+        paint(8, 6, 250, 10, -1, (r, x, y, w, h, hov) -> r.drawString(Component.literal("Core Monitor (" + size[0] + "\u00D7" + size[1] + ")").withStyle(s -> s.withBold(true)), x, y, head(), false));
         click(W - 46, 4, 38, 14, -1, (r, x, y, w, h, hov) -> button(r, x, y, w, h, "Done", btn(), hov, false), () -> gui.getScreen().onClose());
         paint(8, 22, W - 16, 16, -1, this::statusStrip);
         buildTabs();
@@ -136,7 +137,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
         BlockPos p = tile.linkPos.get();
         String dim = tile.linkDim.get();
         dim = dim.substring(dim.indexOf(':') + 1).replace("the_", "");
-        String right = dim + " · " + (live ? "loaded" : "not loaded");
+        String right = dim + " \u00B7 " + (live ? "loaded" : "not loaded");
         int rw = font().width(right);
         str(r, right, x + w - 5 - rw, y + 4, 0xFFAAAAAA);
         str(r, fit("Linked: Tier " + tile.tier.get() + " Energy Core at " + p.getX() + " " + p.getY() + " " + p.getZ(), w - rw - 16), x + 5, y + 4, live ? 0xFF55FF55 : 0xFFAAAAAA);
@@ -183,7 +184,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
         return switch (tab) {
             case 0 -> "Link: Crystal Binder, Shift-click the core, then this monitor.";
             case 1 -> "The tier upgrade itself is still done at the core.";
-            case 2 -> "Green = input (charging), red = output. Pin = show where it is.";
+            case 2 -> "Pin: box through walls for 30 s + chat waypoint. Click again to stop.";
             case 3 -> "Alerts: below the alarm %, stabilizer broken, core turned off.";
             default -> tile.owner.isNull() ? "No owner: anyone can change settings" : "Owner: " + tile.ownerName.get() + " (and operators)";
         };
@@ -194,7 +195,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
     private void buildDisplay() {
         paint(8, 60, 170, 150, 0, (r, x, y, w, h, hov) -> fieldset(r, x, y, w, h, "Show on screen"));
         String[] names = {"Tier header", "Status word", "Percent", "Fill bar", "Stored / capacity", "In and out", "Net per tick",
-                "Time to full / empty", "Graph (3×2, 3×3)", "Stat cards (3×3)", "Core picture", "Frame"};
+                "Time to full / empty", "Graph (3\u00D72, 3\u00D73)", "Stat cards (3\u00D73)", "Core picture", "Frame"};
         int[] flags = {TileCoreMonitor.SHOW_HEADER, TileCoreMonitor.SHOW_STATUS, TileCoreMonitor.SHOW_PERCENT, TileCoreMonitor.SHOW_BAR,
                 TileCoreMonitor.SHOW_STORED, TileCoreMonitor.SHOW_INOUT, TileCoreMonitor.SHOW_NET, TileCoreMonitor.SHOW_ETA,
                 TileCoreMonitor.SHOW_GRAPH, TileCoreMonitor.SHOW_STATS, TileCoreMonitor.SHOW_RENDER, TileCoreMonitor.SHOW_FRAME};
@@ -211,7 +212,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
         paint(186, 92, 158, 58, 0, (r, x, y, w, h, hov) -> {
             fieldset(r, x, y, w, h, "Alert colours");
             str(r, "Warn (yellow) below " + warnSlider.value() + "%", x + 6, y + 12, text());
-            str(r, "Alarm (red, flashing) below " + alarmSlider.value() + "%", x + 6, y + 34, text());
+            str(r, "Alarm (red) below " + alarmSlider.value() + "%", x + 6, y + 34, text());
         });
         warnSlider = slider(192, 114, 146, 0, 0xFFFFAA00, () -> tile.warnAt.get(), v -> sendLook(null, -1, v, -1, -1, -1));
         alarmSlider = slider(192, 136, 146, 0, 0xFFFF5555, () -> tile.alarmAt.get(), v -> sendLook(null, -1, -1, v, -1, -1));
@@ -246,8 +247,8 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
             str(r, fit("TIER " + tile.tier.get() + " ENERGY CORE", w - ww - 14), x + 5, y + 5, 0xFF55FFFF);
             long net = tile.input.get() - tile.output.get();
             String line = !tile.isLinked() ? "Link a core first" : !live ? "Last values shown" : on
-                    ? "Pylons running · Net " + signed(net) + " " + tile.unitName() + "/t"
-                    : "Pylons stopped · " + EnergyCoreGui.shortNumber(tile.toUnit(tile.stored.get())) + " " + tile.unitName() + " kept";
+                    ? "Running \u00B7 Net " + signed(net) + " " + tile.unitName() + "/t"
+                    : "Stopped \u00B7 " + EnergyCoreGui.shortNumber(tile.toUnit(tile.stored.get())) + " " + tile.unitName() + " kept";
             str(r, fit(line, w - 10), x + 5, y + 17, 0xFFAAAAAA);
         });
         click(8, 106, 168, 20, 1, (r, x, y, w, h, hov) -> button(r, x, y, w, h, tile.coreActive.get() ? "Deactivate core" : "Activate core",
@@ -255,8 +256,8 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
                 () -> { if (tile.isLinked() && tile.loaded.get()) tile.sendPacketToServer(o -> {}, TileCoreMonitor.MSG_TOGGLE_CORE); });
         paint(8, 130, 168, 40, 1, (r, x, y, w, h, hov) -> r.drawWordWrap(Component.literal(
                 "Deactivating stops the pylons; stored energy is kept. Activating checks the structure and stabilizers first, like the core's own button."), x, y, (int) w, muted()));
-        paint(8, 176, 168, 10, 1, (r, x, y, w, h, hov) -> str(r, "Who can use this", x, y, head()));
-        paint(8, 188, 168, 30, 1, (r, x, y, w, h, hov) -> r.drawWordWrap(Component.literal(tile.owner.isNull()
+        paint(8, 182, 168, 10, 1, (r, x, y, w, h, hov) -> str(r, "Who can use this", x, y, head()));
+        paint(8, 194, 168, 30, 1, (r, x, y, w, h, hov) -> r.drawWordWrap(Component.literal(tile.owner.isNull()
                 ? "No owner yet: anyone can change it. Linking with the binder makes you the owner."
                 : "Only " + tile.ownerName.get() + " (who linked it) and server operators."), x, y, (int) w, text()));
 
@@ -270,7 +271,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
         paint(184, 74, 78, 36, 1, (r, x, y, w, h, hov) -> {
             int cur = Math.max(1, tile.tier.get());
             card(r, x, y, w, h, 0xFF8800FF);
-            str(r, "NOW · TIER " + cur, x + 4, y + 4, 0xFFAAAAAA);
+            str(r, "NOW \u00B7 TIER " + cur, x + 4, y + 4, 0xFFAAAAAA);
             str(r, fit(capText(cur), w - 8), x + 4, y + 15, 0xFFFFAA00);
             str(r, fit(total(blockCounts(cur)) + " blocks", w - 8), x + 4, y + 26, 0xFFAAAAAA);
         });
@@ -281,7 +282,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
             str(r, fit(capText(t), w - 8), x + 4, y + 15, 0xFF55FF55);
             long cap = capacity(t), now = capacity(cur);
             String ratio = cap < 0 ? "No real limit" : now <= 0 || t == cur ? "current tier" : cap >= now
-                    ? String.format(Locale.ROOT, "×%.1f of now", cap / (double) now) : String.format(Locale.ROOT, "%.0f%% of now", cap * 100D / now);
+                    ? String.format(Locale.ROOT, "\u00D7%.1f of now", cap / (double) now) : String.format(Locale.ROOT, "%.0f%% of now", cap * 100D / now);
             str(r, fit(ratio, w - 8), x + 4, y + 26, 0xFFAAAAAA);
         });
         paint(184, 114, 160, 48, 1, (r, x, y, w, h, hov) -> {
@@ -310,7 +311,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
                 int cur = Math.max(1, tile.tier.get());
                 int bg = t == cur ? 0xFF8800FF : t == preview() ? 0xFF2F6B2F : hov ? lighten(subBg()) : subBg();
                 r.fill(x, y, x + w, y + h, bg);
-                str(r, fit("T" + t + " · " + shortCap(t), w - 6), x + 3, y + 2, t == cur || t == preview() ? 0xFFFFFFFF : text());
+                str(r, fit("T" + t + " \u00B7 " + shortCap(t), w - 6), x + 3, y + 2, t == cur || t == preview() ? 0xFFFFFFFF : text());
             }, () -> previewTier = t);
         }
     }
@@ -391,12 +392,17 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
                 str(r, fit(p.pos().getX() + " " + p.pos().getY() + " " + p.pos().getZ(), w - 76 - rw), x + 5, y + 6, 0xFFE8E6F0);
             });
             click(14 + 202 - 62, ry + 2, 14, 15, 2, (r, x, y, w, h, hov) -> {
-                if (pylon(row) == null) return;
-                button(r, x, y, w, h, "", btn(), hov, false);
+                var p = pylon(row);
+                if (p == null) return;
+                button(r, x, y, w, h, "", MonitorHighlight.isOn(tile.linkDim.get(), p.pos()) ? 0xFF6A2FA8 : btn(), hov, false);
                 pin(r, x, y);
             }, () -> {
                 var p = pylon(row);
-                if (p != null) tile.sendPacketToServer(o -> o.writePos(p.pos()), TileCoreMonitor.MSG_PYLON_LOCATE);
+                if (p == null) return;
+                // Through-walls box (30 s, click again to stop) plus the server's chat waypoint and particle column.
+                if (MonitorHighlight.toggle(tile.linkDim.get(), p.pos(), p.input() ? 0x55FF55 : 0xFF5555)) {
+                    tile.sendPacketToServer(o -> o.writePos(p.pos()), TileCoreMonitor.MSG_PYLON_LOCATE);
+                }
             });
             click(14 + 202 - 46, ry + 2, 44, 15, 2, (r, x, y, w, h, hov) -> {
                 var p = pylon(row);
@@ -412,14 +418,14 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
             fieldset(r, x, y, w, h, "Rate limits");
             str(r, "Max input / tick", x + 6, y + 12, text());
             str(r, "Max output / tick", x + 6, y + 40, text());
-            str(r, "Reserve % (no output", x + 6, y + 68, text());
-            str(r, "below it)", x + 6, y + 78, text());
-            r.drawWordWrap(Component.literal("Whole core, shared by its pylons. Empty = no limit."), x + 6, y + 126, (int) w - 12, muted());
+            str(r, "Reserve %", x + 6, y + 68, text());
+            r.drawWordWrap(Component.literal("Whole core, shared by its pylons. Reserve: no output below this fill. Empty = no limit."),
+                    x + 6, y + 116, (int) w - 12, muted());
         });
         GuiTextField in = input(236, 82, 102, 2, 0xFF55FF55, tile.limIn.get() > 0 ? Long.toString(tile.limIn.get()) : "", 19);
         GuiTextField out = input(236, 110, 102, 2, 0xFFFF5555, tile.limOut.get() > 0 ? Long.toString(tile.limOut.get()) : "", 19);
-        GuiTextField res = input(236, 148, 102, 2, 0xFFFFAA00, tile.limReserve.get() > 0 ? Integer.toString(tile.limReserve.get()) : "", 3);
-        click(236, 166, 102, 15, 2, (r, x, y, w, h, hov) -> button(r, x, y, w, h, "Save limits", btn(), hov, !tile.isLinked() || !tile.loaded.get()), () -> {
+        GuiTextField res = input(236, 138, 102, 2, 0xFFFFAA00, tile.limReserve.get() > 0 ? Integer.toString(tile.limReserve.get()) : "", 3);
+        click(236, 156, 102, 15, 2, (r, x, y, w, h, hov) -> button(r, x, y, w, h, "Save limits", btn(), hov, !tile.isLinked() || !tile.loaded.get()), () -> {
             if (!tile.isLinked() || !tile.loaded.get()) return;
             long a = parse(in.getValue()), b = parse(out.getValue());
             int c = (int) Math.min(100, parse(res.getValue()));
@@ -445,7 +451,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
             fieldset(r, x, y, w, h, "Alerts");
             str(r, "Switching one on sends a TEST.", x + 6, y + 66, muted());
         });
-        String[] names = {"Chat message", "Toast", "Sound", "Also to my FTB Teams party"};
+        String[] names = {"Chat message", "Toast", "Sound", "Also to my team"};
         int[] flags = {TileCoreMonitor.ALERT_CHAT, TileCoreMonitor.ALERT_TOAST, TileCoreMonitor.ALERT_SOUND, TileCoreMonitor.ALERT_TEAM};
         for (int i = 0; i < 4; i++) {
             int flag = flags[i];
@@ -461,7 +467,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
         click(14, 157, 156, 15, 3, (r, x, y, w, h, hov) -> {
             button(r, x, y, w, h, "", btn(), hov, false);
             str(r, fit(TileCoreMonitor.REDSTONE_MODES[clamp(tile.redstoneMode.get(), TileCoreMonitor.REDSTONE_MODES.length - 1)], w - 18), x + 5, y + 4, 0xFFFFFFFF);
-            str(r, "▼", x + w - 11, y + 4, 0xFFFFFFFF);
+            str(r, "\u25BC", x + w - 11, y + 4, 0xFFFFFFFF);
         }, () -> tile.sendPacketToServer(o -> { o.writeInt(tile.alerts.get()); o.writeByte((tile.redstoneMode.get() + 1) % TileCoreMonitor.REDSTONE_MODES.length); },
                 TileCoreMonitor.MSG_ALERTS));
 
@@ -469,8 +475,13 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
             fieldset(r, x, y, w, h, "Computer and locate");
             r.drawWordWrap(Component.literal("CC: Tweaked peripheral \"draconic_monitor\": getStored, getNet, getEta, setActive and more."), x + 6, y + 12, (int) w - 12, text());
         });
-        click(190, 208, 148, 15, 3, (r, x, y, w, h, hov) -> button(r, x, y, w, h, "Locate core (chat + waypoint)", btn(), hov, !tile.isLinked()),
-                () -> { if (tile.isLinked()) tile.sendPacketToServer(o -> {}, TileCoreMonitor.MSG_LOCATE); });
+        click(190, 208, 148, 15, 3, (r, x, y, w, h, hov) -> button(r, x, y, w, h,
+                        tile.isLinked() && MonitorHighlight.isOn(tile.linkDim.get(), tile.linkPos.get()) ? "Stop highlighting" : "Locate core",
+                        tile.isLinked() && MonitorHighlight.isOn(tile.linkDim.get(), tile.linkPos.get()) ? 0xFF6A2FA8 : btn(), hov, !tile.isLinked()),
+                () -> {
+                    if (!tile.isLinked()) return;
+                    if (MonitorHighlight.toggle(tile.linkDim.get(), tile.linkPos.get(), 0xFFAA00)) tile.sendPacketToServer(o -> {}, TileCoreMonitor.MSG_LOCATE);
+                });
     }
 
     // ### Stats (styled after Logistic Networks' I/O Monitor)
@@ -500,8 +511,8 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
         long net = tile.input.get() - tile.output.get();
         String unit = tile.unitName();
         str(r, "Net flow", x + 8, y + 7, 0xFFFFFFFF);
-        str(r, " · Tier " + tile.tier.get() + " core", x + 8 + font().width("Net flow"), y + 7, 0xFF9A9AA8);
-        String badge = live ? "● LIVE" : "● OFFLINE";
+        str(r, " \u00B7 Tier " + tile.tier.get() + " core", x + 8 + font().width("Net flow"), y + 7, 0xFF9A9AA8);
+        String badge = live ? "\u25CF LIVE" : "\u25CF OFFLINE";
         int bw = font().width(badge) + 8;
         r.fill(x + w - 8 - bw, y + 5, x + w - 8, y + 17, live ? 0xFF16331F : 0xFF33161A);
         str(r, badge, x + w - 4 - bw, y + 7, live ? 0xFF55FF77 : 0xFFFF5555);
@@ -510,7 +521,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
         str(r, "Throughput / tick", x + 8 + font().width(big) + 8, y + 22, 0xFF6A6A78);
 
         // chart
-        double cx = x + 40, cy = y + 38, cw = w - 48, ch = 86;
+        double cx = x + 46, cy = y + 38, cw = w - 54, ch = 86;
         r.fill(cx - 1, cy - 1, cx + cw + 1, cy + ch + 1, 0xFF2B2B33);
         r.fill(cx, cy, cx + cw, cy + ch, 0xFF101014);
         long[] d = tile.statSeries[statRange];
@@ -523,8 +534,8 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
             double gy = cy + ch * g / 4D;
             r.fill(cx, gy, cx + cw, gy + 1, 0xFF22222A);
             long v = top - (top + bottom) * g / 4;
-            String lab = EnergyCoreGui.shortNumber(tile.toUnit(v));
-            str(r, fit(lab, 30), cx - 4 - Math.min(30, font().width(lab)), gy - 4, 0xFF6A6A78);
+            String lab = compact(tile.toUnit(v));
+            str(r, lab, cx - 4 - font().width(lab), gy - 4, 0xFF6A6A78);
         }
         r.fill(cx, zero, cx + cw, zero + 1, 0xFF4A4A58);
         if (d.length == 0) {
@@ -788,15 +799,24 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
         r.fill(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF0B0710);
     }
 
-    /** Small white map pin, drawn in a 14x15 button. */
+    /** Red teardrop map pin with a white dot, drawn in a 14x15 button. */
     private static void pin(GuiRender r, double x, double y) {
-        int c = 0xFFFFFFFF;
-        r.fill(x + 5, y + 3, x + 9, y + 4, c);
-        r.fill(x + 4, y + 4, x + 10, y + 7, c);
-        r.fill(x + 5, y + 7, x + 9, y + 8, c);
-        r.fill(x + 6, y + 8, x + 8, y + 10, c);
-        r.fill(x + 6.5, y + 10, x + 7.5, y + 12, c);
-        r.fill(x + 6, y + 5, x + 8, y + 6, 0xFF555555);
+        int c = 0xFFFF5555, d = 0xFF9A2A2A;
+        r.fill(x + 5, y + 2, x + 9, y + 3, c);
+        r.fill(x + 4, y + 3, x + 10, y + 8, c);
+        r.fill(x + 5, y + 8, x + 9, y + 9, c);
+        r.fill(x + 6, y + 9, x + 8, y + 11, c);
+        r.fill(x + 6.5, y + 11, x + 7.5, y + 12, c);
+        r.fill(x + 9, y + 4, x + 10, y + 8, d); // shade on the right
+        r.fill(x + 6, y + 4, x + 8, y + 6, 0xFFFFFFFF);
+    }
+
+    /** -1000 -> "-1k", 1500 -> "1.5k"; millions and up like elsewhere (271.781M). */
+    private static String compact(long v) {
+        long a = Math.abs(v);
+        if (a < 1000) return Long.toString(v);
+        if (a < 1_000_000) return String.format(Locale.ROOT, "%.1fk", v / 1000D).replace(".0k", "k");
+        return EnergyCoreGui.shortNumber(v);
     }
 
     private static long parse(String s) {

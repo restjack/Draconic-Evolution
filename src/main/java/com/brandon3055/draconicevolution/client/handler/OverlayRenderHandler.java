@@ -35,6 +35,12 @@ public class OverlayRenderHandler {
         float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
 
         try {
+            com.brandon3055.draconicevolution.client.render.MonitorHighlight.render(event.getPoseStack(), partialTicks);
+        } catch (Throwable e) {
+            LOGGER.error("An error occurred while rendering the Core Monitor highlight", e);
+        }
+
+        try {
             if (!stack.isEmpty() && stack.getItem() instanceof ICrystalBinder) {
                 BinderHandler.renderWorldOverlay(player, event.getPoseStack(), world, stack, mc, partialTicks);
             } else if (!offStack.isEmpty() && offStack.getItem() instanceof ICrystalBinder) {

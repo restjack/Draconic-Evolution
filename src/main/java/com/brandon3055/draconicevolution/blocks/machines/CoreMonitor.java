@@ -26,6 +26,13 @@ public class CoreMonitor extends EntityBlockBCore {
         canProvidePower = true; // Round C redstone modes
     }
 
+    /** No black selection box over the screen itself; the sides and back still show it. */
+    @Override
+    public boolean renderSelectionBox(net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent event, net.minecraft.world.level.Level level) {
+        BlockState state = level.getBlockState(event.getHitResult().getBlockPos());
+        return !state.hasProperty(FACING) || event.getHitResult().getDirection() != state.getValue(FACING);
+    }
+
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
