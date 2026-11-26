@@ -114,6 +114,7 @@ public class RenderTileEnergyCore implements BlockEntityRenderer<TileEnergyCore,
     }
 
     private void extractGeometry(TileEnergyCore te, float partialTicks, PoseStack poseStack, MultiBufferSource getter, int packedLight, int packedOverlay) {
+        if (!com.brandon3055.draconicevolution.DEConfig.blockEffectRendering) return; // client safety switch (eli.5)
         if (!te.active.get()) {
             return;
         }

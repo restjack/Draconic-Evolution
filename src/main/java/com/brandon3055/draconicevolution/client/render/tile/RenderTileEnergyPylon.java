@@ -72,6 +72,7 @@ public class RenderTileEnergyPylon implements BlockEntityRenderer<TileEnergyPylo
     }
 
     private void extractGeometry(TileEnergyPylon te, float partialTicks, PoseStack mStack, MultiBufferSource getter, int packedLight, int packedOverlay) {
+        if (!com.brandon3055.draconicevolution.DEConfig.blockEffectRendering) return; // client safety switch (eli.5)
         if (!te.structureValid.get()) return;
 
         Matrix4 mat = new Matrix4(mStack);

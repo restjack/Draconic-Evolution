@@ -260,6 +260,17 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
                 .setTooltipSingle(() -> TOOLKIT.translate("config_colour"));
         Constraints.placeOutside(setColour, customColour, Constraints.LayoutPos.MIDDLE_LEFT, 0, 0);
 
+        // eli.6: per-player client toggle for DE block effects (core, stabilizers, pylons, reactor). Same setting as
+        // "blockEffectRendering" in config/brandon3055/DraconicEvolution.cfg; saved immediately, applies next frame.
+        GuiButton effects = TOOLKIT.createThemedIconButton(root, 12, DEGuiTextures.getter("effects_toggle"))
+                .onPress(() -> com.brandon3055.draconicevolution.DEConfig.modifyClientProperty("blockEffectRendering",
+                        v -> v.setBoolean(!com.brandon3055.draconicevolution.DEConfig.blockEffectRendering)))
+                .setToggleMode(() -> !com.brandon3055.draconicevolution.DEConfig.blockEffectRendering)
+                .setTooltipSingle(() -> Component.literal(com.brandon3055.draconicevolution.DEConfig.blockEffectRendering
+                        ? "Block effects ON (core, stabilizers, pylons, reactor). Click to hide them - only for you."
+                        : "Block effects OFF - only for you. Click to show them again."));
+        Constraints.placeOutside(effects, setColour, Constraints.LayoutPos.MIDDLE_LEFT, 0, 0);
+
         setupColourPickers(gui.getDirectRoot(), tile);
     }
 

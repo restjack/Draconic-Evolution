@@ -146,6 +146,7 @@ public class RenderTileReactorComponent implements BlockEntityRenderer<TileReact
     }
 
     private void extractGeometry(TileReactorComponent te, float partialTicks, PoseStack mStack, MultiBufferSource getter, int packedLight, int packedOverlay) {
+        if (!com.brandon3055.draconicevolution.DEConfig.blockEffectRendering) return; // client safety switch (eli.5)
         Matrix4 mat = new Matrix4(mStack);
         mat.translate(0.5, 0, 0.5);
 

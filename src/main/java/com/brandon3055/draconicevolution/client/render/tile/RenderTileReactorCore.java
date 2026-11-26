@@ -128,6 +128,7 @@ public class RenderTileReactorCore implements BlockEntityRenderer<TileReactorCor
     }
 
     private void extractGeometry(TileReactorCore te, float partialTicks, PoseStack poseStack, MultiBufferSource buffers, int packedLight, int packedOverlay) {
+        if (!com.brandon3055.draconicevolution.DEConfig.blockEffectRendering) return; // client safety switch (eli.5)
         Matrix4 mat = new Matrix4(poseStack);
         CCRenderState ccrs = CCRenderState.instance();
         ccrs.reset();

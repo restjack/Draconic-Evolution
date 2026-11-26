@@ -70,6 +70,7 @@ public class RenderEnergyCoreStabilizer implements BlockEntityRenderer<TileEnerg
     }
 
     private void extractGeometry(TileEnergyCoreStabilizer tile, float partialTicks, PoseStack poseStack, MultiBufferSource getter, int packedLight, int packedOverlay) {
+        if (!com.brandon3055.draconicevolution.DEConfig.blockEffectRendering) return; // client safety switch (eli.5)
         if (!tile.isValidMultiBlock.get()) return;
 
         CCRenderState ccrs = CCRenderState.instance();

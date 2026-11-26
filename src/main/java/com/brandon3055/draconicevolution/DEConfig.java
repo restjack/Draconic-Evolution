@@ -380,6 +380,7 @@ public class DEConfig {
 //    public static boolean crystalShaders;
 //    public static boolean reactorShaders;
     public static boolean guardianShaders;
+    public static boolean blockEffectRendering;
     //    public static boolean otherShaders;
     public static boolean itemDislocatorSound;
 
@@ -407,6 +408,11 @@ public class DEConfig {
                 .setComment("Set this to false to disable chaos guardian shaders. (May visually break some stuff but could be useful if you are experiencing gl crashes.)")
                 .setDefaultBoolean(true)
                 .onSync((tag, type) -> guardianShaders = tag.getBoolean());
+        clientTag.getValue("blockEffectRendering")
+                .setComment("Set this to false to stop rendering the energy core (shell, stabilizer orbs, beams), energy pylon spheres and reactor effects. "
+                        + "The blocks keep working; only their visuals are hidden. A safety switch for the unofficial 26.1.2 port if these render wrong or crash your graphics.")
+                .setDefaultBoolean(true)
+                .onSync((tag, type) -> blockEffectRendering = tag.getBoolean());
 //        clientTag.getValue("otherShaders")
 //                .setComment("Set this to false to disable all other shaders.")
 //                .setDefaultBoolean(true)
