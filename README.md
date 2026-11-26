@@ -8,19 +8,19 @@ Current build: **`3.1.4-unofficial-1.0`** (jar `Draconic-Evolution-26.1.2-3.1.4-
 
 ## A look at it
 
-| Core Monitor (3×3, with the live core picture) | Energy core screen |
+| Core Monitor, 4×4 (core picture, stat cards, graph) | Core Monitor close-up |
 | --- | --- |
-| ![Core Monitor 3x3 screen with core picture, stats and graph](.github/readme/core-monitor-3x3.png) | ![Energy core screen with stored, in, out, net and time to empty](.github/readme/core-screen.png) |
+| ![Core Monitor 4x4 screen with core picture, stats and graph](.github/readme/core-monitor-4x4.png) | ![Core Monitor close-up: animated core picture and numbers](.github/readme/core-monitor-core-picture.png) |
 
-| Core Monitor settings: Control | Core Monitor settings: Stats |
+| Monitor settings: Control (core power, next tier) | Monitor settings: Stats |
 | --- | --- |
 | ![Control tab: core power and next tier preview](.github/readme/monitor-settings-control.png) | ![Stats tab: net flow chart and averages](.github/readme/monitor-settings-stats.png) |
 
-| In-game guide (Patchouli; also GuideME, hold G) |
-| --- |
-| ![Guide book page about Draconium](.github/readme/guide-book.png) |
+| Energy core screen (In / Out / Net, rate graph) | In-game guide (Patchouli book; same guide in GuideME, hold G) |
+| --- | --- |
+| ![Energy core screen with stored, in, out, net, time to full and the rate graph](.github/readme/core-screen.png) | ![Draconic Evolution Guide book, first page](.github/readme/guide-book.png) |
 
-More: [Display tab](.github/readme/monitor-settings-display.png) · [Pylons tab](.github/readme/monitor-settings-pylons.png) · [Options tab](.github/readme/monitor-settings-options.png) · [core picture close-up](.github/readme/core-monitor-core-picture.png)
+More: [Display tab](.github/readme/monitor-settings-display.png) · [Pylons tab](.github/readme/monitor-settings-pylons.png) · [Options tab](.github/readme/monitor-settings-options.png) · [monitor and core, angled](.github/readme/core-monitor-angle.png) · [GuideME page for the Core Monitor](.github/readme/guideme-core-monitor.png)
 
 ## What this branch adds
 
