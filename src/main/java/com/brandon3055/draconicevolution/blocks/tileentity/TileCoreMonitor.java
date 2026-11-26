@@ -42,7 +42,7 @@ import java.util.Set;
  * values stay and {@link #loaded} goes false; the monitor never loads chunks itself.
  */
 public class TileCoreMonitor extends TileBCore implements IInteractTile, net.minecraft.world.MenuProvider, com.brandon3055.brandonscore.lib.IRedstoneEmitter {
-    public static final int MAX_SIZE = 3;
+    public static final int MAX_SIZE = 4;
 
     public final ManagedString linkDim = register(new ManagedString("link_dim", "", DataFlags.SAVE_NBT_SYNC_TILE));
     public final ManagedPos linkPos = register(new ManagedPos("link_pos", (BlockPos) null, DataFlags.SAVE_NBT_SYNC_TILE));

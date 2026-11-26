@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * eli.8 (restjack fork, Extras switch coreMonitor): a display panel linked to an energy core. Panels facing the same way
- * next to each other form one screen up to 3x3. Link: Shift-right-click the core (or a stabilizer/pylon) with a Crystal
+ * next to each other form one screen up to 4x4. Link: Shift-right-click the core (or a stabilizer/pylon) with a Crystal
  * Binder, then right-click the monitor with it.
  */
 public class CoreMonitor extends EntityBlockBCore {

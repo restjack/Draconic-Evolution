@@ -10,50 +10,38 @@ item_ids:
 
 # Core Monitor
 
-The **Core Monitor** is a screen that shows an energy core's numbers from anywhere, even another dimension.
+The **Core Monitor** shows an energy core's numbers from anywhere, even another dimension.
 
-Place panels facing the same way next to each other: up to 3 by 3 of them join into one bigger screen with more detail. The bottom-left panel draws it.
+Panels facing the same way join into one screen, up to 4 by 4. Bigger screens show more: a graph from 3 by 2, stat cards and a live picture of the core on 3 by 3 and 4 by 4.
 
 <Recipe id="draconicevolution:machines/core_monitor" />
 
 ## Linking
 
-Take a **Crystal Binder**, Shift-right-click the core (or one of its stabilizers or pylons), then right-click any panel of the screen. All joined panels link at once.
+Take a **Crystal Binder**, Shift-right-click the core (or a stabilizer or pylon), then right-click any panel. Panels added later join on their own.
 
-A core far away only updates while its chunk is loaded; the screen then shows the last values it saw and how long ago.
-
-## What it shows
-
-Fill level with a bar, status (charging, draining, full, low, inactive, stabilizer problem), stored and capacity, energy in and out, the net rate and the time until full or empty. Colours turn yellow below 25% and red below 10%.
-
-Servers can switch the monitor off with **coreMonitor** in the config.
+A far core only updates while its chunk is loaded; the screen then shows the last values and how long ago.
 
 ## Settings
 
-Right-click a panel with an empty hand for its settings.
-- **Show**: which lines the screen shows.
-- **Core**: turn the core on or off, preview the next tier.
-- **Pylons**: each pylon and its rate; click a mode to switch it.
-- **Limits**: max in/out per tick and a reserve %.
+Right-click a panel with an empty hand.
+- **Display**: what the screen shows, unit, warning and alarm levels, graph range, background.
+- **Control**: turn the core on or off; preview the next tier.
+- **Pylons**: each pylon, its rate and mode, and rate limits.
 
-## Look
+## More settings
 
-Name the monitor, pick OP, RF, FE or J, set the warning and alarm colours, a target % for the timer, the background, the frame, and a small picture of the core on 2x2 and bigger screens.
+- **Options**: name, ETA target, alerts (chat, toast, sound, team; switching one on sends a TEST), redstone output, locate.
+- **Stats**: averages, peaks and a graph over 5 minutes, 1 hour or 24 hours.
 
-Only the player who linked it (and operators) can change settings.
+Only the player who linked it and operators can change settings.
 
-## Alerts
+## Finding things
 
-When the core drops below the alarm %, a stabilizer breaks or the core turns off, the owner gets a chat line, a toast and/or a sound; optionally their FTB Teams party too.
+The pin next to a pylon, and **Locate core**, outline that block through walls for 30 seconds (click again to stop) and put its position in chat as a JourneyMap waypoint.
 
-**Locate** puts the core's position in chat as a JourneyMap waypoint.
+With CC: Tweaked the monitor is the peripheral **draconic_monitor**.
 
 ## Redstone
 
-Each panel can give a signal: the fill level (0-15), on below the alarm %, on while full, or on while draining.
-
-**Stats** shows the last hour's average and peaks, the lowest fill in 24 hours, and a graph over 5 minutes, 1 hour or 24 hours.
-
-## Computers
-
-With CC: Tweaked the monitor is a peripheral, **draconic_monitor**: getStored, getCapacity, getPercent, getInput, getOutput, getNet, getEta, getTier, isActive, isLoaded, getLimits and setActive(true/false).
+Each panel can give a signal: the fill level (0-15), on below the alarm level, on while full, or on while draining.

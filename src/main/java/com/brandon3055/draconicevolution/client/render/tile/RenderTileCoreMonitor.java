@@ -28,7 +28,7 @@ import java.util.Locale;
 /**
  * eli.8 Core Monitor screen, laid out like the mockups (artifact EH52817rQQMr5U8Gxmf923, boards Main and Render).
  * <p>
- * The bottom-left panel draws the whole screen (up to 3x3). Coordinates are "mockup pixels": 180 per block, so a 1x1 is
+ * The bottom-left panel draws the whole screen (up to 4x4). Coordinates are "mockup pixels": 180 per block, so a 1x1 is
  * 180x180, a 3x3 540x540, and font sizes are the mockup's CSS sizes. Extract builds a list of draw ops (needs the tile
  * and the font); submit replays them. One bezel is drawn over the whole merged face, so panel seams don't show.
  */
@@ -59,6 +59,7 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
         Direction facing;
         int w, h;
         float time;
+        float px = B; // canvas units per block: 180, or 135 on 4x4 so it uses the 3x3 design at full mockup size (720 px = Render board)
         final List<Object> ops = new ArrayList<>();
     }
 
@@ -101,6 +102,7 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
         state.facing = facing;
         state.w = w;
         state.h = h;
+        state.px = Math.min(w, h) >= 4 ? 135F : B;
         state.time = level.getGameTime() + partialTicks;
         state.lightCoords = FULL_BRIGHT;
         new Layout(tile, state, level).build();
@@ -129,8 +131,8 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
             this.s = s;
             this.level = level;
             this.ops = s.ops;
-            W = s.w * B;
-            H = s.h * B;
+            W = s.w * s.px;
+            H = s.h * s.px;
             m = Math.min(s.w, s.h);
         }
 
@@ -548,7 +550,7 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
         pose.translate(0.5, 0.5, 0.5);
         pose.mulPose(Axis.YP.rotationDegrees(-state.facing.toYRot())); // local +Z = facing, +X = viewer's right
         pose.translate(-0.5, state.h - 0.5, 0.5015);
-        pose.scale(1F / B, -1F / B, 1F / B); // canvas: x right, y down, mockup pixels
+        pose.scale(1F / state.px, -1F / state.px, 1F / state.px); // canvas: x right, y down, mockup pixels
         for (Object op : state.ops) {
             if (op instanceof Rect r) {
                 quad(pose, collector, r.x0, r.y0, r.x1, r.y1, r.z, r.colour);

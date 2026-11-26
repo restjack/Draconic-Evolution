@@ -195,7 +195,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
     private void buildDisplay() {
         paint(8, 60, 170, 150, 0, (r, x, y, w, h, hov) -> fieldset(r, x, y, w, h, "Show on screen"));
         String[] names = {"Tier header", "Status word", "Percent", "Fill bar", "Stored / capacity", "In and out", "Net per tick",
-                "Time to full / empty", "Graph (3\u00D72, 3\u00D73)", "Stat cards (3\u00D73)", "Core picture", "Frame"};
+                "Time to full / empty", "Graph (3\u00D72 and up)", "Stat cards (3\u00D73, 4\u00D74)", "Core picture", "Frame"};
         int[] flags = {TileCoreMonitor.SHOW_HEADER, TileCoreMonitor.SHOW_STATUS, TileCoreMonitor.SHOW_PERCENT, TileCoreMonitor.SHOW_BAR,
                 TileCoreMonitor.SHOW_STORED, TileCoreMonitor.SHOW_INOUT, TileCoreMonitor.SHOW_NET, TileCoreMonitor.SHOW_ETA,
                 TileCoreMonitor.SHOW_GRAPH, TileCoreMonitor.SHOW_STATS, TileCoreMonitor.SHOW_RENDER, TileCoreMonitor.SHOW_FRAME};
