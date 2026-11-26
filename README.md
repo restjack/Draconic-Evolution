@@ -1,3 +1,73 @@
+# Draconic Evolution for Minecraft 26.1.2 — restjack fork (`eli/upstream-fixes`)
+
+> **This branch** = [TasteFu1's unofficial 26.1.2 port](https://github.com/TasteFu1/Draconic-Evolution/tree/port/26.1.2-neoforge) **plus bug fixes** found while running it on a dedicated server (FTB Evolution 2).
+> Our own fixes are also offered upstream as [TasteFu1/Draconic-Evolution#1](https://github.com/TasteFu1/Draconic-Evolution/pull/1).
+> Not affiliated with or endorsed by brandon3055. All credit for Draconic Evolution goes to him; the port itself is TasteFu1's and MehanikTMYT's work.
+
+## What this branch adds
+
+| Fix | Effect in game |
+| --- | --- |
+| Stabilizer beam direction | Energy core stabilizer beams point into the core (were all pointing north). |
+| `ModelMat` shader fix | Stabilizer orbs, pylon shells and the legacy core shell render on the block (they were floating around the camera, often seen as big cyan shapes in four directions). |
+| Live machine screens | The energy core screen (and every DE machine screen) updates stored OP and I/O while open. |
+| Block effects switch | Client option `blockEffectRendering` in `config/brandon3055/DraconicEvolution.cfg`, or the **eye button** on the energy core screen. Hides energy core, stabilizer, pylon and reactor visuals **for that player only**; the blocks keep working. A safety valve if they render wrong or crash your graphics. |
+| Upstream 1.21 fixes (open PRs [#2044](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2044), [#2046](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2046), [#2050](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2050), [#2051](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2051), [#2052](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2052), [#2053](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2053)) | Stabilizer disintegration, Draconium Chest losing shift-clicked items, constant module re-saves, night-vision packet spam, crystals/pylons/reactors keeping far chunks loaded, crystal network spam, dislocator limits. #2052 is adapted to the port; #2053's arena-check commit is left out on purpose (it can stop the guardian spawning on servers with view distance < 8). |
+
+Mod version string: `3.1.4-port.3-eli.6`. Needs NeoForge **26.1.2.126 or newer** (below 26.2), Minecraft 26.1.2, Java 25.
+
+## Installing
+
+There are **no prebuilt downloads**. Draconic Evolution's licence does not allow redistributing the mod, so build it yourself (below). Put the three jars in `mods/` on **every client and the server**:
+
+| File (from the build) | Provides |
+| --- | --- |
+| `Draconic-Evolution-26.1.2-3.1.4-port.3-eli.6.jar` | Draconic Evolution |
+| `BrandonsCore-3.2.1+26.1.2-port.1.jar` | Brandon's Core |
+| `codechickenlib-4.7.0+26.1.2-port.2.jar` | CodeChickenLib |
+
+Sharing the jars privately with your own modpack/server players is covered by brandon3055's modpack permission. Please don't upload them anywhere public.
+
+## Building (incl. Windows traps)
+
+Needs Git, Python 3.8+ and a **JDK 25**. Then, from this branch:
+
+```sh
+python gradle/build-port.py assemble     # or "build" to also run tests
+```
+
+On **Windows** two things break the build; both have easy workarounds:
+
+1. **Git line endings.** With Git's default `core.autocrlf=true`, the port's `.patch` files and the library checkouts get CRLF, and `git apply` fails with "patch does not apply". Clone with `git clone -c core.autocrlf=false …`, and run the build with the override for the library checkouts:
+   ```sh
+   GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.autocrlf GIT_CONFIG_VALUE_0=false python gradle/build-port.py assemble
+   ```
+2. **Gradle can't download Java 25 itself** (the pinned foojay plugin is too old for Gradle 9: `JvmVendorSpec does not have member field ... IBM_SEMERU`). Point it at a local JDK 25 instead (e.g. an unpacked Temurin 25 zip):
+   ```sh
+   export JAVA_HOME=/path/to/jdk-25
+   export GRADLE_OPTS="-Dorg.gradle.java.installations.paths=/path/to/jdk-25 -Dorg.gradle.java.installations.auto-download=false"
+   ```
+
+Output: `.gradle/port-work/Draconic-Evolution/build/libs/` (the mod) and `.gradle/port-work/deps/` (the two libraries). `assemble` is enough; the unit-test stage needs the same JDK setup.
+
+## Adding it to an existing world
+
+- Draconic Evolution's ore generates only in **newly generated chunks**. A world explored (or pregenerated) before you added the mod has no Draconium there.
+- **Retrogen:** `extras/ftb-evolution-2/kubejs/` has a KubeJS 8 script pair (`startup_scripts/retrogen_hook.js` + `server_scripts/systems/retrogen.js`). It adds DE's own ore features to old chunks once each, at DE's own rates, and skips brand-new chunks. Copy both, then fully restart.
+- **Chaos Islands** generate every `chaosIslandSeparation` blocks (default 10000) in the End, never at 0,0. With a world border smaller than that, lower it (e.g. `2000`) **before** the End generates, and restart fully; DE reads it at startup only. An already-generated End needs its terrain reset (keep each dimension's `data/` folder, which holds the world border).
+- **Mystical Agriculture** ships a Draconium ore-infusion recipe with an outdated item id. `extras/ftb-evolution-2/kubejs/server_scripts/recipes/draconic_mystical_compat.js` re-adds it with the right one.
+
+## Known issues (upstream, not fixed here)
+
+- Chaos Guardian fight: upstream reports a crash on right-clicking a guardian crystal, an invulnerable crystal after the kill, double spawns and a stuck gravity well. Back up before fighting.
+- Never move an Energy Core with AE2 Spatial IO (upstream server-crash report).
+- The core screen shows **net** I/O; hold **Shift** for separate in/out (same as upstream).
+- The Information Tablet has no recipe (also true in official 1.21.1; it needs Project Intelligence).
+
+---
+
+*TasteFu1's original README for the port follows.*
+
 # Draconic Evolution
 
 ## Minecraft 26.1.2 · NeoForge
