@@ -282,7 +282,8 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
 
     private void setupColourPickers(GuiElement<?> root, TileEnergyCore tile) {
         GuiColourPicker frameColourDialog = GuiColourPicker.create(root, ColourState.create(tile.frameColour::get, tile.frameColour::set), false);
-        frameColourDialog.constrain(TOP, literal(0));
+        frameColourDialog.constrain(TOP, literal(12));
+        labelPicker(frameColourDialog, "Shell frame colour"); // eli.7: upstream left the three pickers unlabeled
         frameColourDialog.constrain(LEFT, literal(0));
         frameColourDialog.addMoveHandle((int) frameColourDialog.ySize());
         frameColourDialog.setEnabled(colourSelectMode::get);
@@ -290,7 +291,8 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
         frameColourDialog.getOkButton().onPress(() -> setColourSelectMode(root, false));
 
         GuiColourPicker triangleColourDialog = GuiColourPicker.create(root, ColourState.create(tile.innerColour::get, tile.innerColour::set), false);
-        triangleColourDialog.constrain(TOP, literal(100));
+        triangleColourDialog.constrain(TOP, literal(112));
+        labelPicker(triangleColourDialog, "Shell panel colour"); // eli.7: upstream left the three pickers unlabeled
         triangleColourDialog.constrain(LEFT, literal(0));
         triangleColourDialog.addMoveHandle((int) triangleColourDialog.ySize());
         triangleColourDialog.setEnabled(colourSelectMode::get);
@@ -298,12 +300,21 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
         triangleColourDialog.getOkButton().onPress(() -> setColourSelectMode(root, false));
 
         GuiColourPicker effectColourDialog = GuiColourPicker.create(root, ColourState.create(tile.effectColour::get, tile.effectColour::set), false);
-        effectColourDialog.constrain(TOP, literal(200));
+        effectColourDialog.constrain(TOP, literal(212));
+        labelPicker(effectColourDialog, "Shell glow colour"); // eli.7: upstream left the three pickers unlabeled
         effectColourDialog.constrain(LEFT, literal(0));
         effectColourDialog.addMoveHandle((int) effectColourDialog.ySize());
         effectColourDialog.setEnabled(colourSelectMode::get);
         effectColourDialog.getCancelButton().setEnabled(false);
         effectColourDialog.getOkButton().onPress(() -> setColourSelectMode(root, false));
+    }
+
+    /** Name tag above a colour picker; a child of the dialog so it moves with it. */
+    private static void labelPicker(GuiColourPicker dialog, String text) {
+        GuiRectangle tag = toolTipBackground(dialog, 0xF0100010, () -> 0xFF8800FF);
+        Constraints.size(tag, dialog.xSize(), 11);
+        Constraints.placeOutside(tag, dialog, Constraints.LayoutPos.TOP_CENTER, 0, -1);
+        Constraints.bind(new GuiText(tag, Component.literal(text).withStyle(GOLD)), tag, 1);
     }
 
     private double getEnergyDouble(TileEnergyCore tile) {

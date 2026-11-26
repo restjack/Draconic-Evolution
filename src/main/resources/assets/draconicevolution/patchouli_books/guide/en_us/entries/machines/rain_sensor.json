@@ -1,0 +1,16 @@
+{
+  "name": "Rain Sensor",
+  "icon": "draconicevolution:rain_sensor",
+  "category": "draconicevolution:machines",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A flat sensor that gives a full-strength redstone signal while it is raining, as long as it can see the sky. It checks once per second. Red particles show when it is on.$(br2)Pair it with a $(l:machines/celestial_manipulator)Celestial Manipulator$(/l) to clear the weather as soon as rain starts."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:rain_sensor"
+    }
+  ]
+}

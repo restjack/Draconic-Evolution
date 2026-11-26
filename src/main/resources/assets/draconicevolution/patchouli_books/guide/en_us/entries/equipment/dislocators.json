@@ -1,0 +1,64 @@
+{
+  "name": "Dislocators",
+  "icon": "draconicevolution:dislocator",
+  "category": "draconicevolution:equipment",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Dislocators are teleporters, and all of them work across dimensions.$(li)$(item)Dislocator$(): one fixed destination, limited uses.$(li)$(item)Advanced Dislocator$(): a list of destinations, fuelled by ender pearls.$(li)$(item)Bound Dislocators$(): go to a matching dislocator or to a player."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:tools/dislocator"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "For pedestals and portals see $(l:equipment/portals)Pedestals and Portals$(/l). For pulling in dropped items see $(l:equipment/item_dislocator)Item Dislocator$(/l)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Dislocator",
+      "text": "$(l)Shift-right-click$() to save the spot you stand on, the way you face and the dimension. This cannot be changed later. Right-click to teleport there.$(br2)Each jump costs one heart, and you need more than one heart left. It has 32 uses and can be repaired with Draconium ingots on an anvil. Left-click a mob to send it there instead; sending players needs the advanced version."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Advanced Dislocator",
+      "text": "$(l)Shift-right-click$() opens its screen: up to 256 named destinations. Add where you stand, double-click a name to rename it, drag to reorder, and lock entries so they are not changed by accident."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Each teleport burns one ender pearl of fuel and no health; add pearls with the fuel buttons. Right-click teleports to the selected destination. In blink mode right-click instead jumps up to 32 blocks where you look, four blinks per pearl."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "More tricks",
+      "text": "Controls has unbound keys to move the selection, teleport, blink or open the screen without right-clicking.$(br2)Left-click a mob to send it to the selected destination. A player can be sent too, but only while they sneak, which counts as their consent."
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Advanced Dislocator",
+      "result": "draconicevolution:advanced_dislocator",
+      "catalyst": "draconicevolution:dislocator",
+      "info": "Wyvern injectors, 1M OP",
+      "i0": "tag:c:ender_pearls",
+      "i1": "tag:c:ingots/draconium",
+      "i2": "tag:c:ender_pearls",
+      "i3": "tag:c:ingots/draconium",
+      "i4": "tag:c:ender_pearls",
+      "i5": "tag:c:ingots/draconium",
+      "i6": "draconicevolution:wyvern_core",
+      "i7": "tag:c:ingots/draconium"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Bound Dislocators",
+      "text": "Right-click an $(item)Un-Bound Dislocator (Point-to-Point)$() to split it into a linked pair. Either one takes you to wherever the other is: on a pedestal, in a receptacle, dropped on the ground or carried by a player.$(br2)Right-click an $(item)Un-Bound Dislocator (Player)$() to bind it to yourself. Whoever holds it can use it to reach you while you are online. Bound dislocators use no fuel and never wear out."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:tools/p2p_dislocator_unbound",
+      "recipe2": "draconicevolution:tools/player_dislocator_unbound"
+    }
+  ]
+}

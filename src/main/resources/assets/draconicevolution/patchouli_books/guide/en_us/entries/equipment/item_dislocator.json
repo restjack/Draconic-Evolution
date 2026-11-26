@@ -1,0 +1,30 @@
+{
+  "name": "Item Dislocator",
+  "icon": "draconicevolution:magnet",
+  "category": "draconicevolution:equipment",
+  "sortnum": 6,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)Item Dislocator$() pulls dropped items within 8 blocks into your inventory; the $(item)Awakened Item Dislocator$() reaches 32 blocks. $(l)Shift-right-click$() it to switch it on or off, or bind the Toggle Item Dislocator key in Controls."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:tools/magnet",
+      "recipe2": "draconicevolution:tools/advanced_magnet"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "It pauses while you sneak, leaves alone items that another player is standing closer to, and ignores items you threw until they could be picked up, so you can still hand things to friends."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Blocking it",
+      "text": "The $(item)Dislocation Normalization Field Projector$() stops every item dislocator from taking items that lie within 5 blocks of it. It needs no power. Put one next to farms, mob drops or item displays you want left alone."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:dislocation_inhibitor"
+    }
+  ]
+}

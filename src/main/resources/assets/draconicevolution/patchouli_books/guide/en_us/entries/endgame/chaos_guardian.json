@@ -1,0 +1,91 @@
+{
+  "name": "Chaos Guardian",
+  "icon": "draconicevolution:chaos_shard",
+  "category": "draconicevolution:endgame",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Chaos Islands are floating islands of end stone and obsidian out in the End. Each hides a $(item)Chaos Crystal$() in an obsidian chamber at its heart, and each is guarded by the $(l)Chaos Guardian$(), a far tougher cousin of the Ender Dragon. Beating it is the only way to get $(item)Chaos Shards$(), which every chaotic-tier item and the $(l:endgame/reactor)Draconic Reactor$(/l) need."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(c)Untested in this port.$() Upstream has open guardian bugs, such as a crash when right-clicking a Guardian Crystal (reported from FTB Evolution). Back up the world before you fight."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where to find one",
+      "text": "Islands sit on a grid: every point where both X and Z are multiples of the config value $(l)chaosIslandSeparation$() (default 10,000), except the main island at 0, 0. Each island is centred on its grid point with the crystal at Y 80, and normal End terrain is cleared for about 770 blocks around it."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "On this server the value is $(l)2000$(), which puts eight islands inside the ±2,500 world border: (±2000, 0), (0, ±2000) and the four corners (±2000, ±2000)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Starting the fight",
+      "text": "Nothing happens until a player walks to the middle of the island, just above the Chaos Crystal. Then 14 obelisks rise in a ring about 90 blocks out and 40 blocks above the crystal, each topped with a $(l)Guardian Crystal$(), and the Guardian appears high above the centre."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The boss bar shows its health, its shield (the bar is purple while the shield holds) and how many crystals are left. Everyone within about 200 blocks of the centre is in the fight."
+    },
+    {
+      "type": "patchouli:entity",
+      "entity": "draconicevolution:draconic_guardian",
+      "text": "The Chaos Guardian. It is immune to fire and to harmful potion effects."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Guardian Crystals",
+      "text": "While any crystal survives, the Guardian takes no damage and its shield refills within seconds. Normal attacks do nothing to the crystals either."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "A crystal becomes $(l)unstable$() for 10 seconds when one of the Guardian's own attacks hits it, and only then do your hits count. Lure its fireballs and beam into a crystal, then strike. Chaotic-tier weapons destabilise crystals by themselves (server config). Each crystal has a 512-point shield that refills over a minute, and it explodes when broken."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Shield and health",
+      "text": "Once every crystal is gone, the Guardian's 16,000-point shield stops refilling. Break it, then wear down 1,000 health. One hit removes at most 500 shield or 100 health, and a hit no bigger than the last one is ignored for a quarter of a second, so heavy, steady hits beat many small ones. Head hits do full damage; body hits about a quarter. Only player and explosion damage reaches its health."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The longer the fight and the more damage it takes, the angrier it gets, and it uses its beam and bombardments more often."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Its attacks",
+      "text": "$(li)Its fireballs, beam and charge ignore normal armour and resistance. A charge hits for 150.$(li)The laser beam is stopped by solid blocks. At full power it kills outright; only the protection window of a triggered Undying module saves you."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)A long charge-up summons 8 to 13 $(l)Guardian Withers$(), pulls players back toward the centre and switches off flight and Elytra gliding high above the island. Kill the withers to cut it short.$(li)It heals slowly while near a living crystal."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "What to bring",
+      "text": "$(li)Draconic armour with a shield. It is the only protection that works here, though guardian damage drains it three times faster than normal hits.$(li)Lots of energy to keep that shield and your gear charged.$(li)A strong bow or weapon: aim for the head.$(li)Blocks to hide behind while the beam charges.$(li)An Undying module."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "See $(l:equipment/modules)Modules$(/l). Upstream reports stuck or doubled guardians after a server restart mid-fight, so finish a fight once you start it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Rewards",
+      "text": "The Guardian drops about 24,000 experience and a $(item)Dragon Heart$(), which floats 20 blocks above the Chaos Crystal. Only after the Guardian dies can the $(item)Chaos Crystal$() be broken; it drops 5 $(item)Chaos Shards$() (server config). Until you break it, lightning strikes around it.$(br2)Older versions made the island collapse when the crystal broke. That implosion is not implemented in 3.1.4, so the island stays."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:decompress/large_chaos_frag",
+      "recipe2": "draconicevolution:decompress/medium_chaos_frag",
+      "text": "A shard splits into 9 Large Chaos Fragments, each of those into 9 Small, then 9 Tiny. Recipes use every size."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Fighting again",
+      "text": "Each island has one Guardian, and it does not come back by itself. An operator can run $(l)/respawn_draconic_guardian$() within 60 blocks of an island's Chaos Crystal, then walk to the centre to start a new fight. The crystal has to still be there, so a second fight is only possible before it is broken."
+    }
+  ]
+}

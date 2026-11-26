@@ -1,0 +1,41 @@
+{
+  "name": "The Module System",
+  "icon": "draconicevolution:module_core",
+  "category": "draconicevolution:equipment",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Draconic tools, weapons, armour and capacitors are modular. Freshly crafted, they store no energy, and a tool without energy digs no faster than a bare hand. Upgrades are $(item)modules$() that you place in the item's grid."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:modules/module_core",
+      "recipe2": "draconicevolution:modules/item_draconium_energy",
+      "text": "Every module starts from a Module Core. Look the rest up in JEI."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Press $(l)Shift+C$() (the Tool Modules key) to open the module screen for the modular items in your inventory. $(l)C$() (Tool Config) opens each item's settings, such as mining speed and AOE size."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Installing",
+      "text": "Drag a module from your inventory onto free space in the grid. Most modules are 1x1; some are 2x1, 2x2 or 3x3, and the energy link is 4x4.$(br2)A module only goes in if:$(li)its tier is the same as or lower than the item's,$(li)the item supports that type,$(li)there is room where you drop it, and"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)the item is under that type's install limit (for example one AOE module, up to eight Speed modules)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tiers and grids",
+      "text": "Modules come in four tiers: Draconium (no prefix in the name), Wyvern, Draconic and Chaotic. Gear comes in Wyvern, Draconic and Chaotic. Grid sizes by tier:$(li)Tools and bows: 4x4, 6x5, 8x6$(li)Staff of Power: 8x6, 10x8 (Draconic, Chaotic only)$(li)Chestpiece: 6x5, 8x6, 10x8$(li)Capacitor: 4x4, 5x5, 8x6$(br2)Server owners can change these in the DE config."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Energy first",
+      "text": "Install an energy module first: 1M, 4M, 16M or 64M OP from Draconium to Chaotic, and they add up. Tools use 256 OP per block mined and 1,024 OP per point of melee damage.$(br2)Charge gear in the $(l:energy_network/generator)Generator$(/l)'s charge slot, any FE charger, or a capacitor. The full module list is in $(l:equipment/module_types)Module Types$(/l)."
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Reading Your Core",
+  "icon": "minecraft:spyglass",
+  "category": "draconicevolution:energy_core",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The core screen shows stored and maximum OP, energy coming $(2)in$() and going $(c)out$() per tick, the $(l)net$() rate, and how long until the core is full or empty at the current rate.$(br2)With $(item)Jade$() installed, looking at the core, a pylon sphere or a Stabilizer shows the same numbers without opening anything. Hold Shift for in/out and the time estimate."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Effects and safety",
+      "text": "The eye button on the core screen hides the core, stabilizer and pylon effects for you only; the blocks keep working. The client config value $(l)blockEffectRenderDistance$() limits how far away they are drawn.$(br2)$(c)Never move a core with AE2 Spatial IO$(): the core, stabilizers and pylons are marked as unmovable for that reason."
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "id": "draconicevolution_armour_modules",
+  "name": {
+    "translate": "collapsible_groups.group.draconicevolution_armour_modules",
+    "fallback": "Draconic Evolution: Armour Modules"
+  },
+  "enabled": true,
+  "filter": {
+    "all": [
+      {
+        "type": "item",
+        "namespace": "draconicevolution"
+      },
+      {
+        "item_path_starts_with": "item_"
+      },
+      {
+        "any": [
+          {
+            "item_path_ends_with": "_flight"
+          },
+          {
+            "item_path_ends_with": "_jump"
+          },
+          {
+            "item_path_ends_with": "_hill_step"
+          },
+          {
+            "item_path_ends_with": "_aqua_adapt"
+          },
+          {
+            "item_path_ends_with": "_night_vision"
+          },
+          {
+            "item_path_ends_with": "_auto_feed"
+          },
+          {
+            "item_path_ends_with": "_cloaking"
+          }
+        ]
+      }
+    ]
+  }
+}

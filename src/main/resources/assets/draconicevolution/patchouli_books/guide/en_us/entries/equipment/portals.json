@@ -1,0 +1,40 @@
+{
+  "name": "Pedestals and Portals",
+  "icon": "draconicevolution:dislocator_receptacle",
+  "category": "draconicevolution:equipment",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A $(item)Dislocator Pedestal$() holds a dislocator. Right-click the pedestal to go to the held dislocator's destination; no uses, fuel or health are spent. Right-click it with a dislocator in hand to place one, and shift-right-click to take it back. Wool under the pedestal silences it."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:dislocator_receptacle",
+      "recipe2": "draconicevolution:infused_obsidian"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "A pedestal makes a good home for one half of a point-to-point $(l:equipment/dislocators)bound dislocator$(/l) pair."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:dislocator_pedestal"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Portals",
+      "text": "Build a flat ring of $(item)Infused Obsidian$(), any shape, and swap one frame block for a $(item)Dislocator Receptacle$() touching the inside of the ring. Insert a dislocator that has a destination and the portal fills in; walk through to travel. Taking the dislocator out closes it.$(br2)The default limit is 65,536 portal blocks (about 256x256). Right-click the receptacle with infused obsidian to disguise it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Redstone and automation",
+      "text": "Without redstone the portal opens whenever a dislocator is inside. A redstone signal also opens it, losing the signal closes it, and while powered the dislocator is locked in. Hoppers and pipes can insert and remove dislocators."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Energy through portals",
+      "text": "Put the two halves of a point-to-point pair into two receptacles. Save an energy crystal to a $(item)Crystal Binder$() and right-click a receptacle to link them (one crystal per receptacle, within 32 blocks). Do the same at the other portal.$(br2)The two crystals then act as if linked directly, at any distance and across dimensions. Both ends must stay loaded."
+    }
+  ]
+}

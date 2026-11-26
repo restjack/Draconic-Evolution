@@ -1,0 +1,26 @@
+{
+  "name": "The Energy Core",
+  "icon": "draconicevolution:energy_core",
+  "category": "draconicevolution:energy_core",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)Energy Core$() is a multiblock energy store. It starts as a single block and grows into a large sphere of Draconium and Redstone blocks as you raise its tier.$(br2)Energy goes in and out through $(l:energy_core/pylons)Energy Pylons$(/l), and the core only works while it is held in place by $(l:energy_core/stabilizers)Stabilizers$(/l)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:machines/energy_core",
+      "text": "Start here: place the core where the middle of the finished build should be."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Energy is measured in OP, which converts 1:1 with FE."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Capacity",
+      "text": "$(li)Tier 1: 45.5 million OP$(li)Tier 2: 273 million OP$(li)Tier 3: 1.64 billion OP$(li)Tier 4: 9.88 billion OP$(li)Tier 5: 59.3 billion OP$(li)Tier 6: 356 billion OP$(li)Tier 7: 2.14 trillion OP$(li)Tier 8: effectively unlimited OP$(br2)Tier 8 has no practical limit; its screen lets you set an energy target just for display. Server owners can change these numbers in the DE config."
+    }
+  ]
+}

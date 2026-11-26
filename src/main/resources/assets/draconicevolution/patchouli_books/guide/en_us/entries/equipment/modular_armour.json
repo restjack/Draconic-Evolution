@@ -1,0 +1,81 @@
+{
+  "name": "Modular Armour",
+  "icon": "draconicevolution:draconic_chestpiece",
+  "category": "draconicevolution:equipment",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Draconic armour is a single $(item)Chestpiece$() in Wyvern, Draconic and Chaotic tiers. On its own it is a diamond-grade chestplate; its strength comes from $(l:equipment/modules)modules$(/l), above all the energy shield. If Curios is installed it can also be worn in a Curios slot.$(br2)Its grid holds most body modules: shield, Undying, Flight, Speed, Jump, Auto Feed, Night Vision and more."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Energy shield",
+      "text": "Install a $(l)Shield Control$() module to get a shield (one per chestpiece). Add $(l)Shield Capacity$() modules for more shield points, $(l)Large Shield Capacity$() for many points in one 2x2 module, and $(l)Shield Recovery$() for faster recharge.$(br2)The shield soaks up damage before your health. After a hit it waits out a cooldown (shorter on higher tier controllers), then recharges using energy."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Shield upkeep",
+      "text": "Holding the shield up also costs a little energy, more the bigger it is. If the chestpiece runs dry, the shield fades away over about a minute. Keep plenty of energy modules, or an Energy Link, in the same grid."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Undying",
+      "text": "When a fatal hit lands and the module is charged, $(l)Undying$() cancels the death, heals you, adds a short shield boost and gives a moment of invulnerability. Draconic and Chaotic modules also clear harmful effects.$(br2)It then recharges from the chestpiece: 2 minutes and 5M OP (Wyvern), 1 minute and 10M OP (Draconic), 45 seconds and 20M OP (Chaotic)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Flight",
+      "text": "The Wyvern $(l)Flight$() module gives elytra flight. Draconic and Chaotic also give creative-style flight, unless the server turned that off. A Toggle Flight key can be bound in Controls.$(br2)Chestpieces are fusion crafted from a diamond chestplate up through each tier."
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Wyvern Chestpiece",
+      "result": "draconicevolution:wyvern_chestpiece",
+      "catalyst": "minecraft:diamond_chestplate",
+      "info": "Wyvern injectors, 8M OP",
+      "i0": "draconicevolution:draconium_core",
+      "i1": "tag:c:ingots/draconium",
+      "i2": "tag:c:ingots/draconium",
+      "i3": "draconicevolution:basic_relay_crystal",
+      "i4": "draconicevolution:wyvern_energy_core",
+      "i5": "draconicevolution:basic_relay_crystal"
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Draconic Chestpiece",
+      "result": "draconicevolution:draconic_chestpiece",
+      "catalyst": "draconicevolution:wyvern_chestpiece",
+      "info": "Draconic (awakened) injectors, 32M OP",
+      "i0": "tag:c:ingots/netherite",
+      "i1": "draconicevolution:wyvern_core",
+      "i2": "tag:c:ingots/netherite",
+      "i3": "tag:c:ingots/draconium_awakened",
+      "i4": "tag:c:ingots/draconium_awakened",
+      "i5": "tag:c:ingots/netherite",
+      "i6": "draconicevolution:draconic_energy_core",
+      "i7": "tag:c:ingots/netherite"
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Chaotic Chestpiece",
+      "result": "draconicevolution:chaotic_chestpiece",
+      "catalyst": "draconicevolution:draconic_chestpiece",
+      "info": "Chaotic injectors, 128M OP",
+      "i0": "tag:c:ingots/draconium_awakened",
+      "i1": "draconicevolution:chaotic_core",
+      "i2": "tag:c:ingots/draconium_awakened",
+      "i3": "tag:c:ingots/draconium_awakened",
+      "i4": "tag:c:ingots/draconium_awakened",
+      "i5": "tag:c:ingots/draconium_awakened",
+      "i6": "draconicevolution:chaotic_energy_core",
+      "i7": "tag:c:ingots/draconium_awakened"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:modules/item_wyvern_shield_control",
+      "recipe2": "draconicevolution:modules/item_wyvern_undying",
+      "text": "Two modules worth making early."
+    }
+  ]
+}

@@ -49,10 +49,16 @@ public class ClientEventHandler {
     public static int explosionTime = 0;
     public static boolean explosionRetreating = false;
 
+    /** Fusion recipes received from the server (eli.7); read by the JEI plugin. */
+    public static java.util.List<net.minecraft.world.item.crafting.RecipeHolder<com.brandon3055.draconicevolution.api.crafting.IFusionRecipe>> fusionRecipes = java.util.List.of();
+
     public static void init(IEventBus modBus) {
         modBus.addListener(EventPriority.LOW, ClientEventHandler::registerOverlays);
         modBus.addListener(ClientEventHandler::addPackFinders);
         NeoForge.EVENT_BUS.addListener(ClientEventHandler::tickEnd);
+        // eli.7: keep the fusion recipes the server sent, for the JEI category. HIGHEST so it runs before JEI reloads.
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, (net.neoforged.neoforge.client.event.RecipesReceivedEvent e) ->
+                fusionRecipes = java.util.List.copyOf(e.getRecipeMap().byType(com.brandon3055.draconicevolution.api.DraconicAPI.FUSION_RECIPE_TYPE.get())));
     }
 
     public static void addPackFinders(AddPackFindersEvent event) {

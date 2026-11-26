@@ -1,0 +1,20 @@
+{
+  "name": "Potentiometer",
+  "icon": "draconicevolution:potentiometer",
+  "category": "draconicevolution:machines",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A small plate that gives off an adjustable redstone signal from 0 to 15. It can be placed on any side of a solid block.$(br2)$(li)Right-click: signal +1 (after 15 it wraps to 0).$(li)Shift-right-click: signal -1 (after 0 it wraps to 15)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:machines/potentiometer"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The current value appears above the hotbar. It also powers the block it sits on."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "Flow Gates",
+  "icon": "draconicevolution:flux_gate",
+  "category": "draconicevolution:energy_network",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)Flux Gate$() limits how much energy passes through it; the $(item)Fluid Gate$() does the same for fluids. Feed the back, take from the front. When you place a gate, its front (output) faces you.$(br2)Right-click it to set two rates:$(li)$(l)Redstone Signal Low$(): the flow with no signal.$(li)$(l)Redstone Signal High$(): the flow at signal strength 15."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:flux_gate",
+      "recipe2": "draconicevolution:fluid_gate"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Signals in between give a rate in between. Type a number and press Apply."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Notes",
+      "text": "$(li)The flux gate counts in RF/t, the same as OP/t or FE/t. The fluid gate counts in mB/t.$(li)The Flow line shows the rate in use right now.$(li)High may be lower than Low, so a gate can also close when powered: set High to 0.$(li)A $(item)Potentiometer$() or a comparator makes a handy dial.$(li)With CC: Tweaked installed a computer can take over the gate; the screen then shows Overridden."
+    }
+  ]
+}

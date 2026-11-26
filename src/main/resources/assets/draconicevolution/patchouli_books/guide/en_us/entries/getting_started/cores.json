@@ -1,0 +1,80 @@
+{
+  "name": "Cores",
+  "icon": "draconicevolution:wyvern_core",
+  "category": "draconicevolution:getting_started",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Cores are the crafting parts that set the tier of almost everything in the mod. There are four, from lowest to highest:$(li)$(item)Draconium Core$()$(li)$(item)Wyvern Core$()$(li)$(item)Draconic Core$() (made from Awakened Draconium)$(li)$(item)Chaotic Core$()$(br2)Items that hold energy also need an $(item)Energy Controller$(): Wyvern, Draconic or Chaotic."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:components/wyvern_core",
+      "text": "Four Draconium Cores, Draconium ingots and a Nether Star."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Any of the four cores can also turn a vanilla spawner into a $(l:machines/stabilized_spawner)Stabilized Spawner$(/l)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:components/draconium_core",
+      "text": "The basic core: Draconium, gold and a diamond. Needed for the Fusion Crafting Core and most early machines."
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Draconic Core",
+      "result": "draconicevolution:awakened_core",
+      "catalyst": "tag:c:nether_stars",
+      "info": "Wyvern injectors, 1M OP",
+      "i0": "draconicevolution:wyvern_core",
+      "i1": "draconicevolution:wyvern_core",
+      "i2": "tag:c:ingots/draconium_awakened",
+      "i3": "tag:c:ingots/draconium_awakened",
+      "i4": "tag:c:ingots/draconium_awakened",
+      "i5": "tag:c:ingots/draconium_awakened",
+      "i6": "draconicevolution:wyvern_core",
+      "i7": "draconicevolution:wyvern_core"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Higher tiers",
+      "text": "The $(item)Draconic Core$() needs Wyvern injectors and $(l:getting_started/awakened_draconium)Awakened Draconium$(/l).$(br2)The $(item)Chaotic Core$() needs Draconic injectors and $(item)Large Chaos Fragments$(), which come from the $(l:endgame/chaos_guardian)Chaos Guardian$(/l)."
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Chaotic Core",
+      "result": "draconicevolution:chaotic_core",
+      "catalyst": "draconicevolution:large_chaos_frag",
+      "info": "Draconic (awakened) injectors, 100M OP",
+      "i0": "tag:c:ingots/draconium_awakened",
+      "i1": "tag:c:ingots/draconium_awakened",
+      "i2": "draconicevolution:awakened_core",
+      "i3": "draconicevolution:awakened_core",
+      "i4": "draconicevolution:large_chaos_frag",
+      "i5": "draconicevolution:large_chaos_frag",
+      "i6": "tag:c:ingots/draconium_awakened",
+      "i7": "draconicevolution:awakened_core",
+      "i8": "draconicevolution:awakened_core",
+      "i9": "draconicevolution:large_chaos_frag",
+      "i10": "draconicevolution:large_chaos_frag",
+      "i11": "tag:c:ingots/draconium_awakened"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:components/wyvern_energy_core",
+      "text": "Wyvern Energy Controller: Draconium, Redstone blocks and a Draconium Core."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:components/draconic_energy_core",
+      "text": "Draconic Energy Controller: four Wyvern Energy Controllers and Awakened Draconium around a Wyvern Core."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:components/chaotic_energy_core",
+      "text": "Chaotic Energy Controller: Draconic Energy Controllers, a Draconic Core and Medium Chaos Fragments."
+    }
+  ]
+}

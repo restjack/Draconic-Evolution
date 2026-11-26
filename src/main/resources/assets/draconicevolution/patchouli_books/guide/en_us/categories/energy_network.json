@@ -1,0 +1,6 @@
+{
+  "name": "Energy Transport",
+  "description": "Generators, crystals and gates for moving energy around.",
+  "icon": "draconicevolution:basic_relay_crystal",
+  "sortnum": 3
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Draconic Evolution Guide",
+  "landing_text": "A field guide to Draconic Evolution on Minecraft 26.1.2.$(br2)This book was written for the unofficial 26.1.2 port. Some features are untested here, so read $(l:this_port/whats_different)What's different in this port$(/l) before you build anything big.$(br2)Recipes for every item are also in JEI.",
+  "version": 1,
+  "use_resource_pack": true,
+  "model": "patchouli:book_purple",
+  "book_texture": "patchouli:textures/gui/book_purple.png",
+  "show_progress": false,
+  "creative_tab": "draconicevolution:items",
+  "i18n": false
+}

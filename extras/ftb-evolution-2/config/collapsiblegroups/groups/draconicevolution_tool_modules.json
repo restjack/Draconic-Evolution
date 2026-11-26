@@ -1,0 +1,58 @@
+{
+  "id": "draconicevolution_tool_modules",
+  "name": {
+    "translate": "collapsible_groups.group.draconicevolution_tool_modules",
+    "fallback": "Draconic Evolution: Tool Modules"
+  },
+  "enabled": true,
+  "filter": {
+    "all": [
+      {
+        "type": "item",
+        "namespace": "draconicevolution"
+      },
+      {
+        "item_path_starts_with": "item_"
+      },
+      {
+        "any": [
+          {
+            "item_path_ends_with": "_aoe"
+          },
+          {
+            "item_path_ends_with": "_speed"
+          },
+          {
+            "item_path_ends_with": "_damage"
+          },
+          {
+            "item_path_ends_with": "_tree_harvest"
+          },
+          {
+            "item_path_ends_with": "_junk_filter"
+          },
+          {
+            "item_path_ends_with": "_ender_collection"
+          },
+          {
+            "item_path_ends_with": "_mining_stability"
+          },
+          {
+            "item_path_ends_with": "_fire_mod"
+          },
+          {
+            "item_path_ends_with": "_ice_mod"
+          },
+          {
+            "item_path_ends_with": "_lightning_mod"
+          }
+        ]
+      },
+      {
+        "not": {
+          "item_path_contains": "_proj_"
+        }
+      }
+    ]
+  }
+}

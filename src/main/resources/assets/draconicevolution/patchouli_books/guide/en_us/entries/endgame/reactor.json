@@ -1,0 +1,46 @@
+{
+  "name": "The Draconic Reactor",
+  "icon": "draconicevolution:reactor_core",
+  "category": "draconicevolution:endgame",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)Draconic Reactor$() turns $(l:getting_started/awakened_draconium)Awakened Draconium$(/l) into huge amounts of energy. It is also the most dangerous thing in the mod: if its containment field fails it explodes, and a full-size reactor leaves a crater hundreds of blocks wide."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(c)Untested in this port.$() Upstream also reports odd behaviour, such as the core jumping straight to 2,500 °C on start-up. Build and test it in a copy of the world before you build one on the server."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Outline",
+      "text": "$(li)$(l:endgame/reactor_building)Build it$(/l): a core, four Reactor Stabilizers around it and at least one Reactor Energy Injector.$(li)$(l:endgame/reactor_operation)Fuel and run it$(/l): load Awakened Draconium, charge it from a big energy store, activate it, then balance what goes in against what comes out with Flow Gates.$(li)$(l:endgame/reactor_safety)Keep it safe$(/l): know what makes it fail and how to shut it down."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The parts need $(l:endgame/chaos_guardian)Chaos Shards$(/l), and you need a large buffer such as an $(l:energy_core/overview)Energy Core$(/l)."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "draconicevolution:reactor_core",
+      "text": "The core goes in the middle. It grows as it heats up, so keep the space around it empty."
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Draconic Reactor Core",
+      "result": "draconicevolution:reactor_core",
+      "catalyst": "draconicevolution:chaos_shard",
+      "info": "Chaotic injectors, 64M OP",
+      "i0": "tag:c:ingots/draconium_awakened",
+      "i1": "tag:c:ingots/draconium",
+      "i2": "tag:c:ingots/draconium_awakened",
+      "i3": "tag:c:ingots/draconium",
+      "i4": "tag:c:ingots/draconium_awakened",
+      "i5": "tag:c:ingots/draconium",
+      "i6": "tag:c:ingots/draconium_awakened",
+      "i7": "draconicevolution:large_chaos_frag",
+      "i8": "draconicevolution:large_chaos_frag"
+    }
+  ]
+}

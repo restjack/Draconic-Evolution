@@ -1,0 +1,682 @@
+{
+  "name": "Building a Core",
+  "icon": "draconicevolution:draconium_block",
+  "category": "draconicevolution:energy_core",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(li)Place the $(item)Energy Core$() and right-click it.$(li)Use $(l)Tier Up / Tier Down$() to pick a tier.$(li)Press $(l)Toggle Build Guide$() to see a hologram of every block you need.$(li)Place the blocks, or press $(l)Assemble Core$() to let the core place them from your inventory.$(li)Turn the build guide off, add $(l:energy_core/stabilizers)Stabilizers$(/l), then press $(l)Activate$()."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Blocks per tier",
+      "text": "$(li)Tier 1: just the core$(li)Tier 2: 6 Draconium$(li)Tier 3: 26 Draconium$(li)Tier 4: 54 Draconium, 26 Redstone$(li)Tier 5: 90 Draconium, 80 Redstone$(li)Tier 6: 150 Draconium, 178 Redstone$(li)Tier 7: 210 Draconium, 328 Redstone$(li)Tier 8: 786 Draconium, 378 Awakened Draconium"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "All of these are storage blocks; any Draconium or Redstone block tagged as such works."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Tier 2 Energy Core",
+      "multiblock": {
+        "pattern": [
+          [
+            "   ",
+            " D ",
+            "   "
+          ],
+          [
+            " D ",
+            "D0D",
+            " D "
+          ],
+          [
+            "   ",
+            " D ",
+            "   "
+          ]
+        ],
+        "mapping": {
+          "D": "#c:storage_blocks/draconium",
+          "0": "draconicevolution:energy_core"
+        }
+      },
+      "text": "Tier 2. The core block sits in the middle; Stabilizers go outside the structure."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Tier 3 Energy Core",
+      "multiblock": {
+        "pattern": [
+          [
+            "DDD",
+            "DDD",
+            "DDD"
+          ],
+          [
+            "DDD",
+            "D0D",
+            "DDD"
+          ],
+          [
+            "DDD",
+            "DDD",
+            "DDD"
+          ]
+        ],
+        "mapping": {
+          "D": "#c:storage_blocks/draconium",
+          "0": "draconicevolution:energy_core"
+        }
+      },
+      "text": "Tier 3. The core block sits in the middle; Stabilizers go outside the structure."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Tier 4 Energy Core",
+      "multiblock": {
+        "pattern": [
+          [
+            "     ",
+            " DDD ",
+            " DDD ",
+            " DDD ",
+            "     "
+          ],
+          [
+            " DDD ",
+            "DRRRD",
+            "DRRRD",
+            "DRRRD",
+            " DDD "
+          ],
+          [
+            " DDD ",
+            "DRRRD",
+            "DR0RD",
+            "DRRRD",
+            " DDD "
+          ],
+          [
+            " DDD ",
+            "DRRRD",
+            "DRRRD",
+            "DRRRD",
+            " DDD "
+          ],
+          [
+            "     ",
+            " DDD ",
+            " DDD ",
+            " DDD ",
+            "     "
+          ]
+        ],
+        "mapping": {
+          "D": "#c:storage_blocks/draconium",
+          "R": "#c:storage_blocks/redstone",
+          "0": "draconicevolution:energy_core"
+        }
+      },
+      "text": "Tier 4. The core block sits in the middle; Stabilizers go outside the structure."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Tier 5 Energy Core",
+      "multiblock": {
+        "pattern": [
+          [
+            "       ",
+            "       ",
+            "  DDD  ",
+            "  DDD  ",
+            "  DDD  ",
+            "       ",
+            "       "
+          ],
+          [
+            "       ",
+            "  DDD  ",
+            " DRRRD ",
+            " DRRRD ",
+            " DRRRD ",
+            "  DDD  ",
+            "       "
+          ],
+          [
+            "  DDD  ",
+            " DRRRD ",
+            "DRRRRRD",
+            "DRRRRRD",
+            "DRRRRRD",
+            " DRRRD ",
+            "  DDD  "
+          ],
+          [
+            "  DDD  ",
+            " DRRRD ",
+            "DRRRRRD",
+            "DRR0RRD",
+            "DRRRRRD",
+            " DRRRD ",
+            "  DDD  "
+          ],
+          [
+            "  DDD  ",
+            " DRRRD ",
+            "DRRRRRD",
+            "DRRRRRD",
+            "DRRRRRD",
+            " DRRRD ",
+            "  DDD  "
+          ],
+          [
+            "       ",
+            "  DDD  ",
+            " DRRRD ",
+            " DRRRD ",
+            " DRRRD ",
+            "  DDD  ",
+            "       "
+          ],
+          [
+            "       ",
+            "       ",
+            "  DDD  ",
+            "  DDD  ",
+            "  DDD  ",
+            "       ",
+            "       "
+          ]
+        ],
+        "mapping": {
+          "D": "#c:storage_blocks/draconium",
+          "R": "#c:storage_blocks/redstone",
+          "0": "draconicevolution:energy_core"
+        }
+      },
+      "text": "Tier 5. The core block sits in the middle; Stabilizers go outside the structure."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Tier 6 Energy Core",
+      "multiblock": {
+        "pattern": [
+          [
+            "         ",
+            "         ",
+            "         ",
+            "   DDD   ",
+            "   DDD   ",
+            "   DDD   ",
+            "         ",
+            "         ",
+            "         "
+          ],
+          [
+            "         ",
+            "         ",
+            "  DDDDD  ",
+            "  DRRRD  ",
+            "  DRRRD  ",
+            "  DRRRD  ",
+            "  DDDDD  ",
+            "         ",
+            "         "
+          ],
+          [
+            "         ",
+            "  DDDDD  ",
+            " DRRRRRD ",
+            " DRRRRRD ",
+            " DRRRRRD ",
+            " DRRRRRD ",
+            " DRRRRRD ",
+            "  DDDDD  ",
+            "         "
+          ],
+          [
+            "   DDD   ",
+            "  DRRRD  ",
+            " DRRRRRD ",
+            "DRRRRRRRD",
+            "DRRRRRRRD",
+            "DRRRRRRRD",
+            " DRRRRRD ",
+            "  DRRRD  ",
+            "   DDD   "
+          ],
+          [
+            "   DDD   ",
+            "  DRRRD  ",
+            " DRRRRRD ",
+            "DRRRRRRRD",
+            "DRRR0RRRD",
+            "DRRRRRRRD",
+            " DRRRRRD ",
+            "  DRRRD  ",
+            "   DDD   "
+          ],
+          [
+            "   DDD   ",
+            "  DRRRD  ",
+            " DRRRRRD ",
+            "DRRRRRRRD",
+            "DRRRRRRRD",
+            "DRRRRRRRD",
+            " DRRRRRD ",
+            "  DRRRD  ",
+            "   DDD   "
+          ],
+          [
+            "         ",
+            "  DDDDD  ",
+            " DRRRRRD ",
+            " DRRRRRD ",
+            " DRRRRRD ",
+            " DRRRRRD ",
+            " DRRRRRD ",
+            "  DDDDD  ",
+            "         "
+          ],
+          [
+            "         ",
+            "         ",
+            "  DDDDD  ",
+            "  DRRRD  ",
+            "  DRRRD  ",
+            "  DRRRD  ",
+            "  DDDDD  ",
+            "         ",
+            "         "
+          ],
+          [
+            "         ",
+            "         ",
+            "         ",
+            "   DDD   ",
+            "   DDD   ",
+            "   DDD   ",
+            "         ",
+            "         ",
+            "         "
+          ]
+        ],
+        "mapping": {
+          "D": "#c:storage_blocks/draconium",
+          "R": "#c:storage_blocks/redstone",
+          "0": "draconicevolution:energy_core"
+        }
+      },
+      "text": "Tier 6. The core block sits in the middle; Stabilizers go outside the structure."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Tier 7 Energy Core",
+      "multiblock": {
+        "pattern": [
+          [
+            "           ",
+            "           ",
+            "           ",
+            "           ",
+            "    DDD    ",
+            "    DDD    ",
+            "    DDD    ",
+            "           ",
+            "           ",
+            "           ",
+            "           "
+          ],
+          [
+            "           ",
+            "           ",
+            "           ",
+            "   DDDDD   ",
+            "   DRRRD   ",
+            "   DRRRD   ",
+            "   DRRRD   ",
+            "   DDDDD   ",
+            "           ",
+            "           ",
+            "           "
+          ],
+          [
+            "           ",
+            "           ",
+            "   DDDDD   ",
+            "  DRRRRRD  ",
+            "  DRRRRRD  ",
+            "  DRRRRRD  ",
+            "  DRRRRRD  ",
+            "  DRRRRRD  ",
+            "   DDDDD   ",
+            "           ",
+            "           "
+          ],
+          [
+            "           ",
+            "   DDDDD   ",
+            "  DRRRRRD  ",
+            " DRRRRRRRD ",
+            " DRRRRRRRD ",
+            " DRRRRRRRD ",
+            " DRRRRRRRD ",
+            " DRRRRRRRD ",
+            "  DRRRRRD  ",
+            "   DDDDD   ",
+            "           "
+          ],
+          [
+            "    DDD    ",
+            "   DRRRD   ",
+            "  DRRRRRD  ",
+            " DRRRRRRRD ",
+            "DRRRRRRRRRD",
+            "DRRRRRRRRRD",
+            "DRRRRRRRRRD",
+            " DRRRRRRRD ",
+            "  DRRRRRD  ",
+            "   DRRRD   ",
+            "    DDD    "
+          ],
+          [
+            "    DDD    ",
+            "   DRRRD   ",
+            "  DRRRRRD  ",
+            " DRRRRRRRD ",
+            "DRRRRRRRRRD",
+            "DRRRR0RRRRD",
+            "DRRRRRRRRRD",
+            " DRRRRRRRD ",
+            "  DRRRRRD  ",
+            "   DRRRD   ",
+            "    DDD    "
+          ],
+          [
+            "    DDD    ",
+            "   DRRRD   ",
+            "  DRRRRRD  ",
+            " DRRRRRRRD ",
+            "DRRRRRRRRRD",
+            "DRRRRRRRRRD",
+            "DRRRRRRRRRD",
+            " DRRRRRRRD ",
+            "  DRRRRRD  ",
+            "   DRRRD   ",
+            "    DDD    "
+          ],
+          [
+            "           ",
+            "   DDDDD   ",
+            "  DRRRRRD  ",
+            " DRRRRRRRD ",
+            " DRRRRRRRD ",
+            " DRRRRRRRD ",
+            " DRRRRRRRD ",
+            " DRRRRRRRD ",
+            "  DRRRRRD  ",
+            "   DDDDD   ",
+            "           "
+          ],
+          [
+            "           ",
+            "           ",
+            "   DDDDD   ",
+            "  DRRRRRD  ",
+            "  DRRRRRD  ",
+            "  DRRRRRD  ",
+            "  DRRRRRD  ",
+            "  DRRRRRD  ",
+            "   DDDDD   ",
+            "           ",
+            "           "
+          ],
+          [
+            "           ",
+            "           ",
+            "           ",
+            "   DDDDD   ",
+            "   DRRRD   ",
+            "   DRRRD   ",
+            "   DRRRD   ",
+            "   DDDDD   ",
+            "           ",
+            "           ",
+            "           "
+          ],
+          [
+            "           ",
+            "           ",
+            "           ",
+            "           ",
+            "    DDD    ",
+            "    DDD    ",
+            "    DDD    ",
+            "           ",
+            "           ",
+            "           ",
+            "           "
+          ]
+        ],
+        "mapping": {
+          "D": "#c:storage_blocks/draconium",
+          "R": "#c:storage_blocks/redstone",
+          "0": "draconicevolution:energy_core"
+        }
+      },
+      "text": "Tier 7. The core block sits in the middle; Stabilizers go outside the structure."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Tier 8 Energy Core",
+      "multiblock": {
+        "pattern": [
+          [
+            "             ",
+            "             ",
+            "             ",
+            "             ",
+            "    AAAAA    ",
+            "    AAAAA    ",
+            "    AAAAA    ",
+            "    AAAAA    ",
+            "    AAAAA    ",
+            "             ",
+            "             ",
+            "             ",
+            "             "
+          ],
+          [
+            "             ",
+            "             ",
+            "             ",
+            "   AAAAAAA   ",
+            "   ADDDDDA   ",
+            "   ADDDDDA   ",
+            "   ADDDDDA   ",
+            "   ADDDDDA   ",
+            "   ADDDDDA   ",
+            "   AAAAAAA   ",
+            "             ",
+            "             ",
+            "             "
+          ],
+          [
+            "             ",
+            "             ",
+            "   AAAAAAA   ",
+            "  ADDDDDDDA  ",
+            "  ADDDDDDDA  ",
+            "  ADDDDDDDA  ",
+            "  ADDDDDDDA  ",
+            "  ADDDDDDDA  ",
+            "  ADDDDDDDA  ",
+            "  ADDDDDDDA  ",
+            "   AAAAAAA   ",
+            "             ",
+            "             "
+          ],
+          [
+            "             ",
+            "   AAAAAAA   ",
+            "  ADDDDDDDA  ",
+            " ADDDDDDDDDA ",
+            " ADDDDDDDDDA ",
+            " ADDDDDDDDDA ",
+            " ADDDDDDDDDA ",
+            " ADDDDDDDDDA ",
+            " ADDDDDDDDDA ",
+            " ADDDDDDDDDA ",
+            "  ADDDDDDDA  ",
+            "   AAAAAAA   ",
+            "             "
+          ],
+          [
+            "    AAAAA    ",
+            "   ADDDDDA   ",
+            "  ADDDDDDDA  ",
+            " ADDDDDDDDDA ",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            " ADDDDDDDDDA ",
+            "  ADDDDDDDA  ",
+            "   ADDDDDA   ",
+            "    AAAAA    "
+          ],
+          [
+            "    AAAAA    ",
+            "   ADDDDDA   ",
+            "  ADDDDDDDA  ",
+            " ADDDDDDDDDA ",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            " ADDDDDDDDDA ",
+            "  ADDDDDDDA  ",
+            "   ADDDDDA   ",
+            "    AAAAA    "
+          ],
+          [
+            "    AAAAA    ",
+            "   ADDDDDA   ",
+            "  ADDDDDDDA  ",
+            " ADDDDDDDDDA ",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDD0DDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            " ADDDDDDDDDA ",
+            "  ADDDDDDDA  ",
+            "   ADDDDDA   ",
+            "    AAAAA    "
+          ],
+          [
+            "    AAAAA    ",
+            "   ADDDDDA   ",
+            "  ADDDDDDDA  ",
+            " ADDDDDDDDDA ",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            " ADDDDDDDDDA ",
+            "  ADDDDDDDA  ",
+            "   ADDDDDA   ",
+            "    AAAAA    "
+          ],
+          [
+            "    AAAAA    ",
+            "   ADDDDDA   ",
+            "  ADDDDDDDA  ",
+            " ADDDDDDDDDA ",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            "ADDDDDDDDDDDA",
+            " ADDDDDDDDDA ",
+            "  ADDDDDDDA  ",
+            "   ADDDDDA   ",
+            "    AAAAA    "
+          ],
+          [
+            "             ",
+            "   AAAAAAA   ",
+            "  ADDDDDDDA  ",
+            " ADDDDDDDDDA ",
+            " ADDDDDDDDDA ",
+            " ADDDDDDDDDA ",
+            " ADDDDDDDDDA ",
+            " ADDDDDDDDDA ",
+            " ADDDDDDDDDA ",
+            " ADDDDDDDDDA ",
+            "  ADDDDDDDA  ",
+            "   AAAAAAA   ",
+            "             "
+          ],
+          [
+            "             ",
+            "             ",
+            "   AAAAAAA   ",
+            "  ADDDDDDDA  ",
+            "  ADDDDDDDA  ",
+            "  ADDDDDDDA  ",
+            "  ADDDDDDDA  ",
+            "  ADDDDDDDA  ",
+            "  ADDDDDDDA  ",
+            "  ADDDDDDDA  ",
+            "   AAAAAAA   ",
+            "             ",
+            "             "
+          ],
+          [
+            "             ",
+            "             ",
+            "             ",
+            "   AAAAAAA   ",
+            "   ADDDDDA   ",
+            "   ADDDDDA   ",
+            "   ADDDDDA   ",
+            "   ADDDDDA   ",
+            "   ADDDDDA   ",
+            "   AAAAAAA   ",
+            "             ",
+            "             ",
+            "             "
+          ],
+          [
+            "             ",
+            "             ",
+            "             ",
+            "             ",
+            "    AAAAA    ",
+            "    AAAAA    ",
+            "    AAAAA    ",
+            "    AAAAA    ",
+            "    AAAAA    ",
+            "             ",
+            "             ",
+            "             ",
+            "             "
+          ]
+        ],
+        "mapping": {
+          "A": "#c:storage_blocks/draconium_awakened",
+          "D": "#c:storage_blocks/draconium",
+          "0": "draconicevolution:energy_core"
+        }
+      },
+      "text": "Tier 8. The core block sits in the middle; Stabilizers go outside the structure."
+    }
+  ]
+}

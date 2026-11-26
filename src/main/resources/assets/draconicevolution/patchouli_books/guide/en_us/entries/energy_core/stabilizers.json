@@ -1,0 +1,20 @@
+{
+  "name": "Stabilizers",
+  "icon": "draconicevolution:energy_core_stabilizer",
+  "category": "draconicevolution:energy_core",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A core will not activate without Stabilizers. Place four of them in a cross around the core, all on the same plane (horizontal or vertical), each one in line with the core and within 16 blocks of it.$(br2)From tier 5 up each of the four must be an $(l)advanced stabilizer$(): nine Stabilizers placed as a flat 3x3 square facing the core."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:machines/energy_core_stabilizer"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Right-clicking a linked Stabilizer opens the core's screen, which tells you if the structure or the stabilizers are wrong."
+    }
+  ]
+}

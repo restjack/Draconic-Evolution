@@ -1,0 +1,106 @@
+{
+  "name": "Modular Tools",
+  "icon": "draconicevolution:draconic_pickaxe",
+  "category": "draconicevolution:equipment",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Pickaxe, shovel, axe, hoe, sword and bow come in Wyvern, Draconic and Chaotic tiers. Each tier mines faster and hits harder than the last, but all of them depend on $(l:equipment/modules)modules$(/l) and stored energy."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Which modules fit depends on the tool: pickaxe and shovel take mining modules, the sword takes weapon modules, the axe takes both plus Tree Harvest, the hoe takes AOE, and the bow takes projectile modules."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Staff of Power",
+      "text": "The $(item)Staff of Power$() (Draconic and Chaotic only) is a pickaxe, shovel, axe and sword in one, with a much bigger module grid. It is made from the matching pickaxe, shovel and sword.$(br2)Tool Config ($(l)C$()) sets mining speed, AOE size and similar options, so a big AOE tool can still dig a single block."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Capacitors",
+      "text": "A $(item)Capacitor$() is a portable battery. It stores nothing until you add energy modules. In Tool Config, choose what it charges: the held item, worn armour, the hotbar, the main inventory, and Curios slots when Curios is installed."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Recipes",
+      "text": "Tools are made by $(l:fusion_crafting/overview)Fusion Crafting$(/l). The Wyvern tool uses the vanilla diamond tool as its catalyst; each higher tier uses the tier below. The pickaxe line is shown here; every other tool follows the same pattern, so look the rest up in JEI."
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Wyvern Pickaxe",
+      "result": "draconicevolution:wyvern_pickaxe",
+      "catalyst": "minecraft:diamond_pickaxe",
+      "info": "Wyvern injectors, 8M OP",
+      "i0": "draconicevolution:draconium_core",
+      "i1": "tag:c:ingots/draconium",
+      "i2": "tag:c:ingots/draconium",
+      "i3": "draconicevolution:basic_relay_crystal",
+      "i4": "draconicevolution:wyvern_energy_core",
+      "i5": "draconicevolution:basic_relay_crystal"
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Draconic Pickaxe",
+      "result": "draconicevolution:draconic_pickaxe",
+      "catalyst": "draconicevolution:wyvern_pickaxe",
+      "info": "Draconic (awakened) injectors, 32M OP",
+      "i0": "tag:c:ingots/netherite",
+      "i1": "draconicevolution:wyvern_core",
+      "i2": "tag:c:ingots/netherite",
+      "i3": "tag:c:ingots/draconium_awakened",
+      "i4": "tag:c:ingots/draconium_awakened",
+      "i5": "tag:c:ingots/netherite",
+      "i6": "draconicevolution:draconic_energy_core",
+      "i7": "tag:c:ingots/netherite"
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Chaotic Pickaxe",
+      "result": "draconicevolution:chaotic_pickaxe",
+      "catalyst": "draconicevolution:draconic_pickaxe",
+      "info": "Chaotic injectors, 128M OP",
+      "i0": "tag:c:ingots/draconium_awakened",
+      "i1": "draconicevolution:chaotic_core",
+      "i2": "tag:c:ingots/draconium_awakened",
+      "i3": "tag:c:ingots/draconium_awakened",
+      "i4": "tag:c:ingots/draconium_awakened",
+      "i5": "tag:c:ingots/draconium_awakened",
+      "i6": "draconicevolution:chaotic_energy_core",
+      "i7": "tag:c:ingots/draconium_awakened"
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Draconic Staff of Power",
+      "result": "draconicevolution:draconic_staff",
+      "catalyst": "draconicevolution:awakened_core",
+      "info": "Draconic (awakened) injectors, 256M OP",
+      "i0": "tag:c:ingots/draconium_awakened",
+      "i1": "draconicevolution:draconic_pickaxe",
+      "i2": "tag:c:ingots/draconium_awakened",
+      "i3": "tag:c:ingots/draconium_awakened",
+      "i4": "draconicevolution:draconic_sword",
+      "i5": "draconicevolution:draconic_shovel",
+      "i6": "tag:c:ingots/draconium_awakened",
+      "i7": "draconicevolution:draconic_energy_core",
+      "i8": "tag:c:ingots/draconium_awakened",
+      "i9": "tag:c:ingots/draconium_awakened"
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Wyvern Capacitor",
+      "result": "draconicevolution:wyvern_capacitor",
+      "catalyst": "draconicevolution:wyvern_core",
+      "info": "Wyvern injectors, 8M OP",
+      "i0": "tag:c:ingots/draconium",
+      "i1": "draconicevolution:wyvern_energy_core",
+      "i2": "tag:c:ingots/draconium",
+      "i3": "draconicevolution:wyvern_energy_core",
+      "i4": "draconicevolution:wyvern_energy_core",
+      "i5": "tag:c:ingots/draconium",
+      "i6": "draconicevolution:wyvern_energy_core",
+      "i7": "tag:c:ingots/draconium"
+    }
+  ]
+}

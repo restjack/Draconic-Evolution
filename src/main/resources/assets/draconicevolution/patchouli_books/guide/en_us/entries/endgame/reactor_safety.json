@@ -1,0 +1,42 @@
+{
+  "name": "Reactor Safety",
+  "icon": "minecraft:tnt",
+  "category": "draconicevolution:endgame",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "What makes it explode",
+      "text": "$(li)The containment field reaches zero while the core is above 2,000 °C.$(li)A stabilizer is broken while the core is above 2,000 °C.$(li)Fuel conversion reaches 100%. With no draconium left the temperature climbs by itself and the reactor can no longer shut down, so the field fails in the end."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Once the status reads $(c)Explosion Imminent$(), nothing can stop it. Leave."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The explosion",
+      "text": "The stabilizers blow out first. The reactor then works out the blast and counts down: at least a minute, often a few. The crater radius depends on the fuel, from about 50 blocks for one ingot to about 350 for a full load.$(br2)Server owners can shrink it with $(l)reactorExplosionScale$() or replace it with a small blast using $(l)disableLargeReactorBoom$(). Ask the server admin before counting on either."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Taking it apart",
+      "text": "Only take apart a reactor that is $(l)Offline$(). Breaking a stabilizer while the core is between 350 and 2,000 °C sets off a smaller explosion that sprays lava. Below 350 °C the reactor just becomes invalid. Breaking an injector only unlinks it.$(br2)Above 2,000 °C, breaking a stabilizer counts as a field failure."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Shutting down",
+      "text": "Press $(l)Shutdown$(). Output stops at once, but the reaction keeps going until saturation passes 99%; then the temperature falls. Below 2,000 °C the status becomes $(l)Cooling Down$(), and about three minutes later, below 100 °C, $(l)Offline$().$(br2)Keep feeding the field until fusion stops: a field that runs dry during shutdown still explodes. While it is still stopping you can press Activate to restart it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "SAS (fail-safe)",
+      "text": "The $(l)SAS$() button on the reactor screen is a semi-automated shutdown. While it is on and the reactor is online, it starts a shutdown by itself as soon as saturation reaches 99% with the core below 2,500 °C.$(br2)Pair it with redstone: when a comparator in Conversion mode shows the fuel is nearly spent, or anything else looks wrong, close the output Flow Gate. Saturation fills up and SAS shuts the reactor down for you."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Good habits",
+      "text": "$(li)Keep a large buffer so the field never runs short, even during shutdown.$(li)Never let your base draw more from that buffer than the reactor makes; a third Flow Gate on the base supply helps.$(li)Refuel well before conversion reaches 100%.$(li)Keep the core at or below 8,000 °C.$(li)Test the whole setup in a copy of the world first."
+    }
+  ]
+}

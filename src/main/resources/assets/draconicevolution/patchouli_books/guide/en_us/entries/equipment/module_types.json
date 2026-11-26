@@ -1,0 +1,32 @@
+{
+  "name": "Module Types",
+  "icon": "draconicevolution:item_wyvern_energy",
+  "category": "draconicevolution:equipment",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Any powered item",
+      "text": "$(li)$(l)Energy$(): more OP storage."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)$(l)Energy Link$() (Wireless Energy Link, Quantum Energy Tunnel, Chaos-Entangled tunnel): before installing it, shift-right-click an active $(l:energy_core/overview)Energy Core$(/l) with it. The item then charges itself from that core. The Wyvern link works in the same dimension only; Draconic and Chaotic work across dimensions. Opening the link costs a lot of energy and keeping it open costs a little."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tools and weapons",
+      "text": "$(li)$(l)Speed$(): faster mining; on bows, faster draw.$(li)$(l)AOE$(): mine, till or hit an area, 3x3 up to 11x11 by tier. One per item.$(li)$(l)Damage$(): more melee damage.$(li)$(l)Tree Harvest$() (axe, staff): fells whole trees.$(li)$(l)Selective Incineration$(): destroys drops you mark as junk.$(li)$(l)Ender Collection$(): sends drops to your ender chest."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Bows",
+      "text": "$(li)Projectile modules change arrow velocity, accuracy, gravity drop, penetration and base damage.$(li)$(l)Auto Fire$(): looses the arrow as soon as it is fully drawn.$(li)$(l)Projectile Immunity Cancellation$(): arrows hurt mobs that normally ignore them, such as endermen, the Wither and the Ender Dragon."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Chestpiece",
+      "text": "$(li)Shield Control, Shield Capacity, Large Shield Capacity and Shield Recovery: see $(l:equipment/modular_armour)Modular Armour$(/l).$(li)Undying, Flight, Auto Feed, Night Vision, Jump, Hill Step, Aqua Adept, Mining Stabilizer and Speed.$(br2)Every module's tooltip lists its exact numbers, its size and its install limit."
+    }
+  ]
+}

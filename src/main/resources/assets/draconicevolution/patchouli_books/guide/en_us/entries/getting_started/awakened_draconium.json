@@ -1,0 +1,51 @@
+{
+  "name": "Awakened Draconium",
+  "icon": "draconicevolution:awakened_draconium_ingot",
+  "category": "draconicevolution:getting_started",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(item)Awakened Draconium$() is the upgraded form of Draconium, needed for Draconic-tier gear, injectors and cores, and for the outer shell of a tier 8 $(l:energy_core/overview)Energy Core$(/l)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:decompress/awakened_draconium_ingot",
+      "recipe2": "draconicevolution:compress/awakened_draconium_block"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "It cannot be mined. It is made with $(l:fusion_crafting/overview)Fusion Crafting$(/l): four $(item)Draconium Blocks$() in the core, with six $(item)Draconium Cores$() and one $(item)Dragon Heart$() in the injectors. The craft needs $(l)Wyvern injectors or better$() and 50 million OP, and gives four $(item)Awakened Draconium Blocks$()."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "draconicevolution:dragon_heart",
+      "title": "The Dragon Heart",
+      "text": "Every time the $(item)Ender Dragon$() dies, a Dragon Heart appears floating above the exit portal. It does not despawn, so come back for it after the fight.$(br2)The $(l:endgame/chaos_guardian)Chaos Guardian$(/l) drops one too."
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Awakened Draconium Block",
+      "result": "draconicevolution:awakened_draconium_block#4",
+      "catalyst": "draconicevolution:draconium_block#4",
+      "info": "Wyvern injectors, 50M OP",
+      "i0": "draconicevolution:draconium_core",
+      "i1": "draconicevolution:draconium_core",
+      "i2": "draconicevolution:draconium_core",
+      "i3": "draconicevolution:dragon_heart",
+      "i4": "draconicevolution:draconium_core",
+      "i5": "draconicevolution:draconium_core",
+      "i6": "draconicevolution:draconium_core"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Using it",
+      "text": "One Dragon Heart makes four blocks, which is 36 ingots. Each block splits into nine $(item)Awakened Draconium Ingots$(), and each ingot into nine nuggets, the same way as normal Draconium.$(br2)Since the dragon can be fought again, every respawn is another heart. Look up $(item)Awakened Draconium$() in JEI to see where it is used."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:decompress/awakened_draconium_nugget",
+      "recipe2": "draconicevolution:compress/awakened_draconium_ingot"
+    }
+  ]
+}

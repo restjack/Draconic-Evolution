@@ -27,6 +27,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerPlayer;
+import com.brandon3055.draconicevolution.integration.patchouli.PatchouliCompat;
 
 
 
@@ -41,14 +43,33 @@ public class InfoTablet extends Item {
         super(properties);
     }
 
+    /** eli.7: shown as the JEI info page. Project Intelligence has no 26.1 release; the tablet opens our Patchouli guide instead. */
+    public static final Component[] JEI_INFO = {
+            Component.literal("No recipe. In this port the tablet opens the Draconic Evolution Guide (a Patchouli book).").withStyle(ChatFormatting.GRAY),
+            Component.literal("Craft the guide itself from a Book and Draconium Dust. The old Project Intelligence documentation has no Minecraft 26.1 version.").withStyle(ChatFormatting.GRAY)
+    };
+
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> builder, net.minecraft.world.item.TooltipFlag flag) {
+        if (PatchouliCompat.isLoaded()) {
+            builder.accept(Component.literal("Opens the Draconic Evolution Guide").withStyle(ChatFormatting.GRAY));
+        } else {
+            builder.accept(Component.literal("Not supported in this port").withStyle(ChatFormatting.RED));
+            builder.accept(Component.literal("Needs Patchouli for the guide (Project Intelligence has no 26.1 version)").withStyle(ChatFormatting.GRAY));
+        }
+    }
+
     @Override
     public InteractionResult use(Level worldIn, Player playerIn, InteractionHand hand) { // port-26.1.2: InteractionResultHolder удалён
+        if (PatchouliCompat.isLoaded()) {
+            if (playerIn instanceof ServerPlayer player) PatchouliCompat.openGuide(player);
+            return InteractionResult.SUCCESS;
+        }
         if (worldIn.isClientSide()) {
             openPIGui();
         }
         return super.use(worldIn, playerIn, hand);
     }
-
 
     public static void openPIGui() {
         if (PIHelper.isInstalled()) {

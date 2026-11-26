@@ -1,0 +1,30 @@
+{
+  "name": "Entity Detector",
+  "icon": "draconicevolution:entity_detector",
+  "category": "draconicevolution:machines",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)Entity Detector$() scans the area around it at a set interval and gives a redstone signal based on how many matching entities it finds.$(br2)$(li)$(l)Basic$(): range 1-16 blocks, scans every 1.5 to 60 seconds, filters players and hostile mobs."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:entity_detector",
+      "recipe2": "draconicevolution:entity_detector_advanced"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)$(l)Advanced$(): range up to 64 blocks, scans as often as every 0.25 seconds, and has the full filter: mob types, specific players, items and more.$(br2)Both store 512,000 OP and need power."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Signal and cost",
+      "text": "Each scan costs energy, and it rises steeply with range: about 4,000 OP at range 10 and 64,000 OP at range 64. Keep the range as small as the job allows.$(br2)$(li)$(l)RS Min / RS Max$(): set the entity counts that give the weakest and strongest signal. Set both to the same number for a plain on/off signal once that many are found."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)$(l)Pulse mode$(): sends a short pulse after each scan instead of a steady signal."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Disenchanter",
+  "icon": "draconicevolution:disenchanter",
+  "category": "draconicevolution:machines",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Moves enchantments from an item onto books, one at a time, for experience levels.$(br2)Put the enchanted item in the first slot and plain $(item)Books$() in the second, then pick the enchantment to remove. It comes out as an enchanted book; the output slot must be empty."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:disenchanter"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Cost per enchantment level: 7 levels for one-level enchantments, 4 for those that max at II, and 3 for the rest. Sharpness V costs 15 levels.$(br2)Removing an enchantment also lowers the item's anvil repair cost."
+    }
+  ]
+}

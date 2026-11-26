@@ -1,0 +1,26 @@
+{
+  "name": "Energy I/O Crystals",
+  "icon": "draconicevolution:basic_io_crystal",
+  "category": "draconicevolution:energy_network",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "An I/O crystal attaches to the face of the block you place it on: a machine, a cable, a generator or a pylon. $(l)Shift-right-click$() it with an empty hand to switch mode:$(li)$(3)Input from Block$(): accepts energy the block pushes into it. Use this on generators and on pylons set to output.$(li)$(6)Output to Block$(): pushes network energy into the block."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:machines/basic_io_crystal",
+      "recipe2": "draconicevolution:machines/basic_relay_crystal_combine"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "An input crystal does not pull. The block it sits on has to push energy out."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Links",
+      "text": "$(li)Basic: 2 links$(li)Wyvern: 3 links$(li)Draconic: 4 links$(br2)With so few links, I/O crystals are usually linked to a relay crystal rather than to each other.$(br2)One relay crystal crafts into two I/O crystals of the same tier, and two I/O crystals craft back into one relay."
+    }
+  ]
+}

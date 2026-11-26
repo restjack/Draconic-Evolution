@@ -14,6 +14,16 @@ index 5e68ef0..1813d65 100644
  repositories {
      mavenLocal()
      maven { url "https://maven.covers1624.net/" }
+diff --git a/gradle.properties b/gradle.properties
+index 9125669..0dc45ed 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -12,4 +12,4 @@ neo_version_range=[26.1.2.122,26.2)
+ loader_version_range=[1,)
+ 
+ mod_id=brandonscore
+-mod_version=3.2.1+26.1.2-port.1
++mod_version=3.2.1+26.1.2-port.2
 diff --git a/src/main/java/com/brandon3055/brandonscore/blocks/TileBCore.java b/src/main/java/com/brandon3055/brandonscore/blocks/TileBCore.java
 index 227c374..f884c2b 100644
 --- a/src/main/java/com/brandon3055/brandonscore/blocks/TileBCore.java
@@ -36,6 +46,30 @@ index 227c374..f884c2b 100644
          readExtraNBT(tag);
          onTileLoaded();
      }
+diff --git a/src/main/java/com/brandon3055/brandonscore/capability/OPWrappers.java b/src/main/java/com/brandon3055/brandonscore/capability/OPWrappers.java
+index 87da753..42dff4d 100644
+--- a/src/main/java/com/brandon3055/brandonscore/capability/OPWrappers.java
++++ b/src/main/java/com/brandon3055/brandonscore/capability/OPWrappers.java
+@@ -47,14 +47,17 @@ public class OPWrappers {
+             }
+         }
+ 
++        // 26.1: IEnergyStorage.of(EnergyHandler) only guesses these from capacity > 0, which says "no" for
++        // zero-buffer cables (e.g. Powah) so nothing was ever pushed into them. Insert/extract already return 0
++        // when the handler refuses, so just let them try.
+         @Override
+         public boolean canExtract() {
+-            return storage.canExtract();
++            return true;
+         }
+ 
+         @Override
+         public boolean canReceive() {
+-            return storage.canReceive();
++            return true;
+         }
+     }
+ }
 diff --git a/src/main/java/com/brandon3055/brandonscore/client/gui/modular/ModularGuiContainer.java b/src/main/java/com/brandon3055/brandonscore/client/gui/modular/ModularGuiContainer.java
 index 83cd2a2..bc9f0b7 100644
 --- a/src/main/java/com/brandon3055/brandonscore/client/gui/modular/ModularGuiContainer.java

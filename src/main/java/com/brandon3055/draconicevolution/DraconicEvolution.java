@@ -47,6 +47,9 @@ public class DraconicEvolution {
         ModularArmorEventHandler.init();
         DraconicNetwork.init(modBus);
         DEEventHandler.init(modBus);
+        // eli.7: since MC 1.21.2 clients only get recipe types the server sends; JEI needs the fusion recipes.
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.OnDatapackSyncEvent e) ->
+                e.sendRecipes(DraconicAPI.FUSION_RECIPE_TYPE.get()));
 
         // port-26.1.2: BC Utils.loadOptionalMod удалён -> ModList.get().isLoaded
         if (ModList.get().isLoaded("computercraft")) {

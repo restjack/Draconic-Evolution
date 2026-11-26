@@ -1,0 +1,76 @@
+{
+  "name": "Injectors",
+  "icon": "draconicevolution:wyvern_crafting_injector",
+  "category": "draconicevolution:fusion_crafting",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Injectors hold the ingredients of a fusion recipe, one stack each. There are four tiers:$(li)$(item)Draconium$() (basic)$(li)$(item)Wyvern$()$(li)$(item)Draconic$()$(li)$(item)Chaotic$()"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Every recipe has a tier, shown in JEI. $(l)Every injector that holds an item$() must be that tier or higher, or the core reports that the injector tier is too low. Lower-tier injectors can stay in the setup as long as they are empty.$(br2)Higher tiers also charge and craft faster."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Using injectors",
+      "text": "Right-click an injector with an item to insert it; right-click again with an empty hand to take it back.$(br2)$(l)Shift-right-click$() with an empty hand toggles $(l)single item mode$(). In that mode the injector accepts only one item, which stops automation from overfilling it. Stack mode is the default."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:machines/basic_crafting_injector",
+      "text": "The basic injector, crafted normally."
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Wyvern Fusion Crafting Injector",
+      "result": "draconicevolution:wyvern_crafting_injector",
+      "catalyst": "draconicevolution:basic_crafting_injector",
+      "info": "Draconium (basic injectors), 32k OP",
+      "i0": "draconicevolution:wyvern_core",
+      "i1": "tag:c:gems/diamond",
+      "i2": "draconicevolution:draconium_core",
+      "i3": "tag:c:gems/diamond",
+      "i4": "draconicevolution:draconium_core",
+      "i5": "tag:c:gems/diamond",
+      "i6": "tag:c:storage_blocks/draconium",
+      "i7": "tag:c:gems/diamond"
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Draconic Fusion Crafting Injector",
+      "result": "draconicevolution:awakened_crafting_injector",
+      "catalyst": "draconicevolution:wyvern_crafting_injector",
+      "info": "Wyvern injectors, 256k OP",
+      "i0": "tag:c:gems/diamond",
+      "i1": "tag:c:gems/diamond",
+      "i2": "draconicevolution:wyvern_core",
+      "i3": "tag:c:storage_blocks/draconium_awakened",
+      "i4": "draconicevolution:wyvern_core",
+      "i5": "tag:c:gems/diamond",
+      "i6": "tag:c:gems/diamond"
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Chaotic Fusion Crafting Injector",
+      "result": "draconicevolution:chaotic_crafting_injector",
+      "catalyst": "draconicevolution:awakened_crafting_injector",
+      "info": "Draconic (awakened) injectors, 8M OP",
+      "i0": "tag:c:gems/diamond",
+      "i1": "tag:c:gems/diamond",
+      "i2": "draconicevolution:large_chaos_frag",
+      "i3": "draconicevolution:large_chaos_frag",
+      "i4": "draconicevolution:large_chaos_frag",
+      "i5": "draconicevolution:large_chaos_frag",
+      "i6": "minecraft:dragon_egg",
+      "i7": "tag:c:gems/diamond",
+      "i8": "tag:c:gems/diamond"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Upgrading",
+      "text": "The Chaotic injector uses a $(item)Dragon Egg$() and Large Chaos Fragments from the $(l:endgame/chaos_guardian)Chaos Guardian$(/l). Each tier is made from the one below it, so you need at least one injector of a tier before you can make the next one."
+    }
+  ]
+}

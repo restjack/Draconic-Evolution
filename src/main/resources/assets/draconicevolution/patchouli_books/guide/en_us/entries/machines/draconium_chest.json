@@ -1,0 +1,38 @@
+{
+  "name": "Draconium Chest",
+  "icon": "draconicevolution:draconium_chest",
+  "category": "draconicevolution:machines",
+  "sortnum": 8,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A large chest with 260 slots, a built-in crafting grid and a five-slot electric furnace.$(br2)The furnace runs on energy (1 million OP buffer), supplied by cables or by a charged item in its energy slot. A slider sets the speed. Faster smelting costs much more energy, so turn it down if power is short."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The chest's colour can be changed in its screen."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The furnace",
+      "text": "$(l)Auto feed$() moves smeltable items from the chest into the furnace:$(li)$(l)Off$()$(li)$(l)All$(): fills the furnace with anything smeltable.$(li)$(l)Filter$(): only tops up the item types already in the furnace.$(li)$(l)Sticky filter$(): like Filter, but leaves one item in each slot so the filter stays set.$(br2)Smelted items go straight into the chest. Shulker boxes, bags and other Draconium Chests cannot be stored in it."
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Draconium Chest",
+      "result": "draconicevolution:draconium_chest",
+      "catalyst": "minecraft:chest",
+      "info": "Draconium (basic injectors), 2M OP",
+      "i0": "minecraft:furnace",
+      "i1": "draconicevolution:draconium_core",
+      "i2": "minecraft:furnace",
+      "i3": "draconicevolution:draconium_core",
+      "i4": "minecraft:furnace",
+      "i5": "minecraft:crafting_table",
+      "i6": "minecraft:furnace",
+      "i7": "tag:c:storage_blocks/draconium",
+      "i8": "minecraft:furnace",
+      "i9": "minecraft:crafting_table"
+    }
+  ]
+}

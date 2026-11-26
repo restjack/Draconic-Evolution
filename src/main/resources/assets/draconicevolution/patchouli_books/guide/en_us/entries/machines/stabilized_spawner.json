@@ -1,0 +1,40 @@
+{
+  "name": "Stabilized Spawner",
+  "icon": "draconicevolution:stabilized_spawner",
+  "category": "draconicevolution:machines",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Right-click a vanilla mob spawner with any of the four $(l:getting_started/cores)Cores$(/l). The core is used up, and the spawner pops out as a $(item)Stabilized Mob Spawner$() of the same tier, set to the same mob.$(br2)To change the tier, right-click it with a different core; the old core drops out. To change the mob, right-click it with a $(item)Soul$() or a spawn egg."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "A redstone signal turns it off. Breaking a placed spawner loses its mob."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tiers",
+      "text": "$(li)$(l)Draconium$(): up to 4 mobs every 10-40 s; needs a player within 24 blocks; normal spawn rules apply.$(li)$(l)Wyvern$(): up to 6 every 5-20 s; no player needed.$(li)$(l)Draconic$(): up to 8 every 2.5-10 s; ignores light and ground rules.$(li)$(l)Chaotic$(): up to 12 every 1.25-5 s; ignores spawn rules."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Mobs appear within 4 blocks. From Wyvern up they never despawn. A spawner stops while too many of its mob are nearby."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "draconicevolution:mob_soul",
+      "title": "Souls",
+      "text": "A $(item)Soul$() sometimes drops when a player kills a mob with a $(l)Reaper$() weapon. The base chance is 1 in 1000 (1 in 800 for animals), divided by the weapon's Reaper level. Bosses drop no souls."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Using souls",
+      "text": "The $(item)Reaper$() enchantment goes up to V. Wyvern, Draconic and Chaotic swords, axes, bows and staffs count as Reaper 1, 2 and 3, added to any enchantment.$(br2)Example: a Draconic sword (Reaper 2) with Reaper V is level 7, so about 1 in 142 for monsters.$(br2)Besides setting a spawner, a Soul can spawn its mob directly: shift-right-click a block with it. This uses up the Soul."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Server owners can block mobs from dropping souls and from spawners with the $(l)spawnerList$() config."
+    }
+  ]
+}

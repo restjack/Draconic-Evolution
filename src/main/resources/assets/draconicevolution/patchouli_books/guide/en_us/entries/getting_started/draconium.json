@@ -1,0 +1,49 @@
+{
+  "name": "Draconium",
+  "icon": "draconicevolution:draconium_ingot",
+  "category": "draconicevolution:getting_started",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(item)Draconium$() is the base metal of the mod: nearly every Draconic Evolution recipe uses it somewhere, directly or through a $(l:getting_started/cores)Core$(/l).$(br2)It comes as ore, $(item)Dust$(), $(item)Nuggets$(), $(item)Ingots$() and $(item)Blocks$(). Ore drops dust, and dust smelts 1:1 into ingots. Nine nuggets make an ingot and nine ingots make a block, and both go back the other way."
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "draconicevolution:components/draconium_ingot_from_dust",
+      "recipe2": "draconicevolution:components/draconium_ingot_from_ore"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where to find it",
+      "text": "Draconium ore generates in three dimensions:$(li)$(l)Overworld$(): deep down at Y -64 to -48, in roughly one chunk out of ten, as small veins in stone or deepslate.$(li)$(l)Nether$(): Y 4 to 16, about one chunk in thirty, but in big veins.$(li)$(l)End$(): three small veins in every chunk, Y 0 to 70, on the main island and the outer islands."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "On this server Overworld ore is rare. $(l)The End is the main source$(), so plan your Draconium trips there."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "draconicevolution:end_draconium_ore",
+      "title": "Mining",
+      "text": "Mine any of the ores with a pickaxe. Each one drops 2 to 4 $(item)Draconium Dust$(), and Fortune adds up to one more per level.$(br2)Silk Touch gives the ore block, which smelts into only one ingot, so Fortune is the better choice."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Other sources",
+      "text": "Killing the $(item)Ender Dragon$() also drops a large pile of Draconium Dust (about 64 by default), and a $(item)Dragon Heart$() for $(l:getting_started/awakened_draconium)Awakened Draconium$(/l).$(br2)On this server, $(item)Mystical Agriculture$() can also turn Draconium Essence into ingots; check JEI.$(br2)A $(item)Draconium Block$() resists the Wither and the Ender Dragon, and next to an enchanting table it counts as four bookshelves."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:compress/draconium_block",
+      "recipe2": "draconicevolution:decompress/draconium_ingot",
+      "text": "Nine ingots to a block."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:decompress/draconium_nugget",
+      "recipe2": "draconicevolution:compress/draconium_ingot",
+      "text": "Ingots split into nine nuggets, and nine nuggets go back into an ingot."
+    }
+  ]
+}

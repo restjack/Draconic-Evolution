@@ -1,0 +1,75 @@
+{
+  "name": "Building the Reactor",
+  "icon": "draconicevolution:reactor_stabilizer",
+  "category": "draconicevolution:endgame",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Layout",
+      "text": "Place the $(item)Draconic Reactor Core$() first. Then put four $(item)Reactor Stabilizers$() in a ring around it, all on one plane: north, south, east and west, or above, below and two sides. Each one must be in a straight line with the core, 4 to 7 blocks away, with nothing in between."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "One of the two sides that are left takes a $(item)Reactor Energy Injector$(). You can put a second injector on the last side."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Facing and linking",
+      "text": "Reactor parts face the player who places them, like a piston. Stand on the core side of the spot when you place each one, so its front points at the core. A part that faces the core links by itself; right-click any linked part to open the reactor screen.$(br2)The screen shows $(l)Invalid Setup$() until all four stabilizers face the core. Energy goes into the back of the injector and comes out of the back of each stabilizer."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Keep it clear",
+      "text": "The core swells as it heats, to about 6 blocks across with a full load. Any block that ends up inside it slowly burns away. The 4-block minimum keeps the stabilizers and injectors outside that sphere; do not put anything else closer.$(br2)Plan the wiring for big numbers: a full-size reactor can move hundreds of thousands to millions of OP per tick. Use high-tier $(l:energy_network/crystals)Energy Crystals$(/l) or cables that can carry that much."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:machines/reactor_prt_stab_frame",
+      "recipe2": "draconicevolution:machines/reactor_prt_focus_ring",
+      "text": "Stabilizer parts. JEI shows every recipe here too."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:machines/reactor_prt_in_rotor",
+      "recipe2": "draconicevolution:machines/reactor_prt_out_rotor"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:machines/reactor_prt_rotor_full",
+      "text": "The rotor assembly combines both rotors."
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Reactor Stabilizer",
+      "result": "draconicevolution:reactor_stabilizer",
+      "catalyst": "draconicevolution:reactor_prt_stab_frame",
+      "info": "Chaotic injectors, 16M OP",
+      "i0": "draconicevolution:draconic_energy_core",
+      "i1": "draconicevolution:reactor_prt_rotor_full",
+      "i2": "draconicevolution:reactor_prt_focus_ring",
+      "i3": "tag:c:ingots/draconium_awakened",
+      "i4": "tag:c:ingots/draconium_awakened",
+      "i5": "draconicevolution:chaotic_core",
+      "i6": "tag:c:ingots/draconium_awakened",
+      "i7": "draconicevolution:large_chaos_frag"
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Reactor Energy Injector",
+      "result": "draconicevolution:reactor_injector",
+      "catalyst": "draconicevolution:wyvern_core",
+      "info": "Chaotic injectors, 16M OP",
+      "i0": "tag:c:ingots/draconium",
+      "i1": "draconicevolution:reactor_prt_in_rotor",
+      "i2": "draconicevolution:reactor_prt_in_rotor",
+      "i3": "draconicevolution:reactor_prt_in_rotor",
+      "i4": "tag:c:ingots/draconium",
+      "i5": "tag:c:ingots/draconium",
+      "i6": "tag:c:ingots/iron",
+      "i7": "draconicevolution:reactor_prt_in_rotor",
+      "i8": "tag:c:ingots/iron",
+      "i9": "tag:c:ingots/draconium"
+    }
+  ]
+}

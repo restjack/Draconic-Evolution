@@ -1,0 +1,38 @@
+{
+  "name": "Energy Relay Crystals",
+  "icon": "draconicevolution:wyvern_relay_crystal",
+  "category": "draconicevolution:energy_network",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Relay crystals are the hubs of a network. They link only to other crystals (and to portal receptacles), never to machines, but they take many more links than I/O crystals.$(li)Basic: 8 links$(li)Wyvern: 16 links$(li)Draconic: 32 links"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Chain relays to cover long distances. Each hop is limited by its tier's range: 32, 64 or 127 blocks."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:machines/basic_relay_crystal",
+      "recipe2": "draconicevolution:machines/wyvern_relay_crystal",
+      "text": "Wyvern relays are made four at a time from basic ones."
+    },
+    {
+      "type": "draconicevolution:fusion",
+      "title": "Draconic Energy Relay Crystal",
+      "result": "draconicevolution:draconic_relay_crystal#4",
+      "catalyst": "draconicevolution:wyvern_relay_crystal#4",
+      "info": "Draconic (awakened) injectors, 128k OP",
+      "i0": "draconicevolution:wyvern_energy_core",
+      "i1": "tag:c:gems/diamond",
+      "i2": "draconicevolution:wyvern_core",
+      "i3": "tag:c:gems/diamond",
+      "i4": "draconicevolution:wyvern_energy_core",
+      "i5": "draconicevolution:wyvern_energy_core",
+      "i6": "tag:c:gems/diamond",
+      "i7": "tag:c:gems/diamond",
+      "i8": "draconicevolution:wyvern_energy_core"
+    }
+  ]
+}

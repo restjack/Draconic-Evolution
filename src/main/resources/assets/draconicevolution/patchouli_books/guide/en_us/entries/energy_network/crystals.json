@@ -1,0 +1,39 @@
+{
+  "name": "Energy Crystals",
+  "icon": "draconicevolution:basic_relay_crystal",
+  "category": "draconicevolution:energy_network",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Energy crystals move OP without cables. Each crystal has its own buffer, and linked crystals keep sharing energy until they are all at the same charge level, so energy flows from full crystals towards empty ones.$(br2)There are three kinds:$(li)$(l:energy_network/io_crystals)I/O crystals$(/l) sit on a block and move energy in or out.$(li)$(l:energy_network/relay_crystals)Relay crystals$(/l) are hubs with many links."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)$(l:energy_network/wireless_crystals)Wireless crystals$(/l) power machines from a distance."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Linking",
+      "text": "Hold a $(item)Crystal Binder$(). $(l)Shift-right-click$() a crystal to save it to the binder, then right-click another crystal to link the two. Doing the same on an already linked pair breaks the link. Shift-right-click the air to clear the binder."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Both crystals need a free link, the same dimension, and each must be within the other's range. Beams between crystals show energy moving; looking at a crystal shows its charge, links and mode."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tiers",
+      "text": "$(li)Basic: 4M OP buffer, 32 block range$(li)Wyvern: 16M OP, 64 blocks$(li)Draconic: 64M OP, 127 blocks$(br2)Range is a sphere around each crystal, and the shorter range of the two counts. A crystal can pass on its whole buffer every tick, so links are rarely the bottleneck. Link counts are on each crystal's page; higher tiers are crafted from lower ones (see JEI)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Putting it together",
+      "text": "A typical setup: an I/O crystal on each generator or on an $(l:energy_core/pylons)Energy Pylon$(/l), all linked to a relay crystal, and the relay linked to wireless crystals near your machines.$(br2)DE blocks that push energy, including crystals, can feed cables with no buffer (such as Powah's) in this port; older Brandon's Core jars could not."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:tools/crystal_binder"
+    }
+  ]
+}

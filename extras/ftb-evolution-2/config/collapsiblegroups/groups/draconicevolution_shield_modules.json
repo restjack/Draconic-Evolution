@@ -1,0 +1,29 @@
+{
+  "id": "draconicevolution_shield_modules",
+  "name": {
+    "translate": "collapsible_groups.group.draconicevolution_shield_modules",
+    "fallback": "Draconic Evolution: Shield Modules"
+  },
+  "enabled": true,
+  "filter": {
+    "all": [
+      {
+        "type": "item",
+        "namespace": "draconicevolution"
+      },
+      {
+        "item_path_starts_with": "item_"
+      },
+      {
+        "any": [
+          {
+            "item_path_contains": "_shield_"
+          },
+          {
+            "item_path_ends_with": "_undying"
+          }
+        ]
+      }
+    ]
+  }
+}

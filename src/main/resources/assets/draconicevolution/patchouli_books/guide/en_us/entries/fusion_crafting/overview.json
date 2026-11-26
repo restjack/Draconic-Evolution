@@ -1,0 +1,44 @@
+{
+  "name": "Fusion Crafting",
+  "icon": "draconicevolution:crafting_core",
+  "category": "draconicevolution:fusion_crafting",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(item)Fusion Crafting$() is a multiblock crafter that uses energy to merge items. Most advanced Draconic Evolution items are made this way.$(br2)A fusion recipe has three parts:$(li)a $(l)catalyst$(), placed in the $(item)Fusion Crafting Core$()$(li)$(l)ingredients$(), one per $(l:fusion_crafting/injectors)Injector$(/l)$(li)$(l)energy$(), fed into the injectors"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:machines/crafting_core",
+      "text": "The Fusion Crafting Core. See $(l:fusion_crafting/setup)Setup$(/l) for where the injectors go."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "JEI shows every fusion recipe with its tier and energy cost."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Running a craft",
+      "text": "Put the catalyst in the core and the ingredients in the injectors. Open the core: with a valid recipe it shows the result and a start button. A redstone signal on the core also starts the craft.$(br2)A craft runs in two stages:$(li)$(l)Charging$(): each filled injector stores its share of the energy."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)$(l)Crafting$(): the items fly into the core, and the result appears in the core's output slot.$(br2)Every filled injector must be part of the recipe. A spare item in any linked injector means no recipe is found."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Energy and time",
+      "text": "The recipe's energy is split evenly between the ingredients. Each injector charges no faster than its tier allows: about 15 s for Draconium, 11 s for Wyvern, 7 s for Draconic and 3 s for Chaotic injectors. Feeding power faster does not speed it up.$(br2)The crafting stage takes as long as the $(l)lowest tier$() injector in use: 15, 11, 7 or 3 seconds."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Any OP or FE source works, for example $(l:energy_network/crystals)energy crystals$(/l) pointed at the injectors."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Redstone and automation",
+      "text": "A comparator on the core reads its state:$(li)0: no recipe, output empty$(li)1: valid recipe, ready$(li)2 to 3: charging or crafting$(li)15: finished item waiting in the output$(br2)For automation, set the injectors to single item mode (see $(l:fusion_crafting/injectors)Injectors$(/l)), push the catalyst into the core and the ingredients into the injectors, pulse redstone, and pull the result out of the core."
+    }
+  ]
+}

@@ -56,6 +56,7 @@ Output: `.gradle/port-work/Draconic-Evolution/build/libs/` (the mod) and `.gradl
 - **Retrogen:** `extras/ftb-evolution-2/kubejs/` has a KubeJS 8 script pair (`startup_scripts/retrogen_hook.js` + `server_scripts/systems/retrogen.js`). It adds DE's own ore features to old chunks once each, at DE's own rates, and skips brand-new chunks. Copy both, then fully restart.
 - **Chaos Islands** generate every `chaosIslandSeparation` blocks (default 10000) in the End, never at 0,0. With a world border smaller than that, lower it (e.g. `2000`) **before** the End generates, and restart fully; DE reads it at startup only. An already-generated End needs its terrain reset (keep each dimension's `data/` folder, which holds the world border).
 - **Mystical Agriculture** ships a Draconium ore-infusion recipe with an outdated item id. `extras/ftb-evolution-2/kubejs/server_scripts/recipes/draconic_mystical_compat.js` re-adds it with the right one.
+- **JEI tidy-up (client side):** `extras/ftb-evolution-2/config/collapsiblegroups/groups/` has five group files for the Collapsible Groups mod that fold DE's modules into armour, energy, projectile, shield and tool groups in JEI. Copy them into the client's `config/collapsiblegroups/groups/`.
 
 ## Known issues (upstream, not fixed here)
 

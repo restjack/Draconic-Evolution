@@ -1,0 +1,25 @@
+{
+  "name": "Energy Transfuser",
+  "icon": "draconicevolution:energy_transfuser",
+  "category": "draconicevolution:machines",
+  "sortnum": 7,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A charger with four slots, one on each side (north, east, south and west), for items that hold energy. Right-click a side's slot to put an item in or take it out, or use the screen.$(br2)Energy goes in and out through the top and bottom. Each slot has a mode:$(li)$(l)Charge$(): fills the item."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:machines/energy_transfuser"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)$(l)Discharge$(): drains the item, out of the top and bottom and into charging slots.$(li)$(l)Buffer$(): both.$(li)$(l)Disabled$(): ignored."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Automation",
+      "text": "$(l)Balanced mode$() splits incoming energy evenly between the charging slots instead of filling one at a time.$(br2)Pipes and hoppers can insert and remove items on each side. A charging item can be pulled out once full, and a discharging one once empty, which makes simple auto-charging lines easy. Redstone control is set in the screen."
+    }
+  ]
+}

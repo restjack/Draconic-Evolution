@@ -1,0 +1,29 @@
+{
+  "id": "draconicevolution_energy_modules",
+  "name": {
+    "translate": "collapsible_groups.group.draconicevolution_energy_modules",
+    "fallback": "Draconic Evolution: Energy Modules"
+  },
+  "enabled": true,
+  "filter": {
+    "all": [
+      {
+        "type": "item",
+        "namespace": "draconicevolution"
+      },
+      {
+        "item_path_starts_with": "item_"
+      },
+      {
+        "any": [
+          {
+            "item_path_ends_with": "_energy"
+          },
+          {
+            "item_path_ends_with": "_energy_link"
+          }
+        ]
+      }
+    ]
+  }
+}

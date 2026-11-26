@@ -1,0 +1,6 @@
+{
+  "name": "Machines",
+  "description": "Mob grinder, spawner and the smaller utility blocks.",
+  "icon": "draconicevolution:grinder",
+  "sortnum": 5
+}
