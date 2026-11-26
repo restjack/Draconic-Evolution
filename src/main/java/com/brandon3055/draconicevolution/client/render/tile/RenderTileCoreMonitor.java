@@ -397,10 +397,6 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
             }
             if (sideGraph) x1 = x0 + (x1 - x0) * 0.55F;
             float mw = x1 - x0;
-            if (show(TileCoreMonitor.SHOW_HEADER) || show(TileCoreMonitor.SHOW_STATUS)) {
-                header(y, 24, show(TileCoreMonitor.SHOW_HEADER) ? title : "", show(TileCoreMonitor.SHOW_STATUS) ? word : "", CYAN);
-                y += 24 + gap;
-            }
             boolean core = show(TileCoreMonitor.SHOW_RENDER);
             if (show(TileCoreMonitor.SHOW_PERCENT) || core) {
                 float rowH = 64;
