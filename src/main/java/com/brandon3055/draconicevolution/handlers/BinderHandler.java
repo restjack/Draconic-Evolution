@@ -287,8 +287,15 @@ public class BinderHandler {
 
             source.endBatch();
 
+            // eli.8: 26.1 line vertices also need a LineWidth; CCL's outline helper stops at the normal, which left an
+            // unfinished vertex in the shared buffer and crashed the next flush (seen in JourneyMap's waypoint render).
             RenderUtils.bufferCuboidOutline(
-                    new TransformingVertexConsumer(source.getBuffer(DERenderTypes.OUTLINE_TYPE), pStack),
+                    new TransformingVertexConsumer(source.getBuffer(DERenderTypes.OUTLINE_TYPE), pStack) {
+                        @Override
+                        public com.mojang.blaze3d.vertex.VertexConsumer setNormal(float x, float y, float z) {
+                            return super.setNormal(x, y, z).setLineWidth(2F);
+                        }
+                    },
                     cuboid6,
                     0, 0, 0, 1
             );
