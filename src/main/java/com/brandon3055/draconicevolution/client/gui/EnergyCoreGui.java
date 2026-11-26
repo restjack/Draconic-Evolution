@@ -161,15 +161,23 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
         Constraints.size(coreInvalidLabel, playInv.container().xSize(), 8);
         Constraints.placeOutside(coreInvalidLabel, title, Constraints.LayoutPos.BOTTOM_CENTER, 0, 5);
 
+        // eli.8 (upstream TODO in TileEnergyCore.isCoreValidForTier): say which blocks are wrong; details on hover.
+        GuiText badCount = new GuiText(root).setTextSupplier(() -> structureCount(tile))
+                .setTooltip(() -> structureDetails(tile), 0)
+                .setEnabled(() -> !tile.active.get() && !tile.coreValid.get());
+        Constraints.size(badCount, playInv.container().xSize(), 8);
+        Constraints.placeOutside(badCount, coreInvalidLabel, Constraints.LayoutPos.BOTTOM_CENTER, 0, 5);
+
         GuiText stabInvalidLabel = TOOLKIT.createHeading(root, TOOLKIT.translate("stabilizers_invalid").withStyle(RED))
                 .setEnabled(() -> !tile.active.get() && !tile.stabilizersValid.get());
         Constraints.size(stabInvalidLabel, playInv.container().xSize(), 8);
-        Constraints.placeOutside(stabInvalidLabel, coreInvalidLabel, Constraints.LayoutPos.BOTTOM_CENTER, 0, 5);
+        Constraints.placeOutside(stabInvalidLabel, badCount, Constraints.LayoutPos.BOTTOM_CENTER, 0, 5);
 
         GuiText stabAdvLabel = TOOLKIT.createHeading(root, TOOLKIT.translate("stabilizers_advanced"))
                 .setEnabled(() -> !tile.active.get() && !tile.stabilizersValid.get() && tile.reqAdvStabilizers());
         Constraints.size(stabAdvLabel, playInv.container().xSize(), 8);
         Constraints.placeOutside(stabAdvLabel, stabInvalidLabel, Constraints.LayoutPos.BOTTOM_CENTER, 0, 5);
+
 
         //Display
         GuiRectangle display = toolTipBackground(root, 0xF0100010, () -> tile.tier.get() == 8 ? 0xFFFF5500 : 0xFF8800FF)
@@ -272,6 +280,23 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
                         : "Block effects OFF - only for you. Click to show them again."));
         Constraints.placeOutside(effects, setColour, Constraints.LayoutPos.MIDDLE_LEFT, 0, 0);
 
+        // eli.8: rate history graph (net OP/t, one bar per 5 s, last 5 minutes) in a panel right of the screen.
+        GuiButton graphButton = TOOLKIT.createThemedIconButton(root, 12, DEGuiTextures.getter("rate_graph"))
+                .setEnabled(tile.active::get)
+                .onPress(() -> showGraph = !showGraph)
+                .setToggleMode(() -> showGraph)
+                .setTooltipSingle(() -> Component.literal(showGraph ? "Hide the rate history" : "Show the rate history (last 5 minutes)"));
+        Constraints.placeOutside(graphButton, effects, Constraints.LayoutPos.MIDDLE_LEFT, 0, 0);
+
+        GuiRectangle graph = new GuiRectangle(root) {
+            @Override
+            public void renderBackground(GuiRender render, double mouseX, double mouseY, float partialTicks) {
+                renderRateGraph(render, tile, xMin(), yMin(), xSize(), ySize());
+            }
+        }.setEnabled(() -> showGraph && tile.active.get());
+        Constraints.size(graph, 124, 84);
+        Constraints.placeOutside(graph, display, Constraints.LayoutPos.MIDDLE_RIGHT, 6, 0);
+
         setupColourPickers(gui.getDirectRoot(), tile);
     }
 
@@ -315,6 +340,71 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
         Constraints.size(tag, dialog.xSize(), 11);
         Constraints.placeOutside(tag, dialog, Constraints.LayoutPos.TOP_CENTER, 0, -1);
         Constraints.bind(new GuiText(tag, Component.literal(text).withStyle(GOLD)), tag, 1);
+    }
+
+    private static boolean showGraph = false;
+    private static long problemCheckedAt = -1;
+    private static java.util.List<com.brandon3055.brandonscore.multiblock.InvalidPart> problems = java.util.List.of();
+
+    private static java.util.List<com.brandon3055.brandonscore.multiblock.InvalidPart> structureProblems(TileEnergyCore tile) {
+        var level = tile.getLevel();
+        var def = tile.getMultiBlockDef();
+        if (level == null || def == null) return java.util.List.of();
+        if (level.getGameTime() - problemCheckedAt >= 20 || level.getGameTime() < problemCheckedAt) { // re-test once a second
+            problemCheckedAt = level.getGameTime();
+            problems = def.test(level, tile.getBlockPos());
+        }
+        return problems;
+    }
+
+    private static Component structureCount(TileEnergyCore tile) {
+        int n = structureProblems(tile).size();
+        return n == 0 ? Component.empty() : Component.literal(n + (n == 1 ? " block" : " blocks") + " wrong (hover)").withStyle(GOLD);
+    }
+
+    /** "X Y Z: needs Draconium Block (has Stone)" for the first few problems. */
+    private static java.util.List<Component> structureDetails(TileEnergyCore tile) {
+        var list = structureProblems(tile);
+        var out = new java.util.ArrayList<Component>();
+        for (var part : list.subList(0, Math.min(6, list.size()))) {
+            var pos = part.pos();
+            var have = tile.getLevel().getBlockState(pos);
+            var need = part.expected().validBlocks().stream().findFirst().map(b -> (Component) b.getName()).orElse(Component.literal("air"));
+            out.add(Component.literal(pos.getX() + " " + pos.getY() + " " + pos.getZ() + ": needs ").withStyle(GRAY)
+                    .append(need.copy().withStyle(YELLOW))
+                    .append(Component.literal(have.isAir() ? " (empty)" : " (has ").withStyle(GRAY))
+                    .append(have.isAir() ? Component.empty() : have.getBlock().getName().copy().withStyle(RED))
+                    .append(Component.literal(have.isAir() ? "" : ")").withStyle(GRAY)));
+        }
+        if (list.size() > 6) out.add(Component.literal("...and " + (list.size() - 6) + " more").withStyle(GRAY));
+        out.add(Component.literal(tile.buildGuide.get() ? "Wrong blocks have red boxes." : "Turn on Build Guide to see them in the world.").withStyle(DARK_AQUA));
+        return out;
+    }
+
+    private static void renderRateGraph(GuiRender render, TileEnergyCore tile, double x, double y, double w, double h) {
+        render.toolTipBackground(x, y, w, h, 0xF0100010, 0xF0100010, 0xFF8800FF, 0xFF440080, false);
+        long[] hist = tile.clientRateHistory;
+        render.drawString("Net OP/t, last 5 min", x + 4, y + 4, 0xFF55FFFF, false);
+        double gx = x + 4, gy = y + 16, gw = w - 8, gh = h - 30, mid = gy + gh / 2;
+        render.fill(gx, mid, gx + gw, mid + 1, 0x60FFFFFF);
+        if (hist.length == 0) {
+            render.drawString("Collecting... (one bar / 5 s)", x + 4, mid + 4, 0xFFAAAAAA, false);
+            return;
+        }
+        long max = 1;
+        for (long v : hist) max = Math.max(max, Math.abs(v));
+        double bar = gw / TileEnergyCore.HISTORY_SAMPLES;
+        int offset = TileEnergyCore.HISTORY_SAMPLES - hist.length; // newest sample on the right
+        for (int i = 0; i < hist.length; i++) {
+            double bh = (gh / 2) * Math.abs(hist[i]) / (double) max;
+            double bx = gx + (offset + i) * bar;
+            if (hist[i] > 0) render.fill(bx, mid - bh, bx + Math.max(1, bar - 0.5), mid, 0xFF40E060);
+            else if (hist[i] < 0) render.fill(bx, mid + 1, bx + Math.max(1, bar - 0.5), mid + 1 + bh, 0xFFE04040);
+        }
+        render.drawString("±" + Utils.formatNumber(max), x + 4, y + h - 12, 0xFFAAAAAA, false);
+        long last = hist[hist.length - 1];
+        String now = "now " + (last > 0 ? "+" : "") + Utils.formatNumber(last);
+        render.drawString(now, x + w - 4 - render.font().width(now), y + h - 12, last > 0 ? 0xFF40E060 : last < 0 ? 0xFFE04040 : 0xFFAAAAAA, false);
     }
 
     private double getEnergyDouble(TileEnergyCore tile) {

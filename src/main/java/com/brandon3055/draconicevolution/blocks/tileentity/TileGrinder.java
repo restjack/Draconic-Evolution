@@ -180,7 +180,50 @@ public class TileGrinder extends TileBCore implements IRSSwitchable, MenuProvide
 
     public static void register(RegisterCapabilitiesEvent event) {
         com.brandon3055.brandonscore.capability.CapabilityOP.registerBlockEntity(event, DEContent.TILE_GRINDER.get());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, DEContent.TILE_GRINDER.get(), (tile, side) -> tile.xpFluid);
     }
+
+    // eli.8 (upstream #1955): stored XP can be piped out as liquid XP, which the tooltip always promised.
+    // Any fluid in c:experience is accepted on extract (20 mB per XP point, the NeoForge convention);
+    // the first source fluid in that tag is the one advertised to pipes and tanks.
+    public static final int MB_PER_XP = 20;
+    private int pendingXP;
+    private final net.neoforged.neoforge.transfer.transaction.SnapshotJournal<Integer> xpJournal = new net.neoforged.neoforge.transfer.transaction.SnapshotJournal<>() {
+        @Override protected Integer createSnapshot() { return pendingXP; }
+        @Override protected void revertToSnapshot(Integer snapshot) { pendingXP = snapshot; }
+        @Override protected void onRootCommit(Integer original) { storedXP.set(pendingXP); }
+    };
+
+    private static boolean isXpFluid(net.neoforged.neoforge.transfer.fluid.FluidResource resource) {
+        return !resource.isEmpty() && resource.getFluid().isSource(resource.getFluid().defaultFluidState())
+                && resource.getFluid().builtInRegistryHolder().is(net.neoforged.neoforge.common.Tags.Fluids.EXPERIENCE);
+    }
+
+    private static net.neoforged.neoforge.transfer.fluid.FluidResource defaultXpFluid() {
+        for (var holder : net.minecraft.core.registries.BuiltInRegistries.FLUID.getTagOrEmpty(net.neoforged.neoforge.common.Tags.Fluids.EXPERIENCE)) {
+            var resource = net.neoforged.neoforge.transfer.fluid.FluidResource.of(holder.value());
+            if (isXpFluid(resource)) return resource;
+        }
+        return net.neoforged.neoforge.transfer.fluid.FluidResource.EMPTY;
+    }
+
+    public final net.neoforged.neoforge.transfer.ResourceHandler<net.neoforged.neoforge.transfer.fluid.FluidResource> xpFluid = new net.neoforged.neoforge.transfer.ResourceHandler<>() {
+        @Override public int size() { return 1; }
+        @Override public net.neoforged.neoforge.transfer.fluid.FluidResource getResource(int index) { return storedXP.get() > 0 ? defaultXpFluid() : net.neoforged.neoforge.transfer.fluid.FluidResource.EMPTY; }
+        @Override public long getAmountAsLong(int index) { return (long) storedXP.get() * MB_PER_XP; }
+        @Override public long getCapacityAsLong(int index, net.neoforged.neoforge.transfer.fluid.FluidResource resource) { return (long) getXPStorageCapacity() * MB_PER_XP; }
+        @Override public boolean isValid(int index, net.neoforged.neoforge.transfer.fluid.FluidResource resource) { return isXpFluid(resource); }
+        @Override public int insert(int index, net.neoforged.neoforge.transfer.fluid.FluidResource resource, int amount, net.neoforged.neoforge.transfer.transaction.TransactionContext transaction) { return 0; }
+        @Override public int extract(int index, net.neoforged.neoforge.transfer.fluid.FluidResource resource, int amount, net.neoforged.neoforge.transfer.transaction.TransactionContext transaction) {
+            net.neoforged.neoforge.transfer.TransferPreconditions.checkNonEmptyNonNegative(resource, amount);
+            if (index != 0 || !isXpFluid(resource)) return 0;
+            if (!xpJournal.isInTransaction()) pendingXP = storedXP.get();
+            xpJournal.updateSnapshots(transaction);
+            int xp = Math.min(amount / MB_PER_XP, pendingXP);
+            pendingXP -= xp;
+            return xp * MB_PER_XP;
+        }
+    };
 
     private boolean canExtractItem(int slot, ItemStack stack) {
         return EnergyUtils.isEmptyOrInvalid(stack);

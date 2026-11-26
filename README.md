@@ -16,9 +16,11 @@
 | JEI fusion recipes | The port only had EMI support. The server now sends fusion recipes to clients (needed since MC 1.21.2) and a JEI category shows them. Needs this build on the server too. |
 | Energy core quality of life | Jade tooltips for the core, pylons and stabilizers (Shift for in/out and time to full/empty). The core screen shows stored / capacity, In, Out, Net and time to full or empty. Pylons name their mode on the action bar when toggled and are green (input) or red (output). Labelled colour pickers. Client option `blockEffectRenderDistance` limits how far core effects are drawn. Core blocks are tagged `c:relocation_not_supported`, so AE2 Spatial IO won't move them (upstream crash #1931). |
 | In-game guide | A Patchouli book, *Draconic Evolution Guide* (39 entries: getting started, fusion crafting, energy core, energy transport, gear and modules, machines, endgame, this port). Crafted from a Book and Draconium Dust; the Information Tablet opens it too. Written fresh for this port from the facts in the old Project Intelligence docs. |
+| More upstream bug fixes | Crafted modular items (e.g. capacitors from AE2 automation) now stack: no random hidden id until a module screen needs one (upstream #2040). Auto-Feed no longer eats infinite foods (durability foods, plus item tag `draconicevolution:auto_feed_blacklist`; #2017). The Mob Grinder's stored XP can be piped out as any `c:experience` liquid XP at 20 mB per point (#1955). |
+| Energy core screen extras | Graph button: net OP/t over the last 5 minutes. A core that isn't built right shows how many blocks are wrong; hover for positions and what each spot needs. |
 | Upstream 1.21 fixes (open PRs [#2044](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2044), [#2046](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2046), [#2050](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2050), [#2051](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2051), [#2052](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2052), [#2053](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2053)) | Stabilizer disintegration, Draconium Chest losing shift-clicked items, constant module re-saves, night-vision packet spam, crystals/pylons/reactors keeping far chunks loaded, crystal network spam, dislocator limits. #2052 is adapted to the port; #2053's arena-check commit is left out on purpose (it can stop the guardian spawning on servers with view distance < 8). |
 
-Mod version string: `3.1.4-port.3-eli.7` (Brandon's Core `3.2.1+26.1.2-port.2`). Needs NeoForge **26.1.2.126 or newer** (below 26.2), Minecraft 26.1.2, Java 25.
+Mod version string: `3.1.4-port.3-eli.8` (Brandon's Core `3.2.1+26.1.2-port.2`). Needs NeoForge **26.1.2.126 or newer** (below 26.2), Minecraft 26.1.2, Java 25.
 
 ## Installing
 
@@ -26,7 +28,7 @@ There are **no prebuilt downloads**. Draconic Evolution's licence does not allow
 
 | File (from the build) | Provides |
 | --- | --- |
-| `Draconic-Evolution-26.1.2-3.1.4-port.3-eli.7.jar` | Draconic Evolution |
+| `Draconic-Evolution-26.1.2-3.1.4-port.3-eli.8.jar` | Draconic Evolution |
 | `BrandonsCore-3.2.1+26.1.2-port.2.jar` | Brandon's Core |
 | `codechickenlib-4.7.0+26.1.2-port.2.jar` | CodeChickenLib |
 

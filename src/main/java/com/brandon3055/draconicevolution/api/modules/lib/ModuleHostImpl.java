@@ -206,11 +206,13 @@ public class ModuleHostImpl implements ModuleHost, PropertyProvider {
 
     @Override
     public UUID getIdentity() {
-        if (identity == null) {
-            regenIdentity();
-        }
-        return identity;
+        // eli.8 (upstream #2040): no random id until one is needed. Fresh items share UNSET_IDENTITY, so identical
+        // crafted items (e.g. from AE2 automation) still stack; the module/config menus already give duplicates
+        // their own id when opened (IdentityProvider.resolveDuplicateIdentities), which is then saved.
+        return identity == null ? UNSET_IDENTITY : identity;
     }
+
+    public static final UUID UNSET_IDENTITY = new UUID(0L, 0L);
 
     @Override
     public void regenIdentity() {
@@ -297,7 +299,7 @@ public class ModuleHostImpl implements ModuleHost, PropertyProvider {
 
         dataAccess.setter().set(ItemData.MODULE_ENTITIES, FastStream.of(moduleEntities).map(ModuleEntity::copy).toImmutableList(FastStream.infer()));
         dataAccess.setter().set(ItemData.CONFIG_PROPERTIES, FastStream.of(providedProperties).map(ConfigProperty::copy).toImmutableList());
-        dataAccess.setter().set(ItemData.PROVIDER_IDENTITY, getIdentity());
+        if (identity != null) dataAccess.setter().set(ItemData.PROVIDER_IDENTITY, identity);
     }
 
     public void loadData() {
@@ -307,7 +309,7 @@ public class ModuleHostImpl implements ModuleHost, PropertyProvider {
 
         dataAccess.getter().getOrDefault(ItemData.MODULE_ENTITIES, moduleEntities).forEach(e -> moduleEntities.add(e.copy()));
         dataAccess.getter().getOrDefault(ItemData.CONFIG_PROPERTIES, providedProperties).forEach(e -> providedProperties.add(e.copy()));
-        identity = dataAccess.getter().getOrDefault(ItemData.PROVIDER_IDENTITY, getIdentity());
+        identity = dataAccess.getter().get(ItemData.PROVIDER_IDENTITY);
 
         moduleEntities.forEach(e -> e.setHost(this));
         providedProperties.forEach(e -> e.setProvider(this));

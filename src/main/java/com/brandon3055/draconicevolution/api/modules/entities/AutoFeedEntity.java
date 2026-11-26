@@ -127,6 +127,10 @@ public class AutoFeedEntity extends ModuleEntity<AutoFeedData> {
         properties.add(consumeFood);
     }
 
+    public static final net.minecraft.tags.TagKey<net.minecraft.world.item.Item> AUTO_FEED_BLACKLIST =
+            net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM,
+                    net.minecraft.resources.Identifier.fromNamespaceAndPath("draconicevolution", "auto_feed_blacklist"));
+
     @Override
     public void tick(ModuleContext context) {
         AutoFeedData data = module.getData();
@@ -137,7 +141,9 @@ public class AutoFeedEntity extends ModuleEntity<AutoFeedData> {
                     //Do food consumption
                     for (ItemStack stack : player.getInventory().getNonEquipmentItems()) {
                         FoodProperties food = stack.get(DataComponents.FOOD); // port-26.1.2: getFoodProperties удалён
-                        if (!stack.isEmpty() && food != null) {
+                        // eli.8 (upstream #2017): never eat "infinite" foods (Artifacts' Eternal Steak / Everlasting Beef use
+                        // durability) or anything in the draconicevolution:auto_feed_blacklist item tag; shrink(1) would delete them.
+                        if (!stack.isEmpty() && food != null && !stack.isDamageableItem() && !stack.is(AUTO_FEED_BLACKLIST)) {
                             if (food != null && food.nutrition() > 0) { // port-26.1.2: FoodProperties.effects удалены (CONSUMABLE-компонент)
                                 double val = food.nutrition() + food.saturation();
                                 double rem = getStoredFood() + val - data.foodStorage();

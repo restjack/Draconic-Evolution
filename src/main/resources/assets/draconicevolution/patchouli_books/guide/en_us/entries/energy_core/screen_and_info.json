@@ -10,6 +10,11 @@
     },
     {
       "type": "patchouli:text",
+      "title": "History and problems",
+      "text": "The graph button next to the eye opens a panel with the net rate over the last 5 minutes, one bar every 5 seconds: green bars fill the core, red bars drain it.$(br2)While a core is not built correctly, the screen says how many blocks are wrong. Hover over that line to see where they are and what each spot needs."
+    },
+    {
+      "type": "patchouli:text",
       "title": "Effects and safety",
       "text": "The eye button on the core screen hides the core, stabilizer and pylon effects for you only; the blocks keep working. The client config value $(l)blockEffectRenderDistance$() limits how far away they are drawn.$(br2)$(c)Never move a core with AE2 Spatial IO$(): the core, stabilizers and pylons are marked as unmovable for that reason."
     }

@@ -19,7 +19,7 @@
     {
       "type": "patchouli:text",
       "title": "Features",
-      "text": "$(li)$(l)Weapon slot$(): a weapon placed here is used for the kills, so its enchantments apply. It loses durability but never breaks.$(li)$(l)Items$(): drops are pushed into any inventory touching the grinder.$(li)$(l)Experience$(): orbs are stored, up to 8,192 points. Take 1, 5 or 10 levels, or all of it, from the screen."
+      "text": "$(li)$(l)Weapon slot$(): a weapon placed here is used for the kills, so its enchantments apply. It loses durability but never breaks.$(li)$(l)Items$(): drops are pushed into any inventory touching the grinder.$(li)$(l)Experience$(): orbs are stored, up to 8,192 points. Take 1, 5 or 10 levels, or all of it, from the screen, or pipe it out as liquid XP (20 mB per point)."
     },
     {
       "type": "patchouli:text",

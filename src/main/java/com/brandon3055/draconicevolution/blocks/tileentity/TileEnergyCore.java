@@ -101,6 +101,7 @@ public class TileEnergyCore extends TileBCore implements MenuProvider, IInteract
     public static final int MAX_TIER = 8;
     public static final int MSG_TOGGLE_ACTIVATION = 1;
     public static final int MSG_BUILD_CORE = 2;
+    public static final int MSG_RATE_HISTORY = 10;
     public static final int ADV_STABILIZER_TIER = 5;
     public static final int MAX_STABILIZER_DIST = 16;
 
@@ -174,6 +175,53 @@ public class TileEnergyCore extends TileBCore implements MenuProvider, IInteract
             } else {
                 fillPercent.set(((float) energy.getOPStored() / (float) energy.getMaxOPStored()));
             }
+            sampleRateHistory();
+        }
+    }
+
+    // ### Rate history (eli.8): average net OP/t per 5 s sample, last 5 minutes. Not saved; sent to players with the screen open.
+    public static final int HISTORY_SAMPLES = 60, HISTORY_TICKS = 100;
+    private final long[] rateHistory = new long[HISTORY_SAMPLES];
+    private int historyCount, historyTick;
+    private long historySum;
+    /** Client copy, oldest first. */
+    public long[] clientRateHistory = new long[0];
+
+    private void sampleRateHistory() {
+        var io = energy.getIOInfo();
+        if (io != null) historySum += io.currentInput() - io.currentOutput();
+        if (++historyTick < HISTORY_TICKS) return;
+        System.arraycopy(rateHistory, 1, rateHistory, 0, HISTORY_SAMPLES - 1);
+        rateHistory[HISTORY_SAMPLES - 1] = historySum / HISTORY_TICKS;
+        historyCount = Math.min(historyCount + 1, HISTORY_SAMPLES);
+        historySum = 0;
+        historyTick = 0;
+        for (Player player : getAccessingPlayers()) {
+            if (player instanceof ServerPlayer sp) sendRateHistory(sp);
+        }
+    }
+
+    private void sendRateHistory(ServerPlayer player) {
+        sendPacketToClient(player, out -> {
+            out.writeVarInt(historyCount);
+            for (int i = HISTORY_SAMPLES - historyCount; i < HISTORY_SAMPLES; i++) out.writeLong(rateHistory[i]);
+        }, MSG_RATE_HISTORY);
+    }
+
+    @Override
+    public void onPlayerOpenContainer(Player player) {
+        super.onPlayerOpenContainer(player);
+        if (player instanceof ServerPlayer sp) sendRateHistory(sp);
+    }
+
+    @Override
+    public void receivePacketFromServer(MCDataInput data, int id) {
+        if (id == MSG_RATE_HISTORY) {
+            long[] h = new long[data.readVarInt()];
+            for (int i = 0; i < h.length; i++) h[i] = data.readLong();
+            clientRateHistory = h;
+        } else {
+            super.receivePacketFromServer(data, id);
         }
     }
 

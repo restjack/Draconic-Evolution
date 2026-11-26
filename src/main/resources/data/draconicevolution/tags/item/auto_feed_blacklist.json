@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    { "id": "artifacts:eternal_steak", "required": false },
+    { "id": "artifacts:everlasting_beef", "required": false }
+  ]
+}
