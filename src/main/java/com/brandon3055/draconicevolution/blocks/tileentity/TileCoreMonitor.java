@@ -119,7 +119,16 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
         }
         if (!isLinked()) adoptNeighbour();
         if (!isLinked() || !DEConfig.extra("coreMonitor")) return;
-        if (tick % 100 == 1 && isOriginPanel()) pushStatsToNearby();
+        // Only the panel that draws the screen polls the core and syncs the numbers; the rest of the screen just
+        // mirrors its redstone output (on a 4x4 that is 1 poll and 1 sync a second instead of 16).
+        if (!isOriginPanel()) {
+            TileCoreMonitor origin = originPanel();
+            if (origin != this) {
+                updateRedstone(origin);
+                return;
+            }
+        }
+        if (tick % 100 == 1) pushStatsToNearby();
         TileEnergyCore core = findCore();
         if (core == null) {
             loaded.set(false);
@@ -224,8 +233,13 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
     // ### Redstone
 
     private void updateRedstone() {
-        double pct = fillPercent();
-        long net = input.get() - output.get();
+        updateRedstone(this);
+    }
+
+    /** Sets this panel's signal from {@code src}'s numbers (itself, or the screen's origin panel). */
+    private void updateRedstone(TileCoreMonitor src) {
+        double pct = src.fillPercent();
+        long net = src.input.get() - src.output.get();
         int out = switch (redstoneMode.get()) {
             case 1 -> pct < 0 ? 15 : (int) Math.round(Math.min(100, pct) * 15 / 100);
             case 2 -> pct >= 0 && pct < alarmAt.get() ? 15 : 0;
@@ -233,7 +247,7 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
             case 4 -> net < 0 ? 15 : 0;
             default -> 0;
         };
-        if (!loaded.get() && redstoneMode.get() != 1) out = 0;
+        if (!src.loaded.get() && redstoneMode.get() != 1) out = 0;
         if (out != redstoneOut) {
             redstoneOut = out;
             level.updateNeighborsAt(worldPosition, getBlockState().getBlock());

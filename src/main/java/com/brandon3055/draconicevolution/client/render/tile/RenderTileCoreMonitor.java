@@ -5,6 +5,7 @@ import com.brandon3055.draconicevolution.blocks.machines.CoreMonitor;
 import com.brandon3055.draconicevolution.blocks.tileentity.TileCoreMonitor;
 import com.brandon3055.draconicevolution.client.gui.EnergyCoreGui;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -542,6 +543,8 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
     }
 
     // ### Submit
+    // All shapes of one screen go into a single geometry submission (a 4x4 with the core picture is ~150 shapes);
+    // text goes through submitText separately. Everything is opaque, so depth sorts the layers.
 
     @Override
     public void submit(State state, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
@@ -551,16 +554,18 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
         pose.mulPose(Axis.YP.rotationDegrees(-state.facing.toYRot())); // local +Z = facing, +X = viewer's right
         pose.translate(-0.5, state.h - 0.5, 0.5015);
         pose.scale(1F / state.px, -1F / state.px, 1F / state.px); // canvas: x right, y down, mockup pixels
-        for (Object op : state.ops) {
-            if (op instanceof Rect r) {
-                quad(pose, collector, r.x0, r.y0, r.x1, r.y1, r.z, r.colour);
-            } else if (op instanceof Txt tx) {
-                text(pose, collector, tx.text, tx.x, tx.y, tx.size, tx.colour);
-            } else if (op instanceof CoreOp c) {
-                drawCore(pose, collector, c.cx, c.cy, c.k, state.time);
-            } else if (op instanceof GraphOp g) {
-                drawGraph(pose, collector, g);
+        List<Object> ops = List.copyOf(state.ops);
+        float time = state.time;
+        collector.submitCustomGeometry(pose, RenderTypes.textBackground(), (p, vc) -> {
+            for (Object op : ops) {
+                if (op instanceof Rect r) quad(p, vc, r.x0, r.y0, r.x1, r.y1, r.z, r.colour);
+                else if (op instanceof CoreOp c) drawCore(p, vc, c.cx, c.cy, c.k, time);
+                else if (op instanceof GraphOp g) drawGraph(p, vc, g);
             }
+        });
+        for (Object op : ops) {
+            if (op instanceof Txt tx) text(pose, collector, tx.text, tx.x, tx.y, tx.size, tx.colour);
+            else if (op instanceof GraphOp g) graphLabels(pose, collector, g);
         }
         pose.popPose();
     }
@@ -586,44 +591,56 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
 
     // ### Graph: bars (green in, red out) with 15 % headroom and the scale written on the left
 
-    private static void drawGraph(PoseStack pose, SubmitNodeCollector c, GraphOp g) {
-        quad(pose, c, g.x0, g.y0, g.x1, g.y1, Z_BOX, 0xFF3A2450);
-        quad(pose, c, g.x0 + 1, g.y0 + 1, g.x1 - 1, g.y1 - 1, Z_FILL, 0xFF120A18);
+    /** Shared layout of a graph: value range, zero line and plot area. */
+    private record GraphScale(long maxPos, long maxNeg, double up, double down, float labelSize, float gx0, float top, float hgt, float zero) {
+        static GraphScale of(GraphOp g) {
+            long maxPos = 0, maxNeg = 0;
+            for (long v : g.data) { maxPos = Math.max(maxPos, v); maxNeg = Math.max(maxNeg, -v); }
+            // Headroom, and a little room on the empty side so a one-way flow does not glue the zero line to the edge.
+            double up = maxPos > 0 ? maxPos * 1.15 : maxNeg > 0 ? maxNeg * 0.15 : 1;
+            double down = maxNeg > 0 ? maxNeg * 1.15 : maxPos > 0 ? maxPos * 0.15 : 1;
+            float labelSize = Math.max(12, Math.min(16, (g.y1 - g.y0) / 6));
+            float gx0 = g.x0 + 6 + Minecraft.getInstance().font.width("-888.8k") * labelSize / 12F;
+            float top = g.y0 + 4, hgt = g.y1 - 4 - top;
+            return new GraphScale(maxPos, maxNeg, up, down, labelSize, gx0, top, hgt, (float) (top + hgt * up / (up + down)));
+        }
+    }
+
+    private static void drawGraph(PoseStack.Pose p, VertexConsumer vc, GraphOp g) {
+        GraphScale sc = GraphScale.of(g);
+        quad(p, vc, g.x0, g.y0, g.x1, g.y1, Z_BOX, 0xFF3A2450);
+        quad(p, vc, g.x0 + 1, g.y0 + 1, g.x1 - 1, g.y1 - 1, Z_FILL, 0xFF120A18);
+        quad(p, vc, sc.gx0, sc.zero, g.x1 - 2, sc.zero + 1, Z_CORE - 0.2F, 0xFF5A5A66);
+        quad(p, vc, sc.gx0 - 1, sc.top, sc.gx0, sc.top + sc.hgt, Z_CORE - 0.2F, 0xFF3A2450);
         long[] d = g.data;
-        long maxPos = 0, maxNeg = 0;
-        for (long v : d) { maxPos = Math.max(maxPos, v); maxNeg = Math.max(maxNeg, -v); }
-        // Headroom, and a little room on the empty side so a one-way flow doesn't glue the zero line to the edge.
-        double up = maxPos > 0 ? maxPos * 1.15 : maxNeg > 0 ? maxNeg * 0.15 : 1;
-        double down = maxNeg > 0 ? maxNeg * 1.15 : maxPos > 0 ? maxPos * 0.15 : 1;
-        float labelSize = Math.max(12, Math.min(16, (g.y1 - g.y0) / 6));
-        Font font = Minecraft.getInstance().font;
-        float gut = 6 + font.width("-888.8k") * labelSize / 12F;
-        float gx0 = g.x0 + gut, top = g.y0 + 4, bottom = g.y1 - 4, hgt = bottom - top;
-        float zero = (float) (top + hgt * up / (up + down));
-        quad(pose, c, gx0, zero, g.x1 - 2, zero + 1, Z_CORE - 0.2F, 0xFF5A5A66);
-        quad(pose, c, gx0 - 1, top, gx0, bottom, Z_CORE - 0.2F, 0xFF3A2450);
-        // scale labels: the largest value each way and zero
-        text(pose, c, "0", gx0 - 4 - font.width("0") * labelSize / 12F, zero - labelSize / 2, labelSize, GRAY);
-        if (maxPos > 0) {
-            String s = compact((long) (maxPos * g.unitScale));
-            float y = (float) (zero - maxPos / (up + down) * hgt);
-            text(pose, c, s, gx0 - 4 - font.width(s) * labelSize / 12F, Math.max(g.y0 + 1, y - labelSize / 2), labelSize, GREEN);
-        }
-        if (maxNeg > 0) {
-            String s = compact((long) (-maxNeg * g.unitScale));
-            float y = (float) (zero + maxNeg / (up + down) * hgt);
-            text(pose, c, s, gx0 - 4 - font.width(s) * labelSize / 12F, Math.min(g.y1 - labelSize - 1, y - labelSize / 2), labelSize, RED);
-        }
         if (d.length == 0) return;
         int slots = 60;
-        float bw = (g.x1 - gx0 - 4) / slots;
+        float bw = (g.x1 - sc.gx0 - 4) / slots;
         int n = Math.min(slots, d.length), off = slots - n;
         for (int i = 0; i < n; i++) {
             long v = d[d.length - n + i];
-            float bx = gx0 + 2 + (off + i) * bw;
-            float bh = (float) (Math.abs(v) / (up + down) * hgt);
-            if (v > 0) quad(pose, c, bx, zero - bh, bx + bw * 0.72F, zero, Z_CORE, 0xFF55FF55);
-            else if (v < 0) quad(pose, c, bx, zero + 1, bx + bw * 0.72F, zero + 1 + bh, Z_CORE, 0xFFFF5555);
+            float bx = sc.gx0 + 2 + (off + i) * bw;
+            float bh = (float) (Math.abs(v) / (sc.up + sc.down) * sc.hgt);
+            if (v > 0) quad(p, vc, bx, sc.zero - bh, bx + bw * 0.72F, sc.zero, Z_CORE, 0xFF55FF55);
+            else if (v < 0) quad(p, vc, bx, sc.zero + 1, bx + bw * 0.72F, sc.zero + 1 + bh, Z_CORE, 0xFFFF5555);
+        }
+    }
+
+    /** The scale numbers: the largest value each way and zero. */
+    private static void graphLabels(PoseStack pose, SubmitNodeCollector c, GraphOp g) {
+        GraphScale sc = GraphScale.of(g);
+        Font font = Minecraft.getInstance().font;
+        float ls = sc.labelSize;
+        text(pose, c, "0", sc.gx0 - 4 - font.width("0") * ls / 12F, sc.zero - ls / 2, ls, GRAY);
+        if (sc.maxPos > 0) {
+            String s = compact((long) (sc.maxPos * g.unitScale));
+            float y = (float) (sc.zero - sc.maxPos / (sc.up + sc.down) * sc.hgt);
+            text(pose, c, s, sc.gx0 - 4 - font.width(s) * ls / 12F, Math.max(g.y0 + 1, y - ls / 2), ls, GREEN);
+        }
+        if (sc.maxNeg > 0) {
+            String s = compact((long) (-sc.maxNeg * g.unitScale));
+            float y = (float) (sc.zero + sc.maxNeg / (sc.up + sc.down) * sc.hgt);
+            text(pose, c, s, sc.gx0 - 4 - font.width(s) * ls / 12F, Math.min(g.y1 - ls - 1, y - ls / 2), ls, RED);
         }
     }
 
@@ -653,28 +670,26 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
      * Every layer is opaque on purpose: the screen's quads write depth, so a see-through piece drawn before the shape
      * behind it leaves a hole (the dark smears and block-texture holes Eli saw). Glows are blended into BG by hand.
      */
-    private static void drawCore(PoseStack pose, SubmitNodeCollector c, float cx, float cy, float k, float time) {
+    private static void drawCore(PoseStack.Pose p, VertexConsumer vc, float cx, float cy, float k, float time) {
         float pulse = 0.775F + 0.225F * (float) Math.sin(time * Math.PI / 30); // 3 s cycle
         for (int[] d : new int[][]{{0, -1}, {0, 1}, {-1, 0}, {1, 0}}) {
-            line(pose, c, cx + d[0] * 130 * k, cy + d[1] * 130 * k, cx + d[0] * 72 * k, cy + d[1] * 72 * k, 3 * k + 0.5F, Z_FILL + 0.2F,
+            line(p, vc, cx + d[0] * 130 * k, cy + d[1] * 130 * k, cx + d[0] * 72 * k, cy + d[1] * 72 * k, 3 * k + 0.5F, Z_FILL + 0.2F,
                     mix(BG, 0x55FFFF, 0.8F * pulse));
         }
         // halo: a ring outside the sphere only, fading into the background
-        disc(pose, c, cx, cy, 71 * k, 110 * k, mix(BG, 0x8800FF, 0.45F * pulse), 0xFF000000 | BG, Z_FILL);
+        disc(p, vc, cx, cy, 71 * k, 110 * k, mix(BG, 0x8800FF, 0.45F * pulse), 0xFF000000 | BG, Z_FILL);
         // sphere with a baked-in highlight: fan from the hot spot to the rim, orange half way
         float hx = cx - 14 * k, hy = cy - 18 * k, r = 70 * k;
         int seg = 40;
-        c.submitCustomGeometry(pose, RenderTypes.textBackground(), (p, vc) -> {
-            for (int i = 0; i < seg; i++) {
-                double a0 = i * Math.PI * 2 / seg, a1 = (i + 1) * Math.PI * 2 / seg;
-                float rx0 = cx + (float) Math.cos(a0) * r, ry0 = cy + (float) Math.sin(a0) * r;
-                float rx1 = cx + (float) Math.cos(a1) * r, ry1 = cy + (float) Math.sin(a1) * r;
-                float mx0 = hx + (rx0 - hx) * 0.55F, my0 = hy + (ry0 - hy) * 0.55F, mx1 = hx + (rx1 - hx) * 0.55F, my1 = hy + (ry1 - hy) * 0.55F;
-                quad4(p, vc, Z_LINE, hx, hy, 0xFFFFD27A, mx0, my0, 0xFFFF7A1A, mx1, my1, 0xFFFF7A1A, hx, hy, 0xFFFFD27A);
-                quad4(p, vc, Z_LINE, mx0, my0, 0xFFFF7A1A, rx0, ry0, 0xFF7A1200, rx1, ry1, 0xFF7A1200, mx1, my1, 0xFFFF7A1A);
-            }
-        });
-        // Shell: icosahedron wireframe, one turn per 18 s, tilted 25 degrees toward the viewer; back edges dimmer.
+        for (int i = 0; i < seg; i++) {
+            double a0 = i * Math.PI * 2 / seg, a1 = (i + 1) * Math.PI * 2 / seg;
+            float rx0 = cx + (float) Math.cos(a0) * r, ry0 = cy + (float) Math.sin(a0) * r;
+            float rx1 = cx + (float) Math.cos(a1) * r, ry1 = cy + (float) Math.sin(a1) * r;
+            float mx0 = hx + (rx0 - hx) * 0.55F, my0 = hy + (ry0 - hy) * 0.55F, mx1 = hx + (rx1 - hx) * 0.55F, my1 = hy + (ry1 - hy) * 0.55F;
+            quad4(p, vc, Z_LINE, hx, hy, 0xFFFFD27A, mx0, my0, 0xFFFF7A1A, mx1, my1, 0xFFFF7A1A, hx, hy, 0xFFFFD27A);
+            quad4(p, vc, Z_LINE, mx0, my0, 0xFFFF7A1A, rx0, ry0, 0xFF7A1200, rx1, ry1, 0xFF7A1200, mx1, my1, 0xFFFF7A1A);
+        }
+        // Shell: icosahedron wireframe, one turn per 18 s, tilted 25 degrees toward the viewer.
         double a = time / 360D * Math.PI * 2, tilt = Math.toRadians(25);
         float[][] pr = new float[12][3];
         for (int i = 0; i < 12; i++) {
@@ -689,14 +704,14 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
             float depth = (pr[e[0]][2] + pr[e[1]][2]) / 2; // -1 back .. 1 front
             float t = Math.max(0, Math.min(1, (depth + 0.35F) / 0.9F));
             t = t * t * (3 - 2 * t);
-            line(pose, c, pr[e[0]][0], pr[e[0]][1], pr[e[1]][0], pr[e[1]][1], 1.6F * k + 0.4F, Z_CORE + 0.15F * t,
+            line(p, vc, pr[e[0]][0], pr[e[0]][1], pr[e[1]][0], pr[e[1]][1], 1.6F * k + 0.4F, Z_CORE + 0.15F * t,
                     mix(0xFF7A1A, 0xB066FF, 0.22F + 0.78F * t));
         }
-        disc(pose, c, cx, cy, 69.5F * k, 71.5F * k + 0.3F, 0xFFD9B3FF, 0xFFD9B3FF, Z_CORE + 0.2F);
+        disc(p, vc, cx, cy, 69.5F * k, 71.5F * k + 0.3F, 0xFFD9B3FF, 0xFFD9B3FF, Z_CORE + 0.2F);
         for (int[] d : new int[][]{{0, -1}, {0, 1}, {-1, 0}, {1, 0}}) {
             float ox = cx + d[0] * 134 * k, oy = cy + d[1] * 134 * k;
-            disc(pose, c, ox, oy, 0, 7.8F * k, 0xFFE8FFFF, 0xFF3FD4FF, Z_CORE);
-            disc(pose, c, ox, oy, 7.8F * k, 13 * k, 0xFF3FD4FF, 0xFF0A5A7A, Z_CORE);
+            disc(p, vc, ox, oy, 0, 7.8F * k, 0xFFE8FFFF, 0xFF3FD4FF, Z_CORE);
+            disc(p, vc, ox, oy, 7.8F * k, 13 * k, 0xFF3FD4FF, 0xFF0A5A7A, Z_CORE);
         }
     }
 
@@ -711,8 +726,8 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
         return 0xFF000000 | r << 16 | g << 8 | b;
     }
 
-    /** One quad with a colour per corner, both windings. */
-    private static void quad4(PoseStack.Pose p, com.mojang.blaze3d.vertex.VertexConsumer vc, float z, float ax, float ay, int ac, float bx, float by, int bc,
+    /** One quad with a colour per corner, both windings (so face culling can't hide it). */
+    private static void quad4(PoseStack.Pose p, VertexConsumer vc, float z, float ax, float ay, int ac, float bx, float by, int bc,
                               float cx, float cy, int cc, float dx, float dy, int dc) {
         vc.addVertex(p, ax, ay, z).setColor(ac).setLight(FULL_BRIGHT);
         vc.addVertex(p, bx, by, z).setColor(bc).setLight(FULL_BRIGHT);
@@ -725,45 +740,25 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
     }
 
     /** A ring (or a disc when r0 = 0) from r0 to r1, colour fading from c0 inside to c1 outside. */
-    private static void disc(PoseStack pose, SubmitNodeCollector col, float cx, float cy, float r0, float r1, int c0, int c1, float z) {
+    private static void disc(PoseStack.Pose p, VertexConsumer vc, float cx, float cy, float r0, float r1, int c0, int c1, float z) {
         int seg = 32;
-        col.submitCustomGeometry(pose, RenderTypes.textBackground(), (p, vc) -> {
-            for (int i = 0; i < seg; i++) {
-                double a0 = i * Math.PI * 2 / seg, a1 = (i + 1) * Math.PI * 2 / seg;
-                float ax = (float) Math.cos(a0), ay = (float) Math.sin(a0), bx = (float) Math.cos(a1), by = (float) Math.sin(a1);
-                float[] xs = {cx + ax * r0, cx + ax * r1, cx + bx * r1, cx + bx * r0};
-                float[] ys = {cy + ay * r0, cy + ay * r1, cy + by * r1, cy + by * r0};
-                int[] cs = {c0, c1, c1, c0};
-                for (int v = 0; v < 4; v++) vc.addVertex(p, xs[v], ys[v], z).setColor(cs[v]).setLight(FULL_BRIGHT);
-                for (int v = 3; v >= 0; v--) vc.addVertex(p, xs[v], ys[v], z).setColor(cs[v]).setLight(FULL_BRIGHT);
-            }
-        });
+        for (int i = 0; i < seg; i++) {
+            double a0 = i * Math.PI * 2 / seg, a1 = (i + 1) * Math.PI * 2 / seg;
+            float ax = (float) Math.cos(a0), ay = (float) Math.sin(a0), bx = (float) Math.cos(a1), by = (float) Math.sin(a1);
+            quad4(p, vc, z, cx + ax * r0, cy + ay * r0, c0, cx + ax * r1, cy + ay * r1, c1, cx + bx * r1, cy + by * r1, c1,
+                    cx + bx * r0, cy + by * r0, c0);
+        }
     }
 
-    private static void line(PoseStack pose, SubmitNodeCollector c, float x0, float y0, float x1, float y1, float width, float z, int colour) {
+    private static void line(PoseStack.Pose p, VertexConsumer vc, float x0, float y0, float x1, float y1, float width, float z, int colour) {
         float dx = x1 - x0, dy = y1 - y0, len = (float) Math.sqrt(dx * dx + dy * dy);
         if (len < 1.0E-4F) return;
         float nx = -dy / len * width / 2, ny = dx / len * width / 2;
-        quadPts(pose, c, x0 + nx, y0 + ny, x1 + nx, y1 + ny, x1 - nx, y1 - ny, x0 - nx, y0 - ny, z, colour);
+        quad4(p, vc, z, x0 + nx, y0 + ny, colour, x1 + nx, y1 + ny, colour, x1 - nx, y1 - ny, colour, x0 - nx, y0 - ny, colour);
     }
 
-    /** Any four-corner shape, both windings. */
-    private static void quadPts(PoseStack pose, SubmitNodeCollector collector, float ax, float ay, float bx, float by, float cx, float cy,
-                                float dx, float dy, float z, int colour) {
-        collector.submitCustomGeometry(pose, RenderTypes.textBackground(), (p, vc) -> {
-            vc.addVertex(p, ax, ay, z).setColor(colour).setLight(FULL_BRIGHT);
-            vc.addVertex(p, bx, by, z).setColor(colour).setLight(FULL_BRIGHT);
-            vc.addVertex(p, cx, cy, z).setColor(colour).setLight(FULL_BRIGHT);
-            vc.addVertex(p, dx, dy, z).setColor(colour).setLight(FULL_BRIGHT);
-            vc.addVertex(p, dx, dy, z).setColor(colour).setLight(FULL_BRIGHT);
-            vc.addVertex(p, cx, cy, z).setColor(colour).setLight(FULL_BRIGHT);
-            vc.addVertex(p, bx, by, z).setColor(colour).setLight(FULL_BRIGHT);
-            vc.addVertex(p, ax, ay, z).setColor(colour).setLight(FULL_BRIGHT);
-        });
-    }
-
-    /** A flat colour rectangle at canvas depth z. Both windings, so face culling can't hide it. */
-    private static void quad(PoseStack pose, SubmitNodeCollector collector, float x0, float y0, float x1, float y1, float z, int colour) {
-        quadPts(pose, collector, x0, y0, x0, y1, x1, y1, x1, y0, z, colour);
+    /** A flat colour rectangle at canvas depth z. */
+    private static void quad(PoseStack.Pose p, VertexConsumer vc, float x0, float y0, float x1, float y1, float z, int colour) {
+        quad4(p, vc, z, x0, y0, colour, x0, y1, colour, x1, y1, colour, x1, y0, colour);
     }
 }

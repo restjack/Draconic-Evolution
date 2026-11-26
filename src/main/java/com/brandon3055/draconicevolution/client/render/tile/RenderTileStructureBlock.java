@@ -44,8 +44,23 @@ public class RenderTileStructureBlock implements BlockEntityRenderer<TileStructu
         if (DEConfig.blockEffectRendering) return;
         Block original = tile.getOriginalBlock();
         if (original.defaultBlockState().isAir()) return;
-        if (state.model == null) state.model = new BlockModelRenderState();
-        Minecraft.getInstance().getBlockModelResolver().update(state.model, original.defaultBlockState(), DISPLAY);
+        // Resolve the model once per block and keep it on the tile; a tier 8 core has ~1,160 of these.
+        // Rebuilt every 10 s as well, so a resource-pack change (e.g. switching the HD packs) is picked up.
+        long now = tile.getLevel() == null ? 0 : tile.getLevel().getGameTime();
+        if (tile.renderCacheFor != original || !(tile.renderCache instanceof BlockModelRenderState) || now - tile.renderCacheTime > 200 || now < tile.renderCacheTime) {
+            BlockModelRenderState model = new BlockModelRenderState();
+            Minecraft.getInstance().getBlockModelResolver().update(model, original.defaultBlockState(), DISPLAY);
+            tile.renderCache = model;
+            tile.renderCacheFor = original;
+            tile.renderCacheTime = now;
+        }
+        state.model = (BlockModelRenderState) tile.renderCache;
+    }
+
+    /** With block effects on (the normal case) these blocks draw nothing, so skip them before any per-frame work. */
+    @Override
+    public boolean shouldRender(TileStructureBlock tile, Vec3 cameraPos) {
+        return !DEConfig.blockEffectRendering && BlockEntityRenderer.super.shouldRender(tile, cameraPos);
     }
 
     @Override

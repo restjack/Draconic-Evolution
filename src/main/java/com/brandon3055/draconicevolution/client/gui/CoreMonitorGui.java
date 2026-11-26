@@ -16,7 +16,6 @@ import com.brandon3055.brandonscore.multiblock.EmptyPart;
 import com.brandon3055.brandonscore.multiblock.MultiBlockDefinition;
 import com.brandon3055.brandonscore.multiblock.MultiBlockManager;
 import com.brandon3055.brandonscore.multiblock.MultiBlockPart;
-import com.brandon3055.brandonscore.utils.Utils;
 import com.brandon3055.draconicevolution.DEConfig;
 import com.brandon3055.draconicevolution.DraconicEvolution;
 import com.brandon3055.draconicevolution.blocks.machines.CoreMonitor;
@@ -35,12 +34,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.BooleanSupplier;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
@@ -57,7 +53,7 @@ import static com.brandon3055.brandonscore.BCConfig.darkMode;
 public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
     private static final int W = 352, H = 252, PYLON_ROWS = 7;
     private static final String[] TABS = {"Display", "Control", "Pylons", "Options", "Stats"};
-    private static final String[] RANGE_LONG = {"5 minutes", "1 hour", "24 hours"}, RANGE_SHORT = {"5m", "1h", "24h"};
+    private static final String[] RANGE_SHORT = {"5m", "1h", "24h"};
     private static int tab = 0; // remembered while the game runs
     private static int statRange = 0;
 
@@ -845,8 +841,4 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
         return s.getBlock() instanceof CoreMonitor && s.getValue(CoreMonitor.FACING) == facing;
     }
 
-    @SuppressWarnings("unused")
-    private static String limitText(long v) {
-        return v <= 0 ? "no limit" : Utils.addCommas(v) + "/t";
-    }
 }

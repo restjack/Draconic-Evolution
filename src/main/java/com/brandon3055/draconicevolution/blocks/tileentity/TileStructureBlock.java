@@ -97,6 +97,11 @@ public class TileStructureBlock extends TileBCore implements IInteractTile {
         return null;
     }
 
+    /** Client-only render cache for RenderTileStructureBlock (a BlockModelRenderState, typed Object so the server never
+     * needs the client class) and the block it was built for. */
+    public Object renderCache;
+    public Block renderCacheFor; public long renderCacheTime;
+
     public Block getOriginalBlock() {
         Identifier name = blockName.get();
         if (name != null) {
