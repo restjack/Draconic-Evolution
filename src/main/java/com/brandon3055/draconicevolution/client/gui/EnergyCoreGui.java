@@ -307,27 +307,27 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
 
     private void setupColourPickers(GuiElement<?> root, TileEnergyCore tile) {
         GuiColourPicker frameColourDialog = GuiColourPicker.create(root, ColourState.create(tile.frameColour::get, tile.frameColour::set), false);
-        frameColourDialog.constrain(TOP, literal(12));
-        labelPicker(frameColourDialog, "Shell frame colour"); // eli.7: upstream left the three pickers unlabeled
-        frameColourDialog.constrain(LEFT, literal(0));
+        frameColourDialog.constrain(TOP, literal(34));
+        labelPicker(frameColourDialog, "Frame"); // eli.7: upstream left the three pickers unlabeled; short so it fits
+        frameColourDialog.constrain(LEFT, literal(6)); // eli.8: off the screen edge, below other mods' corner icons
         frameColourDialog.addMoveHandle((int) frameColourDialog.ySize());
         frameColourDialog.setEnabled(colourSelectMode::get);
         frameColourDialog.getCancelButton().setEnabled(false);
         frameColourDialog.getOkButton().onPress(() -> setColourSelectMode(root, false));
 
         GuiColourPicker triangleColourDialog = GuiColourPicker.create(root, ColourState.create(tile.innerColour::get, tile.innerColour::set), false);
-        triangleColourDialog.constrain(TOP, literal(112));
-        labelPicker(triangleColourDialog, "Shell panel colour"); // eli.7: upstream left the three pickers unlabeled
-        triangleColourDialog.constrain(LEFT, literal(0));
+        triangleColourDialog.constrain(TOP, literal(120));
+        labelPicker(triangleColourDialog, "Panels");
+        triangleColourDialog.constrain(LEFT, literal(6));
         triangleColourDialog.addMoveHandle((int) triangleColourDialog.ySize());
         triangleColourDialog.setEnabled(colourSelectMode::get);
         triangleColourDialog.getCancelButton().setEnabled(false);
         triangleColourDialog.getOkButton().onPress(() -> setColourSelectMode(root, false));
 
         GuiColourPicker effectColourDialog = GuiColourPicker.create(root, ColourState.create(tile.effectColour::get, tile.effectColour::set), false);
-        effectColourDialog.constrain(TOP, literal(212));
-        labelPicker(effectColourDialog, "Shell glow colour"); // eli.7: upstream left the three pickers unlabeled
-        effectColourDialog.constrain(LEFT, literal(0));
+        effectColourDialog.constrain(TOP, literal(206));
+        labelPicker(effectColourDialog, "Glow");
+        effectColourDialog.constrain(LEFT, literal(6));
         effectColourDialog.addMoveHandle((int) effectColourDialog.ySize());
         effectColourDialog.setEnabled(colourSelectMode::get);
         effectColourDialog.getCancelButton().setEnabled(false);
