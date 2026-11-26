@@ -327,18 +327,18 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
         frameColourDialog.getOkButton().onPress(() -> setColourSelectMode(root, false));
 
         GuiColourPicker triangleColourDialog = GuiColourPicker.create(root, ColourState.create(tile.innerColour::get, tile.innerColour::set), false);
-        triangleColourDialog.constrain(TOP, literal(120));
+        triangleColourDialog.constrain(TOP, literal(34)); // eli.8: side by side; stacked, each label covered the blue slider above it
         labelPicker(triangleColourDialog, "Panels");
-        triangleColourDialog.constrain(LEFT, literal(6));
+        triangleColourDialog.constrain(LEFT, relative(frameColourDialog.get(RIGHT), 8));
         triangleColourDialog.addMoveHandle((int) triangleColourDialog.ySize());
         triangleColourDialog.setEnabled(colourSelectMode::get);
         triangleColourDialog.getCancelButton().setEnabled(false);
         triangleColourDialog.getOkButton().onPress(() -> setColourSelectMode(root, false));
 
         GuiColourPicker effectColourDialog = GuiColourPicker.create(root, ColourState.create(tile.effectColour::get, tile.effectColour::set), false);
-        effectColourDialog.constrain(TOP, literal(206));
+        effectColourDialog.constrain(TOP, literal(34));
         labelPicker(effectColourDialog, "Glow");
-        effectColourDialog.constrain(LEFT, literal(6));
+        effectColourDialog.constrain(LEFT, relative(triangleColourDialog.get(RIGHT), 8));
         effectColourDialog.addMoveHandle((int) effectColourDialog.ySize());
         effectColourDialog.setEnabled(colourSelectMode::get);
         effectColourDialog.getCancelButton().setEnabled(false);
