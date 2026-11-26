@@ -45,8 +45,8 @@ import static net.minecraft.ChatFormatting.*;
  */
 public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
     private static final GuiToolkit TOOLKIT = new GuiToolkit("gui.draconicevolution.core_monitor");
-    private static final int W = 236, H = 200, PYLON_ROWS = 8;
-    private static final String[] TABS = {"Display", "Control", "Pylons", "Limits"};
+    private static final int W = 270, H = 200, PYLON_ROWS = 8;
+    private static final String[] TABS = {"Show", "Core", "Pylons", "Limits", "Look", "Alerts", "Stats"};
     private static int tab = 0; // remembered while the game runs
 
     private TileCoreMonitor tile;
@@ -80,9 +80,9 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
             int t = i;
             GuiButton b = TOOLKIT.createFlat3DButton(root, () -> Component.literal(TABS[t]))
                     .setToggleMode(() -> tab == t)
-                    .onPress(() -> { tab = t; if (t == 2) requestPylons(); });
-            Constraints.size(b, 54, 14);
-            Constraints.placeInside(b, root, Constraints.LayoutPos.TOP_LEFT, 6 + i * 56, 16);
+                    .onPress(() -> { tab = t; if (t == 2) requestPylons(); if (t == 6) requestStats(); });
+            Constraints.size(b, 36, 14);
+            Constraints.placeInside(b, root, Constraints.LayoutPos.TOP_LEFT, 6 + i * 37, 16);
         }
 
         if (!DEConfig.extra("coreMonitor")) {
@@ -93,14 +93,20 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
         buildControl(root);
         buildPylons(root);
         buildLimits(root);
+        buildLook(root);
+        buildAlerts(root);
+        buildStats(root);
 
         text(root, 6, H - 12, -1, () -> Component.literal(tile.owner.isNull() ? "No owner: anyone can change settings"
                 : "Owner: " + tile.ownerName.get() + " (and operators)").withStyle(DARK_GRAY));
 
         gui.onTick(() -> {
-            if (tab == 2 && ++ticks % 20 == 0) requestPylons();
+            if (++ticks % 20 != 0) return;
+            if (tab == 2) requestPylons();
+            if (tab == 6) requestStats();
         });
         if (tab == 2) requestPylons();
+        if (tab == 6) requestStats();
     }
 
     private Component titleText() {
@@ -232,7 +238,7 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
             text(root, 6, 54 + i * 15, 2, () -> {
                 var r = pylon(row);
                 if (r == null) return Component.empty();
-                String rate = (r.input() ? "+" : "-") + EnergyCoreGui.shortNumber(r.rate()) + " " + DEConfig.energyUnit() + "/t";
+                String rate = (r.input() ? "+" : "-") + EnergyCoreGui.shortNumber(tile.toUnit(r.rate())) + " " + tile.unitName() + "/t";
                 return Component.literal(r.pos().getX() + " " + r.pos().getY() + " " + r.pos().getZ() + "  ").withStyle(GRAY)
                         .append(Component.literal(rate).withStyle(r.rate() == 0 ? GRAY : r.input() ? GREEN : RED));
             });
@@ -283,14 +289,196 @@ public class CoreMonitorGui extends ContainerGuiProvider<CoreMonitorMenu> {
     }
 
     private GuiTextField field(GuiElement<?> root, String label, int y, long value) {
-        text(root, 6, y + 2, 3, () -> Component.literal(label).withStyle(GRAY));
+        return field(root, label, y, value, 3);
+    }
+
+    private GuiTextField field(GuiElement<?> root, String label, int y, long value, int onTab) {
+        text(root, 6, y + 2, onTab, () -> Component.literal(label).withStyle(GRAY));
         var f = GuiTextField.create(root, 0xFF000000, 0xFFA0A0A0, 0xE0E0E0);
-        f.container().setEnabled(() -> tab == 3);
+        f.container().setEnabled(() -> tab == onTab);
         f.field().setMaxLength(19).setFilter(s -> s.chars().allMatch(c -> Character.isDigit(c) || c == ','))
                 .setValue(value > 0 ? Long.toString(value) : "");
         Constraints.size(f.container(), 70, 12);
         Constraints.placeInside(f.container(), root, Constraints.LayoutPos.TOP_LEFT, W - 76, y);
         return f.field();
+    }
+
+    // ### Look (Round C)
+
+    private int lookUnit = -1, lookBg = -1;
+
+    private void buildLook(GuiElement<?> root) {
+        text(root, 6, 42, 4, () -> Component.literal("Monitor name").withStyle(GRAY));
+        var nameField = GuiTextField.create(root, 0xFF000000, 0xFFA0A0A0, 0xE0E0E0);
+        nameField.container().setEnabled(() -> tab == 4);
+        nameField.field().setMaxLength(32).setValue(tile.name.get());
+        Constraints.size(nameField.container(), 130, 12);
+        Constraints.placeInside(nameField.container(), root, Constraints.LayoutPos.TOP_LEFT, W - 136, 40);
+
+        GuiButton unitB = TOOLKIT.createFlat3DButton(root, () -> Component.literal("Unit: " + TileCoreMonitor.UNITS[unit()]))
+                .onPress(() -> lookUnit = (unit() + 1) % TileCoreMonitor.UNITS.length)
+                .setTooltipSingle(() -> Component.literal("1 OP = 1 RF = 1 FE = 2.5 J (Mekanism joules)"))
+                .setEnabled(() -> tab == 4);
+        Constraints.size(unitB, 125, 14);
+        Constraints.placeInside(unitB, root, Constraints.LayoutPos.TOP_LEFT, 6, 57);
+        String[] bgNames = {"Solid", "75%", "50%"};
+        GuiButton bgB = TOOLKIT.createFlat3DButton(root, () -> Component.literal("Background: " + bgNames[bg()]))
+                .onPress(() -> lookBg = (bg() + 1) % 3)
+                .setEnabled(() -> tab == 4);
+        Constraints.size(bgB, 125, 14);
+        Constraints.placeInside(bgB, root, Constraints.LayoutPos.TOP_LEFT, W - 131, 57);
+
+        GuiTextField warn = field(root, "Warning colour below %", 76, tile.warnAt.get(), 4);
+        GuiTextField alarm = field(root, "Alarm (and alerts) below %", 94, tile.alarmAt.get(), 4);
+        GuiTextField target = field(root, "ETA target % (empty = full)", 112, tile.target.get(), 4);
+        for (GuiTextField f : new GuiTextField[]{warn, alarm, target}) f.setMaxLength(3);
+
+        GuiButton save = TOOLKIT.createFlat3DButton(root, () -> Component.literal("Save look"))
+                .onPress(() -> {
+                    String n = nameField.field().getValue().trim();
+                    int u = unit(), b = bg();
+                    int w = pct(warn.getValue()), a = pct(alarm.getValue()), t = pct(target.getValue());
+                    tile.sendPacketToServer(o -> { o.writeString(n); o.writeByte(u); o.writeByte(w); o.writeByte(a); o.writeByte(t); o.writeByte(b); }, TileCoreMonitor.MSG_LOOK);
+                })
+                .setEnabled(() -> tab == 4);
+        Constraints.size(save, W - 12, 14);
+        Constraints.placeInside(save, root, Constraints.LayoutPos.TOP_LEFT, 6, 132);
+
+        toggle(root, "Frame", TileCoreMonitor.SHOW_FRAME, 6, 154, 4);
+        toggle(root, "Core picture (2x2 and bigger)", TileCoreMonitor.SHOW_RENDER, W / 2 - 2, 154, 4);
+    }
+
+    private int unit() {
+        if (lookUnit < 0) lookUnit = Math.max(0, Math.min(TileCoreMonitor.UNITS.length - 1, tile.unit.get()));
+        return lookUnit;
+    }
+
+    private int bg() {
+        if (lookBg < 0) lookBg = Math.max(0, Math.min(2, tile.bgAlpha.get()));
+        return lookBg;
+    }
+
+    private static int pct(String s) {
+        return (int) Math.min(100, parse(s));
+    }
+
+    private void toggle(GuiElement<?> root, String name, int flag, int x, int y, int onTab) {
+        GuiButton b = TOOLKIT.createFlat3DButton(root, () -> Component.literal((tile.isShown(flag) ? "[x] " : "[ ] ") + name))
+                .setToggleMode(() -> tile.isShown(flag))
+                .onPress(() -> tile.sendPacketToServer(out -> out.writeInt(tile.show.get() ^ flag), TileCoreMonitor.MSG_SHOW))
+                .setEnabled(() -> tab == onTab);
+        Constraints.size(b, W / 2 - 8, 14);
+        Constraints.placeInside(b, root, Constraints.LayoutPos.TOP_LEFT, x, y);
+    }
+
+    // ### Alerts and redstone (Round C)
+
+    private void buildAlerts(GuiElement<?> root) {
+        String[] names = {"Chat message", "Toast", "Sound", "Also to my team"};
+        int[] flags = {TileCoreMonitor.ALERT_CHAT, TileCoreMonitor.ALERT_TOAST, TileCoreMonitor.ALERT_SOUND, TileCoreMonitor.ALERT_TEAM};
+        for (int i = 0; i < 4; i++) {
+            int flag = flags[i];
+            String name = names[i];
+            GuiButton b = TOOLKIT.createFlat3DButton(root, () -> Component.literal(((tile.alerts.get() & flag) != 0 ? "[x] " : "[ ] ") + name))
+                    .setToggleMode(() -> (tile.alerts.get() & flag) != 0)
+                    .onPress(() -> sendAlerts(tile.alerts.get() ^ flag, tile.redstoneMode.get()))
+                    .setEnabled(() -> tab == 5);
+            Constraints.size(b, W / 2 - 8, 14);
+            Constraints.placeInside(b, root, Constraints.LayoutPos.TOP_LEFT, 6 + (i % 2) * (W / 2 - 4), 38 + (i / 2) * 17);
+        }
+        text(root, 6, 76, 5, () -> Component.literal("Alerts: below the alarm %, stabilizer broken, core deactivated.").withStyle(GRAY));
+        text(root, 6, 87, 5, () -> Component.literal("Sent to " + (tile.ownerName.get().isEmpty() ? "the owner" : tile.ownerName.get())
+                + ((tile.alerts.get() & TileCoreMonitor.ALERT_TEAM) != 0 ? " and their FTB Teams party." : ", if online.")).withStyle(GRAY));
+
+        GuiButton rs = TOOLKIT.createFlat3DButton(root, () -> Component.literal("Redstone: " + TileCoreMonitor.REDSTONE_MODES[
+                        Math.max(0, Math.min(TileCoreMonitor.REDSTONE_MODES.length - 1, tile.redstoneMode.get()))]))
+                .onPress(() -> sendAlerts(tile.alerts.get(), (tile.redstoneMode.get() + 1) % TileCoreMonitor.REDSTONE_MODES.length))
+                .setTooltipSingle(() -> Component.literal("Every panel of the screen gives this signal to blocks next to it"))
+                .setEnabled(() -> tab == 5);
+        Constraints.size(rs, W - 12, 14);
+        Constraints.placeInside(rs, root, Constraints.LayoutPos.TOP_LEFT, 6, 104);
+
+        GuiButton locate = TOOLKIT.createFlat3DButton(root, () -> Component.literal("Locate core (chat line, JourneyMap waypoint)"))
+                .setDisabled(() -> !tile.isLinked())
+                .onPress(() -> tile.sendPacketToServer(o -> {}, TileCoreMonitor.MSG_LOCATE))
+                .setTooltipSingle(() -> Component.literal("JourneyMap shows a waypoint link in that chat line; click it to add the waypoint"))
+                .setEnabled(() -> tab == 5);
+        Constraints.size(locate, W - 12, 14);
+        Constraints.placeInside(locate, root, Constraints.LayoutPos.TOP_LEFT, 6, 126);
+        text(root, 6, 146, 5, () -> {
+            if (!tile.isLinked()) return Component.empty();
+            var p = tile.linkPos.get();
+            return Component.literal("Core: " + p.getX() + " " + p.getY() + " " + p.getZ() + " in " + tile.linkDim.get()).withStyle(GRAY);
+        });
+    }
+
+    private void sendAlerts(int alerts, int redstone) {
+        tile.sendPacketToServer(o -> { o.writeInt(alerts); o.writeByte(redstone); }, TileCoreMonitor.MSG_ALERTS);
+    }
+
+    // ### Stats (Round C)
+
+    private static int range = 0; // 0 = 5 min, 1 = 1 h, 2 = 24 h
+
+    private void requestStats() {
+        tile.sendPacketToServer(out -> {}, TileCoreMonitor.MSG_STATS);
+    }
+
+    private String rate(long op) {
+        return (op > 0 ? "+" : "") + EnergyCoreGui.shortNumber(tile.toUnit(op)) + " " + tile.unitName() + "/t";
+    }
+
+    private void buildStats(GuiElement<?> root) {
+        text(root, 6, 38, 6, () -> Component.literal("Average net, last hour: ").withStyle(GRAY).append(Component.literal(rate(tile.statAvg)).withStyle(tile.statAvg >= 0 ? GREEN : RED)));
+        text(root, 6, 49, 6, () -> Component.literal("Peak input / output, last hour: ").withStyle(GRAY)
+                .append(Component.literal(rate(tile.statPeakIn) + " / " + rate(-tile.statPeakOut)).withStyle(WHITE)));
+        text(root, 6, 60, 6, () -> Component.literal("Lowest fill, last 24 h: ").withStyle(GRAY)
+                .append(Component.literal(tile.statLow < 0 ? "-" : String.format(java.util.Locale.ROOT, "%.1f%%", tile.statLow)).withStyle(WHITE)));
+        text(root, 6, 71, 6, () -> Component.literal("Collected " + EnergyCoreGui.formatDuration(tile.statMinutes * 60D)
+                + " so far (restarts with the server or when the core unloads)").withStyle(DARK_GRAY));
+        String[] names = {"5 min", "1 hour", "24 hours"};
+        for (int i = 0; i < 3; i++) {
+            int r = i;
+            GuiButton b = TOOLKIT.createFlat3DButton(root, () -> Component.literal(names[r]))
+                    .setToggleMode(() -> range == r).onPress(() -> range = r).setEnabled(() -> tab == 6);
+            Constraints.size(b, 60, 13);
+            Constraints.placeInside(b, root, Constraints.LayoutPos.TOP_LEFT, 6 + i * 62, 84);
+        }
+        GuiElement<?> graph = new com.brandon3055.brandonscore.client.gui.modular.elements.GuiRectangle(root) {
+            @Override
+            public void renderBackground(com.brandon3055.brandonscore.client.gui.modular.lib.GuiRender render, double mouseX, double mouseY, float partialTicks) {
+                drawGraph(render, xMin(), yMin(), xSize(), ySize());
+            }
+        }.setEnabled(() -> tab == 6);
+        Constraints.size(graph, W - 12, 84);
+        Constraints.placeInside(graph, root, Constraints.LayoutPos.TOP_LEFT, 6, 100);
+    }
+
+    private void drawGraph(com.brandon3055.brandonscore.client.gui.modular.lib.GuiRender render, double x, double y, double w, double h) {
+        render.toolTipBackground(x, y, w, h, 0xF0100010, 0xF0100010, 0xFF8800FF, 0xFF440080, false);
+        long[] data = tile.statSeries[range];
+        String[] what = {"one bar per 5 s", "one bar per minute", "one bar per 24 min"};
+        render.drawString("Net " + tile.unitName() + "/t, " + what[range], x + 4, y + 4, 0xFF55FFFF, false);
+        double gx = x + 4, gy = y + 15, gw = w - 8, gh = h - 19, mid = gy + gh / 2;
+        render.fill(gx, mid, gx + gw, mid + 1, 0x60FFFFFF);
+        if (data.length == 0) {
+            render.drawString(range == 0 ? "Needs the core's rate history switch (coreRateHistory)" : "Collecting... (first sample after one minute)",
+                    x + 4, mid + 4, 0xFFAAAAAA, false);
+            return;
+        }
+        long max = 1;
+        for (long v : data) max = Math.max(max, Math.abs(v));
+        int slots = 60;
+        double bar = gw / slots;
+        int offset = slots - Math.min(slots, data.length);
+        for (int i = 0; i < Math.min(slots, data.length); i++) {
+            long v = data[data.length - Math.min(slots, data.length) + i];
+            double bh = Math.abs(v) / (double) max * (gh / 2 - 1);
+            double bx = gx + (offset + i) * bar;
+            if (v >= 0) render.fill(bx, mid - bh, bx + Math.max(1, bar - 1), mid, 0xFF55FF55);
+            else render.fill(bx, mid + 1, bx + Math.max(1, bar - 1), mid + 1 + bh, 0xFFFF5555);
+        }
+        render.drawString("max " + EnergyCoreGui.shortNumber(tile.toUnit(max)), x + w - 4 - Minecraft.getInstance().font.width("max " + EnergyCoreGui.shortNumber(tile.toUnit(max))), y + 4, 0xFFAAAAAA, false);
     }
 
     private static long parse(String s) {

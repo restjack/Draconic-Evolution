@@ -76,6 +76,7 @@ public class DraconicNetwork {
     public static final int C_BOSS_SHIELD_INFO =        10;
     public static final int C_DISLOCATOR_TELEPORTED =   11;
     public static final int C_CHUNK_RELIGHT =           12;
+    public static final int C_MONITOR_TOAST =           13; // eli.8 Core Monitor alert
 
     //@formatter:on
 
@@ -214,6 +215,13 @@ public class DraconicNetwork {
         packet.writeUUID(id);
         packet.writeByte(operation);
         if (callBack != null) callBack.accept(packet);
+        packet.sendToPlayer(player);
+    }
+
+    public static void sendMonitorToast(ServerPlayer player, String title, String body) {
+        PacketCustom packet = new PacketCustom(CHANNEL_NAME, C_MONITOR_TOAST, player.registryAccess());
+        packet.writeString(title);
+        packet.writeString(body);
         packet.sendToPlayer(player);
     }
 

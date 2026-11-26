@@ -23,6 +23,7 @@ public class CoreMonitor extends EntityBlockBCore {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
         setBlockEntity(DEContent.TILE_CORE_MONITOR::get, true);
+        canProvidePower = true; // Round C redstone modes
     }
 
     @Override

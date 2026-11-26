@@ -25,12 +25,27 @@
     {
       "type": "patchouli:text",
       "title": "Settings",
-      "text": "Right-click a panel with an empty hand for its settings.$(li)$(l)Display$(): pick which lines the screen shows.$(li)$(l)Control$(): turn the core on or off from here, and preview what the next tier holds and needs.$(li)$(l)Pylons$(): every pylon on the core with its rate; click a mode to switch it."
+      "text": "Right-click a panel with an empty hand for its settings.$(li)$(l)Show$(): which lines the screen shows.$(li)$(l)Core$(): turn the core on or off, preview the next tier.$(li)$(l)Pylons$(): each pylon and its rate; click a mode to switch it.$(li)$(l)Limits$(): max in/out per tick and a reserve %."
     },
     {
       "type": "patchouli:text",
-      "title": "Limits",
-      "text": "Cap how much the core takes in or gives out per tick, or keep a reserve: below that fill level the pylons stop giving energy.$(br2)Only the player who linked the monitor (and operators) can change its settings. Holding a block places it instead of opening the screen."
+      "title": "Look",
+      "text": "Name the monitor, pick OP, RF, FE or J, set the warning and alarm colours, a target % for the timer, the background, the frame, and a small picture of the core on 2x2 and bigger screens.$(br2)Only the player who linked it (and operators) can change settings."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Alerts",
+      "text": "When the core drops below the alarm %, a stabilizer breaks or the core turns off, the owner gets a chat line, a toast and/or a sound; optionally their FTB Teams party too.$(br2)$(l)Locate$() puts the core's position in chat as a JourneyMap waypoint."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Redstone",
+      "text": "Each panel can give a signal: the fill level (0-15), on below the alarm %, on while full, or on while draining.$(br2)$(l)Stats$() shows the last hour's average and peaks, the lowest fill in 24 hours, and a graph over 5 minutes, 1 hour or 24 hours."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Computers",
+      "text": "With CC: Tweaked the monitor is a peripheral, $(l)draconic_monitor$(): getStored, getCapacity, getPercent, getInput, getOutput, getNet, getEta, getTier, isActive, isLoaded, getLimits and setActive(true/false)."
     }
   ]
 }

@@ -218,6 +218,7 @@ public class TileEnergyCore extends TileBCore implements MenuProvider, IInteract
                 fillPercent.set(((float) energy.getOPStored() / (float) energy.getMaxOPStored()));
             }
             sampleRateHistory();
+            sampleMinuteHistory();
             if (++beamTick >= 10) {
                 beamTick = 0;
                 beamForceField();
@@ -268,6 +269,49 @@ public class TileEnergyCore extends TileBCore implements MenuProvider, IInteract
     private long historySum;
     /** Client copy, oldest first. */
     public long[] clientRateHistory = new long[0];
+
+    // ### Minute history (eli.8 Core Monitor stats): one sample per minute for 24 h. Not saved (starts over when the
+    // core's chunk reloads or the server restarts). ponytail: in memory only; save it if players want stats across restarts.
+    public static final int MINUTE_SAMPLES = 1440, MINUTE_TICKS = 1200;
+    public final long[] minuteNet = new long[MINUTE_SAMPLES], minutePeakIn = new long[MINUTE_SAMPLES], minutePeakOut = new long[MINUTE_SAMPLES];
+    public final float[] minuteLowFill = new float[MINUTE_SAMPLES];
+    public int minuteCount;
+    private int minuteTick;
+    private long minuteSum, minuteMaxIn, minuteMaxOut;
+    private float minuteMinFill = 2;
+
+    private void sampleMinuteHistory() {
+        if (!DEConfig.extra("coreMonitor")) return;
+        var io = energy.getIOInfo();
+        if (io != null) {
+            minuteSum += io.currentInput() - io.currentOutput();
+            minuteMaxIn = Math.max(minuteMaxIn, io.currentInput());
+            minuteMaxOut = Math.max(minuteMaxOut, io.currentOutput());
+        }
+        if (!energy.isUnlimited()) minuteMinFill = Math.min(minuteMinFill, fillPercent.get());
+        if (++minuteTick < MINUTE_TICKS) return;
+        shift(minuteNet, minuteSum / MINUTE_TICKS);
+        shift(minutePeakIn, minuteMaxIn);
+        shift(minutePeakOut, minuteMaxOut);
+        System.arraycopy(minuteLowFill, 1, minuteLowFill, 0, MINUTE_SAMPLES - 1);
+        minuteLowFill[MINUTE_SAMPLES - 1] = minuteMinFill > 1 ? -1 : minuteMinFill;
+        minuteCount = Math.min(minuteCount + 1, MINUTE_SAMPLES);
+        minuteTick = 0;
+        minuteSum = minuteMaxIn = minuteMaxOut = 0;
+        minuteMinFill = 2;
+    }
+
+    private static void shift(long[] a, long v) {
+        System.arraycopy(a, 1, a, 0, a.length - 1);
+        a[a.length - 1] = v;
+    }
+
+    /** Last 5 minutes of 5 s samples (empty if the rate history switch is off), oldest first. */
+    public long[] recentHistory() {
+        long[] h = new long[historyCount];
+        System.arraycopy(rateHistory, HISTORY_SAMPLES - historyCount, h, 0, historyCount);
+        return h;
+    }
 
     private void sampleRateHistory() {
         if (!com.brandon3055.draconicevolution.DEConfig.extra("coreRateHistory")) return;

@@ -71,6 +71,12 @@ public class ClientPacketHandler implements ICustomPacketHandler.IClientPacketHa
             case DraconicNetwork.C_CHUNK_RELIGHT:
                 handleChunkRelight(mc, packet.readInt(), packet.readInt());
                 break;
+            case DraconicNetwork.C_MONITOR_TOAST:
+                net.minecraft.client.gui.components.toasts.SystemToast.add(mc.getToastManager(),
+                        net.minecraft.client.gui.components.toasts.SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+                        net.minecraft.network.chat.Component.literal(packet.readString()),
+                        net.minecraft.network.chat.Component.literal(packet.readString()).withStyle(net.minecraft.ChatFormatting.RED));
+                break;
         }
     }
 

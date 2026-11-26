@@ -31,12 +31,29 @@ Servers can switch the monitor off with **coreMonitor** in the config.
 ## Settings
 
 Right-click a panel with an empty hand for its settings.
-- **Display**: pick which lines the screen shows.
-- **Control**: turn the core on or off from here, and preview what the next tier holds and needs.
-- **Pylons**: every pylon on the core with its rate; click a mode to switch it.
+- **Show**: which lines the screen shows.
+- **Core**: turn the core on or off, preview the next tier.
+- **Pylons**: each pylon and its rate; click a mode to switch it.
+- **Limits**: max in/out per tick and a reserve %.
 
-## Limits
+## Look
 
-Cap how much the core takes in or gives out per tick, or keep a reserve: below that fill level the pylons stop giving energy.
+Name the monitor, pick OP, RF, FE or J, set the warning and alarm colours, a target % for the timer, the background, the frame, and a small picture of the core on 2x2 and bigger screens.
 
-Only the player who linked the monitor (and operators) can change its settings. Holding a block places it instead of opening the screen.
+Only the player who linked it (and operators) can change settings.
+
+## Alerts
+
+When the core drops below the alarm %, a stabilizer breaks or the core turns off, the owner gets a chat line, a toast and/or a sound; optionally their FTB Teams party too.
+
+**Locate** puts the core's position in chat as a JourneyMap waypoint.
+
+## Redstone
+
+Each panel can give a signal: the fill level (0-15), on below the alarm %, on while full, or on while draining.
+
+**Stats** shows the last hour's average and peaks, the lowest fill in 24 hours, and a graph over 5 minutes, 1 hour or 24 hours.
+
+## Computers
+
+With CC: Tweaked the monitor is a peripheral, **draconic_monitor**: getStored, getCapacity, getPercent, getInput, getOutput, getNet, getEta, getTier, isActive, isLoaded, getLimits and setActive(true/false).
