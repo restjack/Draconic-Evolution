@@ -209,9 +209,10 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
         // eli.7: six lines, same spacing as upstream: stored / capacity, then In and Out, Net, and time to full/empty.
         GuiText energy = new GuiText(display)
                 .setTextSupplier(() -> {
-                    // getReadable()/getReadableCapacity() end in " Giga " etc.; trim so the joins don't double-space.
-                    MutableComponent c = Component.literal(tile.energy.getReadable().getString().trim()).withStyle(GOLD);
-                    if (!tile.energy.isUnlimited()) c.append(Component.literal(" / " + tile.energy.getReadableCapacity().getString().replace(" OP", "").trim()).withStyle(GRAY));
+                    // eli.8: short prefixes (271.781M / 273M) like other mods; tier 8 keeps DE's own formatter (beyond a long).
+                    MutableComponent c = Component.literal(tile.energy.isUnlimited() ? tile.energy.getReadable().getString().trim()
+                            : shortNumber(tile.energy.getOPStored())).withStyle(GOLD);
+                    if (!tile.energy.isUnlimited()) c.append(Component.literal(" / " + shortNumber(tile.energy.getMaxOPStored())).withStyle(GRAY));
                     return c.append(Component.literal(" " + com.brandon3055.draconicevolution.DEConfig.energyUnit()).withStyle(tile.energy.isUnlimited() ? GOLD : GRAY));
                 });
         Constraints.size(energy, display.xSize(), 9);
@@ -353,6 +354,16 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
     }
 
     private static boolean showGraph = false;
+
+    /** 271781000 -> "271.781M", 273000000 -> "273M", 999999 -> "999,999". Up to three decimals, trailing zeros dropped. */
+    public static String shortNumber(long v) {
+        if (Math.abs(v) < 1_000_000L) return Utils.addCommas(v);
+        String[] units = {"k", "M", "G", "T", "P", "E"};
+        java.math.BigDecimal d = java.math.BigDecimal.valueOf(v); // exact: 1640000000 must read 1.64G, not 1.639G
+        int u = -1;
+        while (d.abs().compareTo(java.math.BigDecimal.valueOf(1000)) >= 0 && u < units.length - 1) { d = d.movePointLeft(3); u++; }
+        return d.setScale(3, java.math.RoundingMode.DOWN).stripTrailingZeros().toPlainString() + units[u];
+    }
     private static long problemCheckedAt = -1;
     private static java.util.List<com.brandon3055.brandonscore.multiblock.InvalidPart> problems = java.util.List.of();
 
