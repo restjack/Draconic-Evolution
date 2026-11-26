@@ -18,7 +18,21 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
+import codechicken.lib.data.MCDataInput;
+import com.brandon3055.brandonscore.lib.IInteractTile;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.BlockHitResult;
+
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,7 +41,7 @@ import java.util.Set;
  * near the monitor see them even when the core is in another dimension. If the core's chunk is not loaded the last
  * values stay and {@link #loaded} goes false; the monitor never loads chunks itself.
  */
-public class TileCoreMonitor extends TileBCore {
+public class TileCoreMonitor extends TileBCore implements IInteractTile, net.minecraft.world.MenuProvider {
     public static final int MAX_SIZE = 3;
 
     public final ManagedString linkDim = register(new ManagedString("link_dim", "", DataFlags.SAVE_NBT_SYNC_TILE));
@@ -42,6 +56,21 @@ public class TileCoreMonitor extends TileBCore {
     public final ManagedBool unlimited = register(new ManagedBool("unlimited", DataFlags.SAVE_NBT_SYNC_TILE));
     public final ManagedBool loaded = register(new ManagedBool("loaded", DataFlags.SAVE_NBT_SYNC_TILE));
     public final ManagedLong lastSeen = register(new ManagedLong("last_seen", DataFlags.SAVE_NBT_SYNC_TILE));
+    // Round B: copies of the core's limits, the player who linked it, and which lines the screen shows.
+    public final ManagedLong limIn = register(new ManagedLong("lim_in", DataFlags.SAVE_NBT_SYNC_TILE));
+    public final ManagedLong limOut = register(new ManagedLong("lim_out", DataFlags.SAVE_NBT_SYNC_TILE));
+    public final ManagedByte limReserve = register(new ManagedByte("lim_reserve", DataFlags.SAVE_NBT_SYNC_TILE));
+    public final ManagedUUID owner = register(new ManagedUUID("owner", (UUID) null, DataFlags.SAVE_NBT_SYNC_TILE));
+    public final ManagedString ownerName = register(new ManagedString("owner_name", "", DataFlags.SAVE_NBT_SYNC_TILE));
+    public final ManagedInt show = register(new ManagedInt("show", SHOW_ALL, DataFlags.SAVE_NBT_SYNC_TILE));
+
+    public static final int SHOW_HEADER = 1, SHOW_STATUS = 2, SHOW_PERCENT = 4, SHOW_BAR = 8, SHOW_STORED = 16,
+            SHOW_INOUT = 32, SHOW_NET = 64, SHOW_ETA = 128, SHOW_ALL = 255;
+    public static final int MSG_SHOW = 1, MSG_TOGGLE_CORE = 2, MSG_PYLONS = 3, MSG_PYLON_FLIP = 4, MSG_LIMITS = 5, MSG_PYLON_LIST = 10;
+
+    /** Client copy of the linked core's pylons, filled when the settings screen asks. */
+    public record PylonRow(BlockPos pos, boolean input, long rate) {}
+    public List<PylonRow> clientPylons = List.of();
 
     private int tick;
 
@@ -74,6 +103,117 @@ public class TileCoreMonitor extends TileBCore {
         var io = core.energy.getIOInfo();
         input.set(io == null ? 0 : io.currentInput());
         output.set(io == null ? 0 : io.currentOutput());
+        limIn.set(core.limitIn.get());
+        limOut.set(core.limitOut.get());
+        limReserve.set(core.reserve.get());
+    }
+
+    @Override
+    public net.minecraft.world.inventory.AbstractContainerMenu createMenu(int windowId, net.minecraft.world.entity.player.Inventory inv, Player player) {
+        return new com.brandon3055.draconicevolution.inventory.CoreMonitorMenu(windowId, inv, this);
+    }
+
+    public boolean isShown(int flag) {
+        return (show.get() & flag) != 0;
+    }
+
+    /** The linking player and server operators may change settings; anyone may if nobody is recorded. */
+    public boolean canControl(ServerPlayer player) {
+        return owner.isNull() || player.getUUID().equals(owner.get())
+                || Commands.hasPermission(Commands.LEVEL_GAMEMASTERS).test(player.createCommandSourceStack());
+    }
+
+    private static Component msg(String text, ChatFormatting colour) {
+        return Component.literal(text).withStyle(colour);
+    }
+
+    @Override
+    public void receivePacketFromClient(MCDataInput data, ServerPlayer player, int id) {
+        super.receivePacketFromClient(data, player, id);
+        if (id == MSG_PYLONS) {
+            sendPylons(player);
+            return;
+        }
+        if (!DEConfig.extra("coreMonitor")) return;
+        if (!canControl(player)) {
+            player.sendOverlayMessage(msg("Only " + (ownerName.get().isEmpty() ? "the owner" : ownerName.get()) + " or an operator can change this monitor", ChatFormatting.RED));
+            return;
+        }
+        switch (id) {
+            case MSG_SHOW -> {
+                int v = data.readInt() & SHOW_ALL;
+                for (TileCoreMonitor p : connectedPanels(level, worldPosition)) p.show.set(v);
+            }
+            case MSG_TOGGLE_CORE -> {
+                TileEnergyCore core = findCore();
+                if (core == null) { player.sendOverlayMessage(msg("Core is not loaded", ChatFormatting.RED)); return; }
+                boolean was = core.active.get();
+                core.toggleActivation();
+                player.sendOverlayMessage(core.active.get() != was ? msg(core.active.get() ? "Core activated" : "Core deactivated", ChatFormatting.GREEN)
+                        : msg("Core can not activate: structure or stabilizers not valid", ChatFormatting.RED));
+                tick = 0;
+            }
+            case MSG_PYLON_FLIP -> {
+                BlockPos pos = data.readPos();
+                TileEnergyCore core = findCore();
+                if (core != null && core.pylons.contains(pos) && LoadedLookup.blockEntity(core.getLevel(), pos) instanceof TileEnergyPylon pylon && pylon.getCore() == core) {
+                    pylon.toggleMode();
+                    player.sendOverlayMessage(TileEnergyPylon.modeText(pylon.ioMode.get()));
+                }
+                sendPylons(player);
+            }
+            case MSG_LIMITS -> {
+                long in = Math.max(0, data.readLong()), out = Math.max(0, data.readLong());
+                byte res = (byte) Math.max(0, Math.min(100, data.readByte()));
+                TileEnergyCore core = findCore();
+                if (core == null) { player.sendOverlayMessage(msg("Core is not loaded", ChatFormatting.RED)); return; }
+                core.limitIn.set(in);
+                core.limitOut.set(out);
+                core.reserve.set(res);
+                player.sendOverlayMessage(msg("Core limits saved", ChatFormatting.GREEN));
+                tick = 0;
+            }
+        }
+    }
+
+    private void sendPylons(ServerPlayer player) {
+        TileEnergyCore core = findCore();
+        List<PylonRow> rows = new ArrayList<>();
+        if (core != null) {
+            Level cl = core.getLevel();
+            core.pylons.removeIf(pos -> !(LoadedLookup.isLoaded(cl, pos)
+                    && LoadedLookup.blockEntity(cl, pos) instanceof TileEnergyPylon p && p.getCore() == core));
+            for (BlockPos pos : core.pylons) {
+                if (LoadedLookup.blockEntity(cl, pos) instanceof TileEnergyPylon p) {
+                    rows.add(new PylonRow(pos, p.ioMode.get().canReceive(), p.lastTickRate()));
+                }
+            }
+            rows.sort((a, b) -> a.pos().compareTo(b.pos()));
+        }
+        sendPacketToClient(player, out -> {
+            out.writeVarInt(rows.size());
+            for (PylonRow r : rows) { out.writePos(r.pos()); out.writeBoolean(r.input()); out.writeLong(r.rate()); }
+        }, MSG_PYLON_LIST);
+    }
+
+    @Override
+    public void receivePacketFromServer(MCDataInput data, int id) {
+        if (id == MSG_PYLON_LIST) {
+            List<PylonRow> rows = new ArrayList<>();
+            int n = data.readVarInt();
+            for (int i = 0; i < n; i++) rows.add(new PylonRow(data.readPos(), data.readBoolean(), data.readLong()));
+            clientPylons = rows;
+        } else {
+            super.receivePacketFromServer(data, id);
+        }
+    }
+
+    @Override
+    public InteractionResult onBlockUse(BlockState state, Player player, InteractionHand hand, BlockHitResult hit) {
+        // Holding a block: place it (building a bigger screen against this one), don't open the settings.
+        if (hand != InteractionHand.MAIN_HAND || player.getItemInHand(hand).getItem() instanceof net.minecraft.world.item.BlockItem) return InteractionResult.PASS;
+        if (player instanceof ServerPlayer sp) sp.openMenu(this, worldPosition);
+        return InteractionResult.SUCCESS;
     }
 
     /** The linked core if its chunk is loaded right now; never loads anything. */
@@ -87,9 +227,11 @@ public class TileCoreMonitor extends TileBCore {
     }
 
     /** Links this panel and every connected panel facing the same way (one screen) to the core. */
-    public int linkScreen(GlobalPos core) {
+    public int linkScreen(GlobalPos core, Player player) {
         Set<TileCoreMonitor> panels = connectedPanels(level, worldPosition);
         for (TileCoreMonitor p : panels) {
+            p.owner.set(player.getUUID());
+            p.ownerName.set(player.getName().getString());
             p.linkDim.set(core.dimension().identifier().toString());
             p.linkPos.set(core.pos());
             p.loaded.set(false);

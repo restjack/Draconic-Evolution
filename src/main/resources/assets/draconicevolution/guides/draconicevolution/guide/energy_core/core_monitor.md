@@ -27,3 +27,16 @@ A core far away only updates while its chunk is loaded; the screen then shows th
 Fill level with a bar, status (charging, draining, full, low, inactive, stabilizer problem), stored and capacity, energy in and out, the net rate and the time until full or empty. Colours turn yellow below 25% and red below 10%.
 
 Servers can switch the monitor off with **coreMonitor** in the config.
+
+## Settings
+
+Right-click a panel with an empty hand for its settings.
+- **Display**: pick which lines the screen shows.
+- **Control**: turn the core on or off from here, and preview what the next tier holds and needs.
+- **Pylons**: every pylon on the core with its rate; click a mode to switch it.
+
+## Limits
+
+Cap how much the core takes in or gives out per tick, or keep a reserve: below that fill level the pylons stop giving energy.
+
+Only the player who linked the monitor (and operators) can change its settings. Holding a block places it instead of opening the screen.

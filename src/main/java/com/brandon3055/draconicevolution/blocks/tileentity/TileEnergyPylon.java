@@ -109,7 +109,11 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
             TransferPreconditions.checkNonNegative(amount);
             TileEnergyCore core = getCore();
             if (!canReceive() || core == null || !core.active.get()) return 0;
-            return showTransfer(core.energy.insert(amount, transaction), transaction);
+            // ponytail: limit budget is spent even if the transaction is later rolled back (under-delivers, never over).
+            int moved = core.energy.insert((int) core.allowIn(amount), transaction);
+            core.usedIn(moved);
+            record(moved);
+            return showTransfer(moved, transaction);
         }
 
         @Override
@@ -117,7 +121,10 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
             TransferPreconditions.checkNonNegative(amount);
             TileEnergyCore core = getCore();
             if (!canExtract() || core == null || !core.active.get()) return 0;
-            return showTransfer(core.energy.extract(amount, transaction), transaction);
+            int moved = core.energy.extract((int) core.allowOut(amount), transaction);
+            core.usedOut(moved);
+            record(moved);
+            return showTransfer(moved, transaction);
         }
 
         private int showTransfer(int moved, TransactionContext transaction) {
@@ -143,7 +150,8 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
             if (coreOffset.isNull() || !canReceive() || getCore() == null || !core.active.get()) {
                 return 0;
             }
-            long received = core.energy.receiveOP(maxReceive, simulate);
+            long received = core.energy.receiveOP(core.allowIn(maxReceive), simulate);
+            if (!simulate) { core.usedIn(received); record(received); }
             if (!simulate && received > 0) {
                 particleRate.set(particleRateFor(received));
             }
@@ -155,7 +163,8 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
             if (coreOffset.isNull() || !canExtract() || getCore() == null || !core.active.get()) {
                 return 0;
             }
-            long extracted = core.energy.extractOP(maxExtract, simulate);
+            long extracted = core.energy.extractOP(core.allowOut(maxExtract), simulate);
+            if (!simulate) { core.usedOut(extracted); record(extracted); }
             if (!simulate && extracted > 0) {
                 particleRate.set(particleRateFor(extracted));
             }
@@ -220,8 +229,12 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
             updateComparators();
         }
 
+        if (!level.isClientSide()) core.pylons.add(worldPosition.immutable());
         if (!level.isClientSide() && ioMode.get().canExtract()) {
-            long extracted = core.energy.extractOP(sendEnergyToAll(core.energy.getUncappedStored(), core.energy.getUncappedStored()), false);
+            long avail = core.allowOut(core.energy.getUncappedStored());
+            long extracted = avail <= 0 ? 0 : core.energy.extractOP(sendEnergyToAll(avail, avail), false);
+            core.usedOut(extracted);
+            record(extracted);
             if (extracted > 0) {
                 particleRate.set(particleRateFor(extracted));
             }
@@ -251,12 +264,35 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
     @Override
     public InteractionResult handleRemoteClick(Player player, BlockHitResult hit) {
         if (!level.isClientSide()) {
-            ioMode.set(ioMode.get().reverse());
-            level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyPylon.MODE, ioMode.get()));
+            toggleMode();
             // eli.7: say which way energy now flows; "input/output" alone reads ambiguously.
             if (com.brandon3055.draconicevolution.DEConfig.extra("pylonModeMessage")) player.sendOverlayMessage(modeText(ioMode.get()));
         }
         return InteractionResult.SUCCESS;
+    }
+
+    public void toggleMode() {
+        ioMode.set(ioMode.get().reverse());
+        level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyPylon.MODE, ioMode.get()));
+    }
+
+    // eli.8 Core Monitor: OP moved through this pylon in the last full tick.
+    private long movedTick = -1, movedNow, movedLast;
+
+    private void record(long n) {
+        if (level == null || n <= 0) return;
+        long t = level.getGameTime();
+        if (t != movedTick) {
+            movedLast = t == movedTick + 1 ? movedNow : 0;
+            movedNow = 0;
+            movedTick = t;
+        }
+        movedNow += n;
+    }
+
+    public long lastTickRate() {
+        long t = level.getGameTime();
+        return t == movedTick ? movedLast : t == movedTick + 1 ? movedNow : 0;
     }
 
     /** Particle tint for undyed pylons (eli.7). Keep in step with the energy_pylon_input/output textures. */

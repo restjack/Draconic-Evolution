@@ -36,7 +36,9 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
     public RenderTileCoreMonitor(BlockEntityRendererProvider.Context context) {
     }
 
-    public record Line(String text, int colour, float scale) {}
+    public record Line(String text, int colour, float scale, boolean bar) {
+        Line(String text, int colour, float scale) { this(text, colour, scale, false); }
+    }
 
     public static class State extends BlockEntityRenderState {
         boolean draw;
@@ -119,23 +121,27 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
                 : net < 0 && pct < 25 ? YELLOW : GREEN;
         if (live && pct >= 0 && pct < 10) s.frame = RED; else if (live && pct >= 0 && pct < 25) s.frame = YELLOW; else if (!live) s.frame = 0xFF55555F;
 
-        if (s.w == 1 && s.h == 1) {
-            s.lines.add(new Line(word, wordColour, 1));
-        } else {
-            s.lines.add(new Line("TIER " + t.tier.get() + " CORE", CYAN, 1));
-            s.lines.add(new Line(word, wordColour, 1));
-        }
-        s.lines.add(new Line(pct < 0 ? EnergyCoreGui.shortNumber(stored) : String.format(java.util.Locale.ROOT, pct >= 99.95 && pct < 100 ? "%.2f%%" : "%.1f%%", pct), pctColour, big));
+        boolean small = s.w == 1 && s.h == 1;
+        if (!small && t.isShown(TileCoreMonitor.SHOW_HEADER)) s.lines.add(new Line("TIER " + t.tier.get() + " CORE", CYAN, 1));
+        if (t.isShown(TileCoreMonitor.SHOW_STATUS)) s.lines.add(new Line(word, wordColour, 1));
+        if (t.isShown(TileCoreMonitor.SHOW_PERCENT)) s.lines.add(new Line(pct < 0 ? EnergyCoreGui.shortNumber(stored)
+                : String.format(java.util.Locale.ROOT, pct >= 99.95 && pct < 100 ? "%.2f%%" : "%.1f%%", pct), pctColour, big));
         s.fill = pct < 0 ? -1 : (float) Math.min(1, pct / 100);
         s.barColour = pctColour;
-        if (s.w == 1 && s.h == 1) {
-            s.lines.add(new Line((net > 0 ? "+" : "") + EnergyCoreGui.shortNumber(net) + " " + unit + "/t", net > 0 ? GREEN : net < 0 ? RED : GRAY, 1));
+        if (s.fill >= 0 && t.isShown(TileCoreMonitor.SHOW_BAR)) s.lines.add(new Line("", 0, 1, true));
+        String netText = (net > 0 ? "+" : "") + EnergyCoreGui.shortNumber(net) + " " + unit + "/t";
+        int netColour = net > 0 ? GREEN : net < 0 ? RED : GRAY;
+        if (small) {
+            if (t.isShown(TileCoreMonitor.SHOW_NET)) s.lines.add(new Line(netText, netColour, 1));
+            if (s.lines.isEmpty()) s.lines.add(new Line(word, wordColour, 1)); // never a blank screen
             return;
         }
-        if (pct >= 0) s.lines.add(new Line(EnergyCoreGui.shortNumber(stored) + " / " + EnergyCoreGui.shortNumber(cap) + " " + unit, GRAY, 1));
-        s.lines.add(new Line("In +" + EnergyCoreGui.shortNumber(t.input.get()) + "  Out -" + EnergyCoreGui.shortNumber(t.output.get()), GRAY, 1));
-        s.lines.add(new Line("Net " + (net > 0 ? "+" : "") + EnergyCoreGui.shortNumber(net) + " " + unit + "/t", net > 0 ? GREEN : net < 0 ? RED : GRAY, 1));
-        if (!live) {
+        if (pct >= 0 && t.isShown(TileCoreMonitor.SHOW_STORED)) s.lines.add(new Line(EnergyCoreGui.shortNumber(stored) + " / " + EnergyCoreGui.shortNumber(cap) + " " + unit, GRAY, 1));
+        if (t.isShown(TileCoreMonitor.SHOW_INOUT)) s.lines.add(new Line("In +" + EnergyCoreGui.shortNumber(t.input.get()) + "  Out -" + EnergyCoreGui.shortNumber(t.output.get()), GRAY, 1));
+        if (t.isShown(TileCoreMonitor.SHOW_NET)) s.lines.add(new Line("Net " + netText, netColour, 1));
+        if (!t.isShown(TileCoreMonitor.SHOW_ETA)) {
+            if (s.lines.isEmpty()) s.lines.add(new Line(word, wordColour, 1));
+        } else if (!live) {
             long ago = Math.max(0, (level.getGameTime() - t.lastSeen.get()) / 20);
             s.lines.add(new Line(t.lastSeen.get() == 0 ? "Core not loaded" : "Last seen " + EnergyCoreGui.formatDuration(ago) + " ago", GRAY, 1));
         } else if (net > 0 && pct >= 0 && pct < 100) {
@@ -161,12 +167,17 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
         Font font = Minecraft.getInstance().font;
         float total = 0;
         for (Line l : state.lines) total += 10 * l.scale();
-        if (state.fill >= 0) total += 10;
         float scaleAll = Math.min(1F, (H - 14) / Math.max(1, total)) * (state.h >= 2 ? 1.6F : 1F);
         if (total * scaleAll > H - 14) scaleAll = (H - 14) / total;
         float y = (H - total * scaleAll) / 2;
-        int i = 0;
         for (Line l : state.lines) {
+            if (l.bar()) {
+                float bh = 6 * scaleAll, bx = 10, bw = W - 20;
+                quad(pose, collector, bx, y, bx + bw, y + bh, 0.1F, 0xFF2A1A33);
+                quad(pose, collector, bx, y, bx + bw * state.fill, y + bh, 0.14F, state.barColour);
+                y += 10 * scaleAll;
+                continue;
+            }
             float sc = l.scale() * scaleAll;
             int tw = font.width(l.text());
             if (tw * sc > W - 14) sc = (W - 14) / tw;
@@ -176,13 +187,6 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
             collector.submitText(pose, 0, 0, Component.literal(l.text()).getVisualOrderText(), false, Font.DisplayMode.POLYGON_OFFSET, l.colour(), FULL_BRIGHT, 0, 0);
             pose.popPose();
             y += 10 * l.scale() * scaleAll;
-            // The fill bar sits right under the big percent line.
-            if (state.fill >= 0 && l.scale() > 1 && i++ == 0) {
-                float bh = 6 * scaleAll, bx = 10, bw = W - 20;
-                quad(pose, collector, bx, y, bx + bw, y + bh, 0.1F, 0xFF2A1A33);
-                quad(pose, collector, bx, y, bx + bw * state.fill, y + bh, 0.14F, state.barColour);
-                y += 10 * scaleAll;
-            }
         }
         pose.popPose();
     }

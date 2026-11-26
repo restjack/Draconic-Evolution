@@ -21,6 +21,16 @@
       "type": "patchouli:text",
       "title": "What it shows",
       "text": "Fill level with a bar, status (charging, draining, full, low, inactive, stabilizer problem), stored and capacity, energy in and out, the net rate and the time until full or empty. Colours turn yellow below 25% and red below 10%.$(br2)Servers can switch the monitor off with $(l)coreMonitor$() in the config."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Settings",
+      "text": "Right-click a panel with an empty hand for its settings.$(li)$(l)Display$(): pick which lines the screen shows.$(li)$(l)Control$(): turn the core on or off from here, and preview what the next tier holds and needs.$(li)$(l)Pylons$(): every pylon on the core with its rate; click a mode to switch it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Limits",
+      "text": "Cap how much the core takes in or gives out per tick, or keep a reserve: below that fill level the pylons stop giving energy.$(br2)Only the player who linked the monitor (and operators) can change its settings. Holding a block places it instead of opening the screen."
     }
   ]
 }

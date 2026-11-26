@@ -148,8 +148,12 @@ public class BinderHandler {
                 return true;
             }
             if (!level.isClientSide()) {
+                if (player instanceof net.minecraft.server.level.ServerPlayer sp && !monitor.canControl(sp)) {
+                    ChatHelper.sendIndexed(player, Component.literal("This monitor belongs to " + monitor.ownerName.get() + ".").withStyle(ChatFormatting.RED), TileCrystalBase.MSG_ID);
+                    return true;
+                }
                 GlobalPos target = getBound(binder);
-                int n = monitor.linkScreen(target);
+                int n = monitor.linkScreen(target, player);
                 ChatHelper.sendIndexed(player, Component.literal("Core Monitor linked (" + n + (n == 1 ? " panel" : " panels") + ") to the core at "
                         + target.pos().getX() + " " + target.pos().getY() + " " + target.pos().getZ() + ".").withStyle(ChatFormatting.GREEN), TileCrystalBase.MSG_ID);
             } else {

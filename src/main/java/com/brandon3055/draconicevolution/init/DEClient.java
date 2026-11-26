@@ -167,6 +167,7 @@ public class DEClient {
 
         event.register(DEContent.MENU_DRACONIUM_CHEST.get(), DraconiumChestGui.Screen::new);
         event.register(DEContent.MENU_ENERGY_CORE.get(), EnergyCoreGui.Screen::new);
+        event.register(DEContent.MENU_CORE_MONITOR.get(), com.brandon3055.draconicevolution.client.gui.CoreMonitorGui.Screen::new);
         event.register(DEContent.MENU_REACTOR.get(), ReactorGui.Screen::new);
 
         event.register(DEContent.MENU_CELESTIAL_MANIPULATOR.get(), CelestialManipulatorGui.Screen::new);

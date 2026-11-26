@@ -132,6 +132,48 @@ public class TileEnergyCore extends TileBCore implements MenuProvider, IInteract
 
     public final ManagedUUID linkUUID = register(new ManagedUUID("link_uuid", (UUID) null, SAVE_NBT));
 
+    // eli.8 Core Monitor (Extras switch coreMonitor): limits for the whole core, set from a monitor. 0 = no limit.
+    public final ManagedLong limitIn = register(new ManagedLong("limit_in", SAVE_NBT_SYNC_TILE));
+    public final ManagedLong limitOut = register(new ManagedLong("limit_out", SAVE_NBT_SYNC_TILE));
+    public final ManagedByte reserve = register(new ManagedByte("reserve", SAVE_NBT_SYNC_TILE)); // % kept back from output
+    /** Pylons that used this core recently (server only, not saved; each pylon re-adds itself every tick). */
+    public final java.util.Set<BlockPos> pylons = new java.util.HashSet<>();
+    private long budgetTick = -1, usedIn, usedOut;
+
+    private void rollBudget() {
+        long t = level.getGameTime();
+        if (t != budgetTick) { budgetTick = t; usedIn = 0; usedOut = 0; }
+    }
+
+    /** How much of {@code want} the pylons may put in this tick. */
+    public long allowIn(long want) {
+        if (want <= 0 || limitIn.get() <= 0 || !DEConfig.extra("coreMonitor")) return want;
+        rollBudget();
+        return Math.max(0, Math.min(want, limitIn.get() - usedIn));
+    }
+
+    /** How much of {@code want} the pylons may take out this tick (output limit and reserve). */
+    public long allowOut(long want) {
+        if (want <= 0 || !DEConfig.extra("coreMonitor")) return want;
+        long a = want;
+        if (reserve.get() > 0 && !energy.isUnlimited()) {
+            a = Math.min(a, Math.max(0, energy.getOPStored() - (long) (energy.getMaxOPStored() * (reserve.get() / 100D))));
+        }
+        if (limitOut.get() > 0) {
+            rollBudget();
+            a = Math.min(a, Math.max(0, limitOut.get() - usedOut));
+        }
+        return a;
+    }
+
+    public void usedIn(long n) {
+        if (n > 0 && limitIn.get() > 0) { rollBudget(); usedIn += n; }
+    }
+
+    public void usedOut(long n) {
+        if (n > 0 && limitOut.get() > 0) { rollBudget(); usedOut += n; }
+    }
+
     public OPStorageOP energy = new OPStorageOP(this, this::getCapacity);
 
     private MultiBlockDefinition definitionCache = null;
