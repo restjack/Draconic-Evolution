@@ -1,0 +1,2 @@
+Redrawn at higher resolution from Draconic Evolution's textures (brandon3055) by tools/hd_textures.py.
+Draconic Evolution licence applies (CoFH "Don't Be a Jerk").

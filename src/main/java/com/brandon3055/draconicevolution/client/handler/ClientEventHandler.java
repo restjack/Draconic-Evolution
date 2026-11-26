@@ -64,6 +64,11 @@ public class ClientEventHandler {
     public static void addPackFinders(AddPackFindersEvent event) {
         event.addPackFinders(Identifier.fromNamespaceAndPath(MODID, "2d_item_models"), PackType.CLIENT_RESOURCES,
                 Component.literal("Draconic Evolution Classic 16×16"), PackSource.BUILT_IN, false, Pack.Position.TOP);
+        // eli.8: optional HD redraws of the energy core, stabilizer and pylon textures (made by tools/hd_textures.py).
+        event.addPackFinders(Identifier.fromNamespaceAndPath(MODID, "hd_32x"), PackType.CLIENT_RESOURCES,
+                Component.literal("Draconic Evolution: core & pylons 32×"), PackSource.BUILT_IN, false, Pack.Position.TOP);
+        event.addPackFinders(Identifier.fromNamespaceAndPath(MODID, "hd_64x"), PackType.CLIENT_RESOURCES,
+                Component.literal("Draconic Evolution: core & pylons 64×"), PackSource.BUILT_IN, false, Pack.Position.TOP);
     }
 
     private static void registerOverlays(RegisterGuiLayersEvent event) {
