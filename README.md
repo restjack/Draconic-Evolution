@@ -12,18 +12,22 @@
 | `ModelMat` shader fix | Stabilizer orbs, pylon shells and the legacy core shell render on the block (they were floating around the camera, often seen as big cyan shapes in four directions). |
 | Live machine screens | The energy core screen (and every DE machine screen) updates stored OP and I/O while open. |
 | Block effects switch | Client option `blockEffectRendering` in `config/brandon3055/DraconicEvolution.cfg`, or the **eye button** on the energy core screen. Hides energy core, stabilizer, pylon and reactor visuals **for that player only**; the blocks keep working. A safety valve if they render wrong or crash your graphics. |
+| Powah / zero-buffer cables | Pylons and other DE machines push energy straight into cables that store nothing (e.g. Powah). Brandon's Core trusted NeoForge 26.1's capacity-based `canReceive` guess, which says "no" for such cables (change in `gradle/brandonscore-26.1.2.patch`, Brandon's Core `port.2`). |
+| JEI fusion recipes | The port only had EMI support. The server now sends fusion recipes to clients (needed since MC 1.21.2) and a JEI category shows them. Needs this build on the server too. |
+| Energy core quality of life | Jade tooltips for the core, pylons and stabilizers (Shift for in/out and time to full/empty). The core screen shows stored / capacity, In, Out, Net and time to full or empty. Pylons name their mode on the action bar when toggled and are green (input) or red (output). Labelled colour pickers. Client option `blockEffectRenderDistance` limits how far core effects are drawn. Core blocks are tagged `c:relocation_not_supported`, so AE2 Spatial IO won't move them (upstream crash #1931). |
+| In-game guide | A Patchouli book, *Draconic Evolution Guide* (39 entries: getting started, fusion crafting, energy core, energy transport, gear and modules, machines, endgame, this port). Crafted from a Book and Draconium Dust; the Information Tablet opens it too. Written fresh for this port from the facts in the old Project Intelligence docs. |
 | Upstream 1.21 fixes (open PRs [#2044](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2044), [#2046](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2046), [#2050](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2050), [#2051](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2051), [#2052](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2052), [#2053](https://github.com/Draconic-Inc/Draconic-Evolution/pull/2053)) | Stabilizer disintegration, Draconium Chest losing shift-clicked items, constant module re-saves, night-vision packet spam, crystals/pylons/reactors keeping far chunks loaded, crystal network spam, dislocator limits. #2052 is adapted to the port; #2053's arena-check commit is left out on purpose (it can stop the guardian spawning on servers with view distance < 8). |
 
-Mod version string: `3.1.4-port.3-eli.6`. Needs NeoForge **26.1.2.126 or newer** (below 26.2), Minecraft 26.1.2, Java 25.
+Mod version string: `3.1.4-port.3-eli.7` (Brandon's Core `3.2.1+26.1.2-port.2`). Needs NeoForge **26.1.2.126 or newer** (below 26.2), Minecraft 26.1.2, Java 25.
 
 ## Installing
 
-There are **no prebuilt downloads**. Draconic Evolution's licence does not allow redistributing the mod, so build it yourself (below). Put the three jars in `mods/` on **every client and the server**:
+There are **no prebuilt downloads**. Draconic Evolution's licence does not allow redistributing the mod, so build it yourself (below). Put the three jars in `mods/` on **every client and the server**. Optional on clients: Jade (tooltips), JEI (fusion recipes), Patchouli (guide).
 
 | File (from the build) | Provides |
 | --- | --- |
-| `Draconic-Evolution-26.1.2-3.1.4-port.3-eli.6.jar` | Draconic Evolution |
-| `BrandonsCore-3.2.1+26.1.2-port.1.jar` | Brandon's Core |
+| `Draconic-Evolution-26.1.2-3.1.4-port.3-eli.7.jar` | Draconic Evolution |
+| `BrandonsCore-3.2.1+26.1.2-port.2.jar` | Brandon's Core |
 | `codechickenlib-4.7.0+26.1.2-port.2.jar` | CodeChickenLib |
 
 Sharing the jars privately with your own modpack/server players is covered by brandon3055's modpack permission. Please don't upload them anywhere public.
@@ -82,7 +86,7 @@ Use Java 25 and Minecraft **26.1.2** with NeoForge **26.1.2.126**. Place the fol
 | File | Provides |
 | --- | --- |
 | `Draconic-Evolution-26.1.2-3.1.4-port.3.jar` | Draconic Evolution |
-| `BrandonsCore-3.2.1+26.1.2-port.1.jar` | Brandon’s Core |
+| `BrandonsCore-3.2.1+26.1.2-port.2.jar` | Brandon’s Core |
 | `codechickenlib-4.7.0+26.1.2-port.2.jar` | CodeChicken Lib and its embedded Quack library |
 
 ### Classic 16×16 textures
