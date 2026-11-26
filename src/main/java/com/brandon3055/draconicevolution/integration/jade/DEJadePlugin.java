@@ -139,17 +139,17 @@ public class DEJadePlugin implements IWailaPlugin {
                             : Component.literal("inactive").withStyle(ChatFormatting.RED))
                     .withStyle(ChatFormatting.GRAY));
             tooltip.add(Component.literal(unlimited
-                    ? "Stored: " + Utils.formatNumber(stored) + " OP"
-                    : "Stored: " + Utils.formatNumber(stored) + " / " + Utils.formatNumber(max) + " OP ("
+                    ? "Stored: " + Utils.formatNumber(stored) + " " + com.brandon3055.draconicevolution.DEConfig.energyUnit()
+                    : "Stored: " + Utils.formatNumber(stored) + " / " + Utils.formatNumber(max) + " " + com.brandon3055.draconicevolution.DEConfig.energyUnit() + " ("
                       + (max > 0 ? Math.round(stored * 1000D / max) / 10D : 0) + "%)").withStyle(ChatFormatting.GOLD));
-            tooltip.add(Component.literal("Net: " + (net > 0 ? "+" : "") + Utils.formatNumber(net) + " OP/t")
+            tooltip.add(Component.literal("Net: " + (net > 0 ? "+" : "") + Utils.formatNumber(net) + " " + com.brandon3055.draconicevolution.DEConfig.energyUnit() + "/t")
                     .withStyle(net > 0 ? ChatFormatting.GREEN : net < 0 ? ChatFormatting.RED : ChatFormatting.GRAY));
             if (accessor.showDetails()) {
                 tooltip.add(Component.literal("In ").withStyle(ChatFormatting.GRAY)
                         .append(Component.literal("+" + Utils.formatNumber(in)).withStyle(ChatFormatting.GREEN))
                         .append(" / Out ")
                         .append(Component.literal("-" + Utils.formatNumber(out)).withStyle(ChatFormatting.RED))
-                        .append(" OP/t"));
+                        .append(" " + com.brandon3055.draconicevolution.DEConfig.energyUnit() + "/t"));
                 if (net > 0 && !unlimited && stored < max) {
                     tooltip.add(Component.literal("Full in " + EnergyCoreGui.formatDuration((max - stored) / (double) net / 20D)).withStyle(ChatFormatting.GRAY));
                 } else if (net < 0 && stored > 0) {

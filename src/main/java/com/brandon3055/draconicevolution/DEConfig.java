@@ -382,8 +382,14 @@ public class DEConfig {
     public static boolean guardianShaders;
     public static boolean blockEffectRendering;
     public static int blockEffectRenderDistance;
+    public static boolean showEnergyAsRF;
     //    public static boolean otherShaders;
     public static boolean itemDislocatorSound;
+
+    /** eli.8: unit shown for energy values (display only; 1 OP = 1 RF/FE). */
+    public static String energyUnit() {
+        return showEnergyAsRF ? "RF" : "OP";
+    }
 
     /** eli.7: render distance for core/stabilizer/pylon effects, capped by blockEffectRenderDistance when set. */
     public static int effectViewDistance(int defaultDistance) {
@@ -424,6 +430,10 @@ public class DEConfig {
                         + "0 = DE's defaults (core 256, stabilizers and pylons 64). Lower it to save frames near big bases.")
                 .setDefaultInt(0)
                 .onSync((tag, type) -> blockEffectRenderDistance = tag.getInt());
+        clientTag.getValue("showEnergyAsRF")
+                .setComment("Show energy as RF instead of OP on the energy core screen, its graph and Jade tooltips. Display only: 1 OP = 1 RF (FE).")
+                .setDefaultBoolean(false)
+                .onSync((tag, type) -> showEnergyAsRF = tag.getBoolean());
 //        clientTag.getValue("otherShaders")
 //                .setComment("Set this to false to disable all other shaders.")
 //                .setDefaultBoolean(true)

@@ -202,7 +202,7 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
                 });
         Constraints.bind(energyBar, barSlot, 1);
 
-        GuiText opLabel = new GuiText(display, Component.translatable("mod_gui.brandonscore.energy_bar.operational_potential").withStyle(DARK_AQUA));
+        GuiText opLabel = new GuiText(display).setTextSupplier(() -> com.brandon3055.draconicevolution.DEConfig.showEnergyAsRF ? Component.literal("Stored Energy").withStyle(DARK_AQUA) : Component.translatable("mod_gui.brandonscore.energy_bar.operational_potential").withStyle(DARK_AQUA));
         Constraints.size(opLabel, display.xSize(), 9);
         Constraints.placeInside(opLabel, display, Constraints.LayoutPos.TOP_CENTER, 0, 5);
 
@@ -212,7 +212,7 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
                     // getReadable()/getReadableCapacity() end in " Giga " etc.; trim so the joins don't double-space.
                     MutableComponent c = Component.literal(tile.energy.getReadable().getString().trim()).withStyle(GOLD);
                     if (!tile.energy.isUnlimited()) c.append(Component.literal(" / " + tile.energy.getReadableCapacity().getString().replace(" OP", "").trim()).withStyle(GRAY));
-                    return c.append(Component.literal(" ").append(Component.translatable("mod_gui.brandonscore.energy_bar.op")).withStyle(tile.energy.isUnlimited() ? GOLD : GRAY));
+                    return c.append(Component.literal(" " + com.brandon3055.draconicevolution.DEConfig.energyUnit()).withStyle(tile.energy.isUnlimited() ? GOLD : GRAY));
                 });
         Constraints.size(energy, display.xSize(), 9);
         Constraints.placeOutside(energy, opLabel, Constraints.LayoutPos.BOTTOM_CENTER, 0, 2);
@@ -287,6 +287,16 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
                 .setToggleMode(() -> showGraph)
                 .setTooltipSingle(() -> Component.literal(showGraph ? "Hide the rate history" : "Show the rate history (last 5 minutes)"));
         Constraints.placeOutside(graphButton, effects, Constraints.LayoutPos.MIDDLE_LEFT, 0, 0);
+
+        // eli.8: show energy as RF instead of OP (display only, 1:1), per player like the eye button.
+        GuiButton unitButton = TOOLKIT.createThemedIconButton(root, 12, DEGuiTextures.getter("energy_unit"))
+                .setEnabled(tile.active::get)
+                .onPress(() -> com.brandon3055.draconicevolution.DEConfig.modifyClientProperty("showEnergyAsRF",
+                        v -> v.setBoolean(!com.brandon3055.draconicevolution.DEConfig.showEnergyAsRF)))
+                .setToggleMode(() -> com.brandon3055.draconicevolution.DEConfig.showEnergyAsRF)
+                .setTooltipSingle(() -> Component.literal(com.brandon3055.draconicevolution.DEConfig.showEnergyAsRF
+                        ? "Showing RF. Click to show OP (1 OP = 1 RF)." : "Showing OP. Click to show RF (1 OP = 1 RF)."));
+        Constraints.placeOutside(unitButton, graphButton, Constraints.LayoutPos.MIDDLE_LEFT, 0, 0);
 
         GuiRectangle graph = new GuiRectangle(root) {
             @Override
@@ -384,7 +394,7 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
     private static void renderRateGraph(GuiRender render, TileEnergyCore tile, double x, double y, double w, double h) {
         render.toolTipBackground(x, y, w, h, 0xF0100010, 0xF0100010, 0xFF8800FF, 0xFF440080, false);
         long[] hist = tile.clientRateHistory;
-        render.drawString("Net OP/t, last 5 min", x + 4, y + 4, 0xFF55FFFF, false);
+        render.drawString("Net " + com.brandon3055.draconicevolution.DEConfig.energyUnit() + "/t, last 5 min", x + 4, y + 4, 0xFF55FFFF, false);
         double gx = x + 4, gy = y + 16, gw = w - 8, gh = h - 30, mid = gy + gh / 2;
         render.fill(gx, mid, gx + gw, mid + 1, 0x60FFFFFF);
         if (hist.length == 0) {
@@ -432,7 +442,7 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
                 .append(Component.literal("+" + Utils.formatNumber(io.currentInput())).withStyle(GREEN))
                 .append(Component.literal(" / ").withStyle(GRAY))
                 .append(Component.literal("-" + Utils.formatNumber(io.currentOutput())).withStyle(RED))
-                .append(Component.literal(" ").append(Component.translatable(OP)).append("/t").withStyle(GRAY));
+                .append(Component.literal(" " + com.brandon3055.draconicevolution.DEConfig.energyUnit() + "/t").withStyle(GRAY));
     }
 
     /** "Net: +766 OP/t", green when filling, red when draining. */
@@ -442,7 +452,7 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
         long net = io.currentInput() - io.currentOutput();
         return Component.literal("Net: ").withStyle(GRAY)
                 .append(Component.literal((net > 0 ? "+" : "") + Utils.formatNumber(net) + " ")
-                        .append(Component.translatable(OP)).append("/t")
+                        .append(com.brandon3055.draconicevolution.DEConfig.energyUnit()).append("/t")
                         .withStyle(net > 0 ? GREEN : net < 0 ? RED : GRAY));
     }
 
