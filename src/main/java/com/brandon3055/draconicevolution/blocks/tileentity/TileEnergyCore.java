@@ -188,6 +188,7 @@ public class TileEnergyCore extends TileBCore implements MenuProvider, IInteract
     public long[] clientRateHistory = new long[0];
 
     private void sampleRateHistory() {
+        if (!com.brandon3055.draconicevolution.DEConfig.extra("coreRateHistory")) return;
         var io = energy.getIOInfo();
         if (io != null) historySum += io.currentInput() - io.currentOutput();
         if (++historyTick < HISTORY_TICKS) return;

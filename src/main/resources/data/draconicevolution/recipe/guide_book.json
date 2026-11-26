@@ -1,6 +1,13 @@
 {
   "neoforge:conditions": [
-    { "type": "neoforge:mod_loaded", "modid": "patchouli" }
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "patchouli"
+    },
+    {
+      "type": "draconicevolution:config",
+      "key": "guideBookRecipe"
+    }
   ],
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
@@ -10,6 +17,8 @@
   ],
   "result": {
     "id": "patchouli:guide_book",
-    "components": { "patchouli:book": "draconicevolution:guide" }
+    "components": {
+      "patchouli:book": "draconicevolution:guide"
+    }
   }
 }

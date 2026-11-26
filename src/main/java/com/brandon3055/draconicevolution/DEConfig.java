@@ -27,6 +27,7 @@ public class DEConfig {
                 .load();
         loadServer();
         loadClient();
+        loadExtras();
         EquipCfg.loadConfig(config);
         ModuleCfg.loadConfig(config);
         config.runSync(ConfigCallback.Reason.MANUAL);
@@ -86,6 +87,60 @@ public class DEConfig {
     public static boolean forceDroppedItemOwner = true;
 
     public static Long[] coreCapacity = new Long[]{45500000L, 273000000L, 1640000000L, 9880000000L, 59300000000L, 356000000000L, 2140000000000L, -1L};
+
+    // ### Extras (restjack fork, eli.8): our own features, each switchable. Bug fixes are not listed here and stay on.
+    // Master switch off = upstream behaviour. Server values are synced to clients (a client hides what the server turned off).
+    public static boolean extrasClient = true, coreScreenDetails = true, coreGraph = true, coreUnitToggle = true,
+            structureHints = true, pylonModeColours = true;
+    public static boolean extrasServer = true, grinderXpPiping = true, guideBookRecipe = true, coreRateHistory = true,
+            pylonModeMessage = true;
+
+    private static void loadExtras() {
+        ConfigCategory extras = config.getCategory("Extras").setComment(
+                "Optional features added by the restjack fork of the unofficial 26.1.2 port (not in official Draconic Evolution).",
+                "Bug fixes are not listed here and are always on. Turn a master switch off for upstream behaviour.",
+                "Modpacks can ship their own defaults for these through the pack's defaultconfigs folder.");
+        ConfigCategory client = extras.getCategory("Client").setComment("Per player. Only changes what this player sees.");
+        client.getValue("extras").setComment("Master switch for every client-side extra below.")
+                .setDefaultBoolean(true).onSync((t, r) -> extrasClient = t.getBoolean());
+        client.getValue("coreScreenDetails").setComment("Energy core screen: In/Out/Net lines, time to full/empty and short M/G numbers. Off = upstream's single I/O line.")
+                .setDefaultBoolean(true).onSync((t, r) -> coreScreenDetails = t.getBoolean());
+        client.getValue("coreGraph").setComment("Energy core screen: rate history graph button (also needs the server's coreRateHistory).")
+                .setDefaultBoolean(true).onSync((t, r) -> coreGraph = t.getBoolean());
+        client.getValue("coreUnitToggle").setComment("Energy core screen: OP/RF unit button (and the RF display it switches on).")
+                .setDefaultBoolean(true).onSync((t, r) -> coreUnitToggle = t.getBoolean());
+        client.getValue("structureHints").setComment("Energy core screen: 'N blocks wrong (hover)' line on an invalid core.")
+                .setDefaultBoolean(true).onSync((t, r) -> structureHints = t.getBoolean());
+        client.getValue("pylonModeColours").setComment("Undyed energy pylons tint their particles green (input) / red (output).")
+                .setDefaultBoolean(true).onSync((t, r) -> pylonModeColours = t.getBoolean());
+
+        ConfigCategory server = extras.getCategory("Server").setComment("Server side; applies to everyone. Restart the server after changing.");
+        server.getValue("extras").syncTagToClient().setComment("Master switch for every server-side extra below.")
+                .setDefaultBoolean(true).onSync((t, r) -> extrasServer = t.getBoolean());
+        server.getValue("grinderXpPiping").syncTagToClient().setComment("Mob Grinder: stored XP can be piped out as liquid XP (any c:experience fluid, 20 mB per point).")
+                .setDefaultBoolean(true).onSync((t, r) -> grinderXpPiping = t.getBoolean());
+        server.getValue("guideBookRecipe").syncTagToClient().setComment("Crafting recipe for the Draconic Evolution Guide (Book + Draconium Dust).")
+                .setDefaultBoolean(true).onSync((t, r) -> guideBookRecipe = t.getBoolean());
+        server.getValue("coreRateHistory").syncTagToClient().setComment("Energy cores record a 5-minute net rate history for the core screen graph.")
+                .setDefaultBoolean(true).onSync((t, r) -> coreRateHistory = t.getBoolean());
+        server.getValue("pylonModeMessage").syncTagToClient().setComment("Action-bar message saying INPUT/OUTPUT when a pylon is switched.")
+                .setDefaultBoolean(true).onSync((t, r) -> pylonModeMessage = t.getBoolean());
+    }
+
+    public static boolean extra(String key) {
+        return switch (key) {
+            case "coreScreenDetails" -> extrasClient && coreScreenDetails;
+            case "coreGraph" -> extrasClient && coreGraph && extrasServer && coreRateHistory;
+            case "coreUnitToggle" -> extrasClient && coreUnitToggle;
+            case "structureHints" -> extrasClient && structureHints;
+            case "pylonModeColours" -> extrasClient && pylonModeColours;
+            case "grinderXpPiping" -> extrasServer && grinderXpPiping;
+            case "guideBookRecipe" -> extrasServer && guideBookRecipe;
+            case "coreRateHistory" -> extrasServer && coreRateHistory;
+            case "pylonModeMessage" -> extrasServer && pylonModeMessage;
+            default -> true;
+        };
+    }
 
     private static void loadServer() {
         serverTag = config.getCategory("Server");
@@ -388,7 +443,7 @@ public class DEConfig {
 
     /** eli.8: unit shown for energy values (display only; 1 OP = 1 RF/FE). */
     public static String energyUnit() {
-        return showEnergyAsRF ? "RF" : "OP";
+        return showEnergyAsRF && extra("coreUnitToggle") ? "RF" : "OP";
     }
 
     /** eli.7: render distance for core/stabilizer/pylon effects, capped by blockEffectRenderDistance when set. */

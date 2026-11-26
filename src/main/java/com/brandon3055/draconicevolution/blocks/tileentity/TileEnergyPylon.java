@@ -254,7 +254,7 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
             ioMode.set(ioMode.get().reverse());
             level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyPylon.MODE, ioMode.get()));
             // eli.7: say which way energy now flows; "input/output" alone reads ambiguously.
-            player.sendOverlayMessage(modeText(ioMode.get()));
+            if (com.brandon3055.draconicevolution.DEConfig.extra("pylonModeMessage")) player.sendOverlayMessage(modeText(ioMode.get()));
         }
         return InteractionResult.SUCCESS;
     }
@@ -427,7 +427,7 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
         Vec3D dest;
 
         // eli.7: undyed pylons tint their particles by mode (matches the side textures).
-        int rgb = ioMode.get() == Mode.INPUT ? INPUT_RGB : OUTPUT_RGB;
+        int rgb = !com.brandon3055.draconicevolution.DEConfig.extra("pylonModeColours") ? 0x00C8FF : ioMode.get() == Mode.INPUT ? INPUT_RGB : OUTPUT_RGB; // 0x00C8FF = upstream colour
         int r = (rgb >> 16) & 0xFF;
         int g = (rgb >> 8) & 0xFF;
         int b = rgb & 0xFF;

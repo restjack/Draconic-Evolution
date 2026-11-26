@@ -1,0 +1,27 @@
+{
+  "name": "Optional Extras and Their Switches",
+  "icon": "minecraft:comparator",
+  "category": "draconicevolution:this_port",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Everything this port adds beyond bug fixes can be switched off in $(l)config/brandon3055/DraconicEvolution.cfg$(), section $(l)Extras$(). Each half has a master switch called $(l)extras$(); turning it off gives the official mod's behaviour.$(br2)Bug fixes are not in this list and are always on."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Client (your own)",
+      "text": "$(li)$(l)coreScreenDetails$(): In/Out/Net lines, time to full/empty, short numbers.$(li)$(l)coreGraph$(): the graph button.$(li)$(l)coreUnitToggle$(): the OP/RF button.$(li)$(l)structureHints$(): the blocks-wrong line.$(li)$(l)pylonModeColours$(): green/red pylon particles."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Server (everyone)",
+      "text": "$(li)$(l)grinderXpPiping$(): liquid XP out of the Mob Grinder.$(li)$(l)guideBookRecipe$(): this book's recipe.$(li)$(l)coreRateHistory$(): cores record their graph data.$(li)$(l)pylonModeMessage$(): the pylon INPUT/OUTPUT message.$(br2)The server's choices reach your game when you join."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Elsewhere",
+      "text": "$(li)Jade's own settings can turn off the Draconic Energy Core tooltips.$(li)The HD texture packs are off until you pick them in Resource Packs.$(li)The eye button and $(l)blockEffectRenderDistance$() control the core effects."
+    }
+  ]
+}

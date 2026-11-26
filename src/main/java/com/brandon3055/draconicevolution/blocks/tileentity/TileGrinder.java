@@ -180,7 +180,7 @@ public class TileGrinder extends TileBCore implements IRSSwitchable, MenuProvide
 
     public static void register(RegisterCapabilitiesEvent event) {
         com.brandon3055.brandonscore.capability.CapabilityOP.registerBlockEntity(event, DEContent.TILE_GRINDER.get());
-        event.registerBlockEntity(Capabilities.Fluid.BLOCK, DEContent.TILE_GRINDER.get(), (tile, side) -> tile.xpFluid);
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, DEContent.TILE_GRINDER.get(), (tile, side) -> com.brandon3055.draconicevolution.DEConfig.extra("grinderXpPiping") ? tile.xpFluid : null);
     }
 
     // eli.8 (upstream #1955): stored XP can be piped out as liquid XP, which the tooltip always promised.

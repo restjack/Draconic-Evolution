@@ -164,7 +164,7 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
         // eli.8 (upstream TODO in TileEnergyCore.isCoreValidForTier): say which blocks are wrong; details on hover.
         GuiText badCount = new GuiText(root).setTextSupplier(() -> structureCount(tile))
                 .setTooltip(() -> structureDetails(tile), 0)
-                .setEnabled(() -> !tile.active.get() && !tile.coreValid.get());
+                .setEnabled(() -> !tile.active.get() && !tile.coreValid.get() && com.brandon3055.draconicevolution.DEConfig.extra("structureHints"));
         Constraints.size(badCount, playInv.container().xSize(), 8);
         Constraints.placeOutside(badCount, coreInvalidLabel, Constraints.LayoutPos.BOTTOM_CENTER, 0, 5);
 
@@ -210,9 +210,11 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
         GuiText energy = new GuiText(display)
                 .setTextSupplier(() -> {
                     // eli.8: short prefixes (271.781M / 273M) like other mods; tier 8 keeps DE's own formatter (beyond a long).
-                    MutableComponent c = Component.literal(tile.energy.isUnlimited() ? tile.energy.getReadable().getString().trim()
+                    boolean details = com.brandon3055.draconicevolution.DEConfig.extra("coreScreenDetails"); // Extras switch: off = DE's own number words
+                    MutableComponent c = Component.literal(tile.energy.isUnlimited() || !details ? tile.energy.getReadable().getString().trim()
                             : shortNumber(tile.energy.getOPStored())).withStyle(GOLD);
-                    if (!tile.energy.isUnlimited()) c.append(Component.literal(" / " + shortNumber(tile.energy.getMaxOPStored())).withStyle(GRAY));
+                    if (!tile.energy.isUnlimited()) c.append(Component.literal(" / " + (details ? shortNumber(tile.energy.getMaxOPStored())
+                            : tile.energy.getReadableCapacity().getString().replace(" OP", "").trim())).withStyle(GRAY));
                     return c.append(Component.literal(" " + com.brandon3055.draconicevolution.DEConfig.energyUnit()).withStyle(tile.energy.isUnlimited() ? GOLD : GRAY));
                 });
         Constraints.size(energy, display.xSize(), 9);
@@ -223,19 +225,19 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
         Constraints.placeOutside(ioLabel, energy, Constraints.LayoutPos.BOTTOM_CENTER, 0, 3);
 
         GuiText inOut = new GuiText(display)
-                .setTextSupplier(() -> tile.energy.isUnlimited() ? genNetText(tile) : genInOutText(tile));
+                .setTextSupplier(() -> tile.energy.isUnlimited() || !com.brandon3055.draconicevolution.DEConfig.extra("coreScreenDetails") ? genNetText(tile) : genInOutText(tile));
         Constraints.size(inOut, display.xSize(), 9);
         Constraints.placeOutside(inOut, ioLabel, Constraints.LayoutPos.BOTTOM_CENTER, 0, 2);
 
         GuiText net = new GuiText(display)
                 .setTextSupplier(() -> genNetText(tile))
-                .setEnabled(() -> !tile.energy.isUnlimited());
+                .setEnabled(() -> !tile.energy.isUnlimited() && com.brandon3055.draconicevolution.DEConfig.extra("coreScreenDetails"));
         Constraints.size(net, display.xSize(), 9);
         Constraints.placeOutside(net, inOut, Constraints.LayoutPos.BOTTOM_CENTER, 0, 3);
 
         GuiText eta = new GuiText(display)
                 .setTextSupplier(() -> genEtaText(tile))
-                .setEnabled(() -> !tile.energy.isUnlimited());
+                .setEnabled(() -> !tile.energy.isUnlimited() && com.brandon3055.draconicevolution.DEConfig.extra("coreScreenDetails"));
         Constraints.size(eta, display.xSize(), 9);
         Constraints.placeOutside(eta, net, Constraints.LayoutPos.BOTTOM_CENTER, 0, 2);
 
@@ -283,7 +285,7 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
 
         // eli.8: rate history graph (net OP/t, one bar per 5 s, last 5 minutes) in a panel right of the screen.
         GuiButton graphButton = TOOLKIT.createThemedIconButton(root, 12, DEGuiTextures.getter("rate_graph"))
-                .setEnabled(tile.active::get)
+                .setEnabled(() -> tile.active.get() && com.brandon3055.draconicevolution.DEConfig.extra("coreGraph"))
                 .onPress(() -> showGraph = !showGraph)
                 .setToggleMode(() -> showGraph)
                 .setTooltipSingle(() -> Component.literal(showGraph ? "Hide the rate history" : "Show the rate history (last 5 minutes)"));
@@ -291,7 +293,7 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
 
         // eli.8: show energy as RF instead of OP (display only, 1:1), per player like the eye button.
         GuiButton unitButton = TOOLKIT.createThemedIconButton(root, 12, DEGuiTextures.getter("energy_unit"))
-                .setEnabled(tile.active::get)
+                .setEnabled(() -> tile.active.get() && com.brandon3055.draconicevolution.DEConfig.extra("coreUnitToggle"))
                 .onPress(() -> com.brandon3055.draconicevolution.DEConfig.modifyClientProperty("showEnergyAsRF",
                         v -> v.setBoolean(!com.brandon3055.draconicevolution.DEConfig.showEnergyAsRF)))
                 .setToggleMode(() -> com.brandon3055.draconicevolution.DEConfig.showEnergyAsRF)
@@ -304,7 +306,7 @@ public class EnergyCoreGui extends ContainerGuiProvider<EnergyCoreMenu> {
             public void renderBackground(GuiRender render, double mouseX, double mouseY, float partialTicks) {
                 renderRateGraph(render, tile, xMin(), yMin(), xSize(), ySize());
             }
-        }.setEnabled(() -> showGraph && tile.active.get());
+        }.setEnabled(() -> showGraph && tile.active.get() && com.brandon3055.draconicevolution.DEConfig.extra("coreGraph"));
         Constraints.size(graph, 124, 84);
         Constraints.placeOutside(graph, display, Constraints.LayoutPos.MIDDLE_RIGHT, 6, 0);
 

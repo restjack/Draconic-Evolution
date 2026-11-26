@@ -56,6 +56,18 @@ On **Windows** two things break the build; both have easy workarounds:
 
 Output: `.gradle/port-work/Draconic-Evolution/build/libs/` (the mod) and `.gradle/port-work/deps/` (the two libraries). `assemble` is enough; the unit-test stage needs the same JDK setup.
 
+## Optional extras (and turning them off)
+
+Our own features (not the bug fixes) each have a switch in `config/brandon3055/DraconicEvolution.cfg`, section `Extras`:
+a `Client` part (per player: core screen details, graph, OP/RF button, structure hints, pylon colours) and a `Server`
+part (grinder XP piping, guide book recipe, core rate history, pylon mode message). Each part has a master `extras`
+switch; off gives the official mod's behaviour. Server values are synced to joining clients.
+
+**Modpack defaults:** this file is not a NeoForge config, so NeoForge's `defaultconfigs/` does not seed it. Use a
+config-seeding mod such as Configured Defaults (FTB packs ship it): put your `DraconicEvolution.cfg` at
+`configureddefaults/config/brandon3055/DraconicEvolution.cfg`. It is copied only when the player has no such file yet,
+and missing values are filled with the defaults, so a file holding only the `Extras` section works.
+
 ## Adding it to an existing world
 
 - Draconic Evolution's ore generates only in **newly generated chunks**. A world explored (or pregenerated) before you added the mod has no Draconium there.
