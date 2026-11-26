@@ -20,6 +20,16 @@ Current build: **`3.1.4-unofficial-1.0`** (jar `Draconic-Evolution-26.1.2-3.1.4-
 | --- | --- |
 | ![Energy core screen with stored, in, out, net, time to full and the rate graph](.github/readme/core-screen.png) | ![Draconic Evolution Guide book, first page](.github/readme/guide-book.png) |
 
+**Core Monitor screen sizes** (panels facing the same way join into one screen; bigger shows more):
+
+| 1×1 | 2×1 | 3×1 |
+| --- | --- | --- |
+| ![1x1 Core Monitor: percent, bar, net rate](.github/readme/size-1x1.png) | ![2x1 Core Monitor: header, percent, stored and net, bar](.github/readme/size-2x1.png) | ![3x1 Core Monitor: wide strip](.github/readme/size-3x1.png) |
+
+| 1×2 | 2×2 | 3×3 / 4×4 |
+| --- | --- | --- |
+| ![1x2 Core Monitor: column with stored, net, time and a small core picture](.github/readme/size-1x2.png) | ![2x2 Core Monitor: percent with core picture, stored, in/out, net, time](.github/readme/size-2x2.png) | ![4x4 Core Monitor: core picture, stat cards and graph](.github/readme/core-monitor-4x4.png) |
+
 More: [Display tab](.github/readme/monitor-settings-display.png) · [Pylons tab](.github/readme/monitor-settings-pylons.png) · [Options tab](.github/readme/monitor-settings-options.png) · [monitor and core, angled](.github/readme/core-monitor-angle.png) · [GuideME page for the Core Monitor](.github/readme/guideme-core-monitor.png)
 
 ## What this branch adds
