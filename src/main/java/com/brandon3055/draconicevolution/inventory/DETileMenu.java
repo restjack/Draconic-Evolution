@@ -103,4 +103,18 @@ public abstract class DETileMenu<T extends TileBCore> extends ContainerBCTile<T>
             }
         }
     }
+
+    /**
+     * 26.1.2 port fix: the player is added to the tile's accessing-player set in the menu constructor, but
+     * TileBCore.getAccessingPlayers() prunes anyone whose containerMenu isn't this menu yet, and that runs before
+     * ServerPlayer.openMenu assigns containerMenu. The set stayed empty, so syncContainer() data (e.g. the energy
+     * core's stored OP and I/O) never reached the open screen. Re-register the viewer each sync (idempotent set add).
+     */
+    @Override
+    public void broadcastChanges() {
+        if (tile != null && player != null && player.containerMenu == this) {
+            tile.onPlayerOpenContainer(player);
+        }
+        super.broadcastChanges();
+    }
 }

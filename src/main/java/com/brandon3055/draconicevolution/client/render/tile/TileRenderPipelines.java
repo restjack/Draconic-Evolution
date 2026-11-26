@@ -96,6 +96,8 @@ public final class TileRenderPipelines {
         public RenderPipeline pipeline(VertexFormat.Mode mode) {
             return pipelines.computeIfAbsent(mode, m -> BCShaders.POS_COLOUR_TEX_ALPHA0.pipeline(m).toBuilder()
                     .withLocation(id("pipeline/" + name + "_" + m.name().toLowerCase(java.util.Locale.ROOT)))
+                    // BC's vertex shader ignores ModelMat, which ExtractedModel uses to place shader geometry.
+                    .withVertexShader(id("core/tile_alpha0_model"))
                     .withColorTargetState(blend == null ? ColorTargetState.DEFAULT : new ColorTargetState(blend))
                     .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, depthWrite)).withCull(true).build());
         }
