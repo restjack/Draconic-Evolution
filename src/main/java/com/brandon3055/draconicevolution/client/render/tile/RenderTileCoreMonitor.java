@@ -74,6 +74,12 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
         return 48;
     }
 
+    /** The bottom-left panel draws the whole screen (up to 4x4), so keep it drawn when only another part of the screen is in view. */
+    @Override
+    public boolean shouldRenderOffScreen() {
+        return true;
+    }
+
     private static boolean isPanel(Level level, BlockPos pos, Direction facing) {
         var s = level.getBlockState(pos);
         return s.getBlock() instanceof CoreMonitor && s.getValue(CoreMonitor.FACING) == facing;
@@ -631,17 +637,23 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
         GraphScale sc = GraphScale.of(g);
         Font font = Minecraft.getInstance().font;
         float ls = sc.labelSize;
-        text(pose, c, "0", sc.gx0 - 4 - font.width("0") * ls / 12F, sc.zero - ls / 2, ls, GRAY);
+        // Labels are dropped when they would overlap: the max labels win over "0" (a small value right by the zero
+        // line, e.g. +2k on a draining core, would otherwise print on top of it).
+        float zeroY = sc.zero - ls / 2;
+        boolean zeroFree = true;
         if (sc.maxPos > 0) {
             String s = compact((long) (sc.maxPos * g.unitScale));
-            float y = (float) (sc.zero - sc.maxPos / (sc.up + sc.down) * sc.hgt);
-            text(pose, c, s, sc.gx0 - 4 - font.width(s) * ls / 12F, Math.max(g.y0 + 1, y - ls / 2), ls, GREEN);
+            float y = Math.max(g.y0 + 1, (float) (sc.zero - sc.maxPos / (sc.up + sc.down) * sc.hgt) - ls / 2);
+            text(pose, c, s, sc.gx0 - 4 - font.width(s) * ls / 12F, y, ls, GREEN);
+            if (Math.abs(y - zeroY) < ls) zeroFree = false;
         }
         if (sc.maxNeg > 0) {
             String s = compact((long) (-sc.maxNeg * g.unitScale));
-            float y = (float) (sc.zero + sc.maxNeg / (sc.up + sc.down) * sc.hgt);
-            text(pose, c, s, sc.gx0 - 4 - font.width(s) * ls / 12F, Math.min(g.y1 - ls - 1, y - ls / 2), ls, RED);
+            float y = Math.min(g.y1 - ls - 1, (float) (sc.zero + sc.maxNeg / (sc.up + sc.down) * sc.hgt) - ls / 2);
+            text(pose, c, s, sc.gx0 - 4 - font.width(s) * ls / 12F, y, ls, RED);
+            if (Math.abs(y - zeroY) < ls) zeroFree = false;
         }
+        if (zeroFree) text(pose, c, "0", sc.gx0 - 4 - font.width("0") * ls / 12F, zeroY, ls, GRAY);
     }
 
     // ### Core picture (mockup board "Render": svg 300x300, sphere r70, halo r110, orbs r13 at 134, beams 130 -> 80)
