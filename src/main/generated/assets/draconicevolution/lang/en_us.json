@@ -1,4 +1,5 @@
 {
+  "block.draconicevolution.core_monitor": "Core Monitor",
   "death.attack.draconicevolution.core_beam": "%1$s walked into an energy core beam",
   "config.jade.plugin_draconicevolution.energy_core": "Draconic Energy Core info",
   "block.draconicevolution.awakened_crafting_injector": "Draconic Fusion Crafting Injector",

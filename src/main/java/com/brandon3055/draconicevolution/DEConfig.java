@@ -93,7 +93,7 @@ public class DEConfig {
     public static boolean extrasClient = true, coreScreenDetails = true, coreGraph = true, coreUnitToggle = true,
             structureHints = true, pylonModeColours = true;
     public static boolean extrasServer = true, grinderXpPiping = true, guideBookRecipe = true, coreRateHistory = true,
-            pylonModeMessage = true, beamForceField = true, beamPush = true, beamAffectsPlayers = true, beamAffectsMobs = true;
+            pylonModeMessage = true, beamForceField = true, beamPush = true, beamAffectsPlayers = true, beamAffectsMobs = true, coreMonitor = true;
     public static double beamDamage = 1.0;
 
     private static void loadExtras() {
@@ -126,6 +126,8 @@ public class DEConfig {
                 .setDefaultBoolean(true).onSync((t, r) -> coreRateHistory = t.getBoolean());
         server.getValue("pylonModeMessage").syncTagToClient().setComment("Action-bar message saying INPUT/OUTPUT when a pylon is switched.")
                 .setDefaultBoolean(true).onSync((t, r) -> pylonModeMessage = t.getBoolean());
+        server.getValue("coreMonitor").syncTagToClient().setComment("Core Monitor block: recipe and its live data. Off = no recipe; placed monitors show 'disabled'.")
+                .setDefaultBoolean(true).onSync((t, r) -> coreMonitor = t.getBoolean());
         server.getValue("beamForceField").syncTagToClient().setComment("Stabilizer beams of an active energy core push out and hurt players and mobs inside them.")
                 .setDefaultBoolean(true).onSync((t, r) -> beamForceField = t.getBoolean());
         server.getValue("beamDamage").setComment("Damage per hit from a stabilizer beam (every half second). 1.0 = half a heart, 0 = no damage.")
@@ -150,6 +152,7 @@ public class DEConfig {
             case "coreRateHistory" -> extrasServer && coreRateHistory;
             case "pylonModeMessage" -> extrasServer && pylonModeMessage;
             case "beamForceField" -> extrasServer && beamForceField;
+            case "coreMonitor" -> extrasServer && coreMonitor;
             default -> true;
         };
     }

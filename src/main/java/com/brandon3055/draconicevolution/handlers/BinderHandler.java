@@ -129,6 +129,35 @@ public class BinderHandler {
         BlockEntity tile = level.getBlockEntity(blockClicked);
         boolean isBound = isBound(binder);
 
+        // eli.8: Core Monitor linking. Shift-click an energy core (or one of its stabilizers / pylons) to save the core,
+        // then click a Core Monitor to link its screen. Works across dimensions.
+        if (player.isShiftKeyDown() && !(tile instanceof ICrystalLink)) {
+            BlockPos corePos = coreOf(tile);
+            if (corePos != null) {
+                bind(binder, corePos, level);
+                if (level.isClientSide()) {
+                    ChatHelper.sendIndexed(player, Component.literal("Energy core saved to the binder. Now click a Core Monitor.").withStyle(ChatFormatting.GREEN), TileCrystalBase.MSG_ID);
+                    player.swing(hand);
+                }
+                return true;
+            }
+        }
+        if (tile instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileCoreMonitor monitor) {
+            if (!isBound) {
+                ChatHelper.sendIndexed(player, Component.literal("Shift-click an energy core with the binder first.").withStyle(ChatFormatting.RED), TileCrystalBase.MSG_ID);
+                return true;
+            }
+            if (!level.isClientSide()) {
+                GlobalPos target = getBound(binder);
+                int n = monitor.linkScreen(target);
+                ChatHelper.sendIndexed(player, Component.literal("Core Monitor linked (" + n + (n == 1 ? " panel" : " panels") + ") to the core at "
+                        + target.pos().getX() + " " + target.pos().getY() + " " + target.pos().getZ() + ".").withStyle(ChatFormatting.GREEN), TileCrystalBase.MSG_ID);
+            } else {
+                player.swing(hand);
+            }
+            return true;
+        }
+
         //If the tile is linkable and the player is sneaking bind the tile to the tool.
         if (tile instanceof ICrystalLink && player.isShiftKeyDown()) {
             bind(binder, blockClicked, level);
@@ -170,6 +199,16 @@ public class BinderHandler {
         }
 
         return false;
+    }
+
+    /** The energy core a clicked core, stabilizer or pylon belongs to, or null. */
+    private static BlockPos coreOf(BlockEntity tile) {
+        if (tile instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileEnergyCore core) return core.getBlockPos();
+        if (tile instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileEnergyPylon pylon && pylon.coreOffset.notNull())
+            return pylon.getBlockPos().subtract(pylon.coreOffset.get());
+        if (tile instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileEnergyCoreStabilizer stab && stab.coreOffset.notNull())
+            return stab.getBlockPos().subtract(stab.coreOffset.get());
+        return null;
     }
 
     private static boolean isBound(ItemStack stack) {

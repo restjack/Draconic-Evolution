@@ -26,6 +26,7 @@ Bug fixes are not in this list and are always on.
 - **guideBookRecipe**: this book's recipe.
 - **coreRateHistory**: cores record their graph data.
 - **pylonModeMessage**: the pylon INPUT/OUTPUT message.
+- **coreMonitor**: the Core Monitor block.
 - **beamForceField**: stabilizer beams push and hurt (plus **beamDamage**, **beamPush**, **beamAffectsPlayers**, **beamAffectsMobs**).
 
 The server's choices reach your game when you join.

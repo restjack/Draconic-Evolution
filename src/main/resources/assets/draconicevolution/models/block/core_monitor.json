@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "draconicevolution:block/core_monitor/core_monitor_side",
+    "side": "draconicevolution:block/core_monitor/core_monitor_side",
+    "front": "draconicevolution:block/core_monitor/core_monitor_front",
+    "particle": "draconicevolution:block/core_monitor/core_monitor_side"
+  }
+}

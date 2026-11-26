@@ -1,0 +1,26 @@
+{
+  "name": "Core Monitor",
+  "icon": "draconicevolution:core_monitor",
+  "category": "draconicevolution:energy_core",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)Core Monitor$() is a screen that shows an energy core's numbers from anywhere, even another dimension.$(br2)Place panels facing the same way next to each other: up to 3 by 3 of them join into one bigger screen with more detail. The bottom-left panel draws it."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "draconicevolution:machines/core_monitor"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Linking",
+      "text": "Take a $(item)Crystal Binder$(), Shift-right-click the core (or one of its stabilizers or pylons), then right-click any panel of the screen. All joined panels link at once.$(br2)A core far away only updates while its chunk is loaded; the screen then shows the last values it saw and how long ago."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "What it shows",
+      "text": "Fill level with a bar, status (charging, draining, full, low, inactive, stabilizer problem), stored and capacity, energy in and out, the net rate and the time until full or empty. Colours turn yellow below 25% and red below 10%.$(br2)Servers can switch the monitor off with $(l)coreMonitor$() in the config."
+    }
+  ]
+}

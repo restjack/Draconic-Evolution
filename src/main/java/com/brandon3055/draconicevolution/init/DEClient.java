@@ -127,6 +127,7 @@ public class DEClient {
         event.registerBlockEntityRenderer(DEContent.TILE_GRINDER.get(), RenderTileGrinder::new);
         event.registerBlockEntityRenderer(DEContent.TILE_DRACONIUM_CHEST.get(), DraconiumChestTileRenderer::new);
         event.registerBlockEntityRenderer(DEContent.TILE_STORAGE_CORE.get(), RenderTileEnergyCore::new);
+        event.registerBlockEntityRenderer(DEContent.TILE_CORE_MONITOR.get(), com.brandon3055.draconicevolution.client.render.tile.RenderTileCoreMonitor::new); // eli.8
         event.registerBlockEntityRenderer(DEContent.TILE_STRUCTURE_BLOCK.get(), com.brandon3055.draconicevolution.client.render.tile.RenderTileStructureBlock::new); // eli.8
         event.registerBlockEntityRenderer(DEContent.TILE_ENERGY_PYLON.get(), RenderTileEnergyPylon::new);
         event.registerBlockEntityRenderer(DEContent.TILE_CORE_STABILIZER.get(), RenderEnergyCoreStabilizer::new);
