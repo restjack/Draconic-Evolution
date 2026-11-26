@@ -213,7 +213,9 @@ public class RenderTileEnergyCore implements BlockEntityRenderer<TileEnergyCore,
             Matrix4 mat = matrix4.copy();
             mat.translate(-posOffset.get().getX() + 0.5, -posOffset.get().getY() + 0.5, -posOffset.get().getZ() + 0.5);
 
-            Direction facing = Direction.getNearest(0, 0, 0, Direction.NORTH);//Direction.getFacingFromAxis(Direction.AxisDirection.POSITIVE, te.multiBlockAxis);
+            // Upstream: Direction.getNearest(x, y, z) of the stabilizer offset. 26.1 only has the overload with a
+            // fallback; the port passed (0, 0, 0), which always returned the fallback, so every beam pointed north.
+            Direction facing = Direction.getNearest(posOffset.get(), Direction.NORTH);
             if (facing.getAxis() == Direction.Axis.X || facing.getAxis() == Direction.Axis.Y) {
                 mat.rotate(-90F * MathHelper.torad, new Vector3(-facing.getStepY(), facing.getStepX(), 0).normalize());
             } else if (facing == Direction.SOUTH) {
