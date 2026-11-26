@@ -10,17 +10,17 @@ Current build: **`3.1.4-unofficial-1.0`** (jar `Draconic-Evolution-26.1.2-3.1.4-
 
 | Core Monitor (3×3, with the live core picture) | Energy core screen |
 | --- | --- |
-| ![Core Monitor 3x3 screen with core picture, stats and graph](docs/images/core-monitor-3x3.png) | ![Energy core screen with stored, in, out, net and time to empty](docs/images/core-screen.png) |
+| ![Core Monitor 3x3 screen with core picture, stats and graph](.github/readme/core-monitor-3x3.png) | ![Energy core screen with stored, in, out, net and time to empty](.github/readme/core-screen.png) |
 
 | Core Monitor settings: Control | Core Monitor settings: Stats |
 | --- | --- |
-| ![Control tab: core power and next tier preview](docs/images/monitor-settings-control.png) | ![Stats tab: net flow chart and averages](docs/images/monitor-settings-stats.png) |
+| ![Control tab: core power and next tier preview](.github/readme/monitor-settings-control.png) | ![Stats tab: net flow chart and averages](.github/readme/monitor-settings-stats.png) |
 
 | In-game guide (Patchouli; also GuideME, hold G) |
 | --- |
-| ![Guide book page about Draconium](docs/images/guide-book.png) |
+| ![Guide book page about Draconium](.github/readme/guide-book.png) |
 
-More: [Display tab](docs/images/monitor-settings-display.png) · [Pylons tab](docs/images/monitor-settings-pylons.png) · [Options tab](docs/images/monitor-settings-options.png) · [core picture close-up](docs/images/core-monitor-core-picture.png)
+More: [Display tab](.github/readme/monitor-settings-display.png) · [Pylons tab](.github/readme/monitor-settings-pylons.png) · [Options tab](.github/readme/monitor-settings-options.png) · [core picture close-up](.github/readme/core-monitor-core-picture.png)
 
 ## What this branch adds
 
