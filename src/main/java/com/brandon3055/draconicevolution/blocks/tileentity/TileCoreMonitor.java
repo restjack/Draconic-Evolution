@@ -92,7 +92,7 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
 
     public static final int SHOW_HEADER = 1, SHOW_STATUS = 2, SHOW_PERCENT = 4, SHOW_BAR = 8, SHOW_STORED = 16,
             SHOW_INOUT = 32, SHOW_NET = 64, SHOW_ETA = 128, SHOW_FRAME = 256, SHOW_RENDER = 512, SHOW_GRAPH = 1024, SHOW_STATS = 2048, SHOW_ALL = 4095;
-    public static final int MSG_SCREEN_RANGE = 12;
+    public static final int MSG_SCREEN_RANGE = 12, MSG_ALERT_TEST = 13, MSG_PYLON_LOCATE = 14;
     public static final int MSG_SHOW = 1, MSG_TOGGLE_CORE = 2, MSG_PYLONS = 3, MSG_PYLON_FLIP = 4, MSG_LIMITS = 5, MSG_PYLON_LIST = 10;
 
     /** Client copy of the linked core's pylons, filled when the settings screen asks. */
@@ -357,6 +357,32 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
         }, MSG_STATS_DATA);
     }
 
+    /** A sample alert to only this player, through one channel, marked TEST so nobody mistakes it for a real one. */
+    private void sendTestAlert(ServerPlayer p, int channel) {
+        String what = "TEST - this is how an alert will look";
+        if ((channel & ALERT_CHAT) != 0) p.sendSystemMessage(Component.literal("[Core Monitor] [TEST] ").withStyle(ChatFormatting.LIGHT_PURPLE)
+                .append(Component.literal(label() + ": below " + alarmAt.get() + "% (example)").withStyle(ChatFormatting.RED)));
+        if ((channel & ALERT_TOAST) != 0) com.brandon3055.draconicevolution.network.DraconicNetwork.sendMonitorToast(p, "[TEST] " + label(), what);
+        if ((channel & ALERT_SOUND) != 0) {
+            p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(net.minecraft.sounds.SoundEvents.NOTE_BLOCK_BELL,
+                    net.minecraft.sounds.SoundSource.BLOCKS, p.getX(), p.getY(), p.getZ(), 1F, 0.6F, p.getRandom().nextLong()));
+            p.sendOverlayMessage(Component.literal("[TEST] alert sound").withStyle(ChatFormatting.LIGHT_PURPLE));
+        }
+    }
+
+    /** Pylon position in chat (JourneyMap waypoint form) plus a column of particles at the pylon. */
+    private void locatePylon(ServerPlayer player, BlockPos pos) {
+        TileEnergyCore core = findCore();
+        if (core == null || !core.pylons.contains(pos)) return;
+        player.sendSystemMessage(Component.literal("Pylon: ").withStyle(ChatFormatting.LIGHT_PURPLE).append(Component.literal(
+                "[name:\"Pylon\", x:" + pos.getX() + ", y:" + pos.getY() + ", z:" + pos.getZ() + ", dim:" + linkDim.get() + "]").withStyle(ChatFormatting.AQUA)));
+        if (core.getLevel() instanceof ServerLevel sl) {
+            for (int i = 0; i < 12; i++) {
+                sl.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 1 + i * 0.6, pos.getZ() + 0.5, 4, 0.15, 0.15, 0.15, 0.01);
+            }
+        }
+    }
+
     /** JourneyMap turns a chat line in this form into a clickable "add waypoint". */
     private void sendLocate(ServerPlayer player) {
         BlockPos p = linkPos.get();
@@ -397,6 +423,14 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
         }
         if (id == MSG_LOCATE) {
             if (isLinked()) sendLocate(player);
+            return;
+        }
+        if (id == MSG_ALERT_TEST) {
+            if (isLinked()) sendTestAlert(player, data.readByte());
+            return;
+        }
+        if (id == MSG_PYLON_LOCATE) {
+            locatePylon(player, data.readPos());
             return;
         }
         if (!DEConfig.extra("coreMonitor")) return;

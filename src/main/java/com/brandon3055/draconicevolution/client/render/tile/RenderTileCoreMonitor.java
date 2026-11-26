@@ -366,9 +366,25 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
             if (barH > 0) bar(x0, y1 - barH, x1, y1);
         }
 
-        /** 2x2 (and 3x2/2x3): mockup "2x2 - all lines, no graph"; a small core next to the percent if enabled. */
+        /** 2x2 (and 3x2/2x3): mockup "2x2 - all lines, no graph"; a small core next to the percent if enabled.
+         * 3x2 puts the graph in a column on the right; 2x3 puts it under the lines. */
         void medium() {
-            float y = y0, mw = x1 - x0, gap = 8;
+            boolean sideGraph = s.w >= 3 && show(TileCoreMonitor.SHOW_GRAPH);
+            float fullX1 = x1, y = y0, gap = 8;
+            if (sideGraph) {
+                float split = x0 + (x1 - x0) * 0.55F;
+                long[] data = t.statSeries[range()];
+                float gy = y0 + (show(TileCoreMonitor.SHOW_HEADER) || show(TileCoreMonitor.SHOW_STATUS) ? 24 + gap : 0);
+                text("Net " + unit + "/t \u00B7 " + RANGE_NAMES[range()], split + 18, gy, fit("Net " + unit + "/t \u00B7 " + RANGE_NAMES[range()], 20, x1 - split - 18), CYAN);
+                ops.add(new GraphOp(split + 18, gy + 24, x1, y1 - 24, data, false));
+                textRight("\u00B1" + num(max(data)), x1, y1 - 20, 20, GRAY);
+            }
+            if (show(TileCoreMonitor.SHOW_HEADER) || show(TileCoreMonitor.SHOW_STATUS)) {
+                header(y, 24, show(TileCoreMonitor.SHOW_HEADER) ? title : "", show(TileCoreMonitor.SHOW_STATUS) ? word : "", CYAN);
+                y += 24 + gap;
+            }
+            if (sideGraph) x1 = x0 + (x1 - x0) * 0.55F;
+            float mw = x1 - x0;
             if (show(TileCoreMonitor.SHOW_HEADER) || show(TileCoreMonitor.SHOW_STATUS)) {
                 header(y, 24, show(TileCoreMonitor.SHOW_HEADER) ? title : "", show(TileCoreMonitor.SHOW_STATUS) ? word : "", CYAN);
                 y += 24 + gap;
@@ -395,6 +411,12 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
                 if (y + 26 > y1 + 1) break;
                 pieces(x0, y, 26, mw, l);
                 y += 26 + gap;
+            }
+            x1 = fullX1;
+            if (!sideGraph && s.h >= 3 && show(TileCoreMonitor.SHOW_GRAPH) && y1 - y > 70) {
+                long[] data = t.statSeries[range()];
+                text("Net " + unit + "/t \u00B7 last " + RANGE_NAMES[range()], x0, y, 22, CYAN);
+                ops.add(new GraphOp(x0, y + 26, x1, y1, data, false));
             }
         }
 
@@ -556,7 +578,7 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
         for (long v : d) { maxPos = Math.max(maxPos, v); maxNeg = Math.max(maxNeg, -v); }
         float top = g.y0 + 3, bottom = g.y1 - 3, hgt = bottom - top;
         float zero = maxPos + maxNeg == 0 ? (top + bottom) / 2 : top + hgt * maxPos / (float) (maxPos + maxNeg);
-        quad(pose, c, g.x0 + 1, zero, g.x1 - 1, zero + 1, Z_LINE, 0xFF5A5A66);
+        quad(pose, c, g.x0 + 1, zero, g.x1 - 1, zero + 1, Z_CORE - 0.2F, 0xFF5A5A66);
         if (d.length == 0) return;
         long scale = Math.max(1, maxPos + maxNeg);
         int slots = 60;
@@ -572,7 +594,7 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
                 else if (v < 0) quad(pose, c, bx, zero + 1, bx + bw * 0.7F, vy + 1, Z_CORE, 0xFFFF5555);
             } else {
                 float mx = bx + bw / 2;
-                quad(pose, c, bx, Math.min(vy, zero), bx + bw, Math.max(vy, zero), Z_LINE, v >= 0 ? 0x5955FF55 : 0x59FF5555);
+                quad(pose, c, bx, Math.min(vy, zero), bx + bw, Math.max(vy, zero), Z_LINE, mix(0x120A18, v >= 0 ? 0x55FF55 : 0xFF5555, 0.35F));
                 if (i > 0) line(pose, c, prevX, prevY, mx, vy, 2F, Z_CORE, 0xFFFFAA00);
                 prevX = mx;
                 prevY = vy;
@@ -602,21 +624,33 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
         ICO_E = edges.toArray(new int[0][]);
     }
 
+    /**
+     * Every layer is opaque on purpose: the screen's quads write depth, so a see-through piece drawn before the shape
+     * behind it leaves a hole (the dark smears and block-texture holes Eli saw). Glows are blended into BG by hand.
+     */
     private static void drawCore(PoseStack pose, SubmitNodeCollector c, float cx, float cy, float k, float time) {
         float pulse = 0.775F + 0.225F * (float) Math.sin(time * Math.PI / 30); // 3 s cycle
-        int beamA = (int) (0.8F * pulse * 255);
         for (int[] d : new int[][]{{0, -1}, {0, 1}, {-1, 0}, {1, 0}}) {
-            line(pose, c, cx + d[0] * 130 * k, cy + d[1] * 130 * k, cx + d[0] * 80 * k, cy + d[1] * 80 * k, 3 * k + 0.5F, Z_FILL, (beamA << 24) | 0x55FFFF);
+            line(pose, c, cx + d[0] * 130 * k, cy + d[1] * 130 * k, cx + d[0] * 72 * k, cy + d[1] * 72 * k, 3 * k + 0.5F, Z_FILL + 0.2F,
+                    mix(BG, 0x55FFFF, 0.8F * pulse));
         }
-        int haloA = (int) (0.35F * pulse * 255);
-        disc(pose, c, cx, cy, 0, 60.5F * k, (haloA << 24) | 0x8800FF, (haloA << 24) | 0x8800FF, Z_FILL);
-        disc(pose, c, cx, cy, 60.5F * k, 110 * k, (haloA << 24) | 0x8800FF, 0x008800FF, Z_FILL);
-        disc(pose, c, cx, cy, 0, 35 * k, 0xFFFFB050, 0xFFFF7A1A, Z_LINE);
-        disc(pose, c, cx, cy, 35 * k, 70 * k, 0xFFFF7A1A, 0xFF7A1200, Z_LINE);
-        disc(pose, c, cx - 14 * k, cy - 18 * k, 0, 26 * k, 0xE6FFD27A, 0x00FFD27A, Z_LINE + 0.1F);
+        // halo: a ring outside the sphere only, fading into the background
+        disc(pose, c, cx, cy, 71 * k, 110 * k, mix(BG, 0x8800FF, 0.45F * pulse), 0xFF000000 | BG, Z_FILL);
+        // sphere with a baked-in highlight: fan from the hot spot to the rim, orange half way
+        float hx = cx - 14 * k, hy = cy - 18 * k, r = 70 * k;
+        int seg = 40;
+        c.submitCustomGeometry(pose, RenderTypes.textBackground(), (p, vc) -> {
+            for (int i = 0; i < seg; i++) {
+                double a0 = i * Math.PI * 2 / seg, a1 = (i + 1) * Math.PI * 2 / seg;
+                float rx0 = cx + (float) Math.cos(a0) * r, ry0 = cy + (float) Math.sin(a0) * r;
+                float rx1 = cx + (float) Math.cos(a1) * r, ry1 = cy + (float) Math.sin(a1) * r;
+                float mx0 = hx + (rx0 - hx) * 0.55F, my0 = hy + (ry0 - hy) * 0.55F, mx1 = hx + (rx1 - hx) * 0.55F, my1 = hy + (ry1 - hy) * 0.55F;
+                quad4(p, vc, Z_LINE, hx, hy, 0xFFFFD27A, mx0, my0, 0xFFFF7A1A, mx1, my1, 0xFFFF7A1A, hx, hy, 0xFFFFD27A);
+                quad4(p, vc, Z_LINE, mx0, my0, 0xFFFF7A1A, rx0, ry0, 0xFF7A1200, rx1, ry1, 0xFF7A1200, mx1, my1, 0xFFFF7A1A);
+            }
+        });
         // Shell: icosahedron wireframe, one turn per 18 s, tilted 25 degrees toward the viewer; back edges dimmer.
         double a = time / 360D * Math.PI * 2, tilt = Math.toRadians(25);
-        float r = 70 * k;
         float[][] pr = new float[12][3];
         for (int i = 0; i < 12; i++) {
             float x = ICO_V[i][0], y = ICO_V[i][1], z = ICO_V[i][2];
@@ -625,16 +659,39 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
             pr[i] = new float[]{cx + x1 * r, cy - y2 * r, z2};
         }
         for (int[] e : ICO_E) {
-            boolean front = pr[e[0]][2] + pr[e[1]][2] > 0;
-            line(pose, c, pr[e[0]][0], pr[e[0]][1], pr[e[1]][0], pr[e[1]][1], 1.6F * k + 0.4F, Z_CORE + (front ? 0.1F : 0),
-                    front ? 0xE6B066FF : 0x50B066FF);
+            if (pr[e[0]][2] + pr[e[1]][2] <= 0) continue; // back edges are hidden by the sphere
+            line(pose, c, pr[e[0]][0], pr[e[0]][1], pr[e[1]][0], pr[e[1]][1], 1.6F * k + 0.4F, Z_CORE, 0xFFB066FF);
         }
-        disc(pose, c, cx, cy, 69 * k, 71 * k + 0.3F, 0xFFD9B3FF, 0xFFD9B3FF, Z_CORE + 0.2F);
+        disc(pose, c, cx, cy, 69.5F * k, 71.5F * k + 0.3F, 0xFFD9B3FF, 0xFFD9B3FF, Z_CORE + 0.2F);
         for (int[] d : new int[][]{{0, -1}, {0, 1}, {-1, 0}, {1, 0}}) {
             float ox = cx + d[0] * 134 * k, oy = cy + d[1] * 134 * k;
             disc(pose, c, ox, oy, 0, 7.8F * k, 0xFFE8FFFF, 0xFF3FD4FF, Z_CORE);
             disc(pose, c, ox, oy, 7.8F * k, 13 * k, 0xFF3FD4FF, 0xFF0A5A7A, Z_CORE);
         }
+    }
+
+    private static final int BG = 0x0B0710;
+
+    /** colour blended over a background by alpha a, as an opaque colour. */
+    private static int mix(int bg, int colour, float a) {
+        a = Math.max(0, Math.min(1, a));
+        int r = (int) (((bg >> 16) & 255) * (1 - a) + ((colour >> 16) & 255) * a);
+        int g = (int) (((bg >> 8) & 255) * (1 - a) + ((colour >> 8) & 255) * a);
+        int b = (int) ((bg & 255) * (1 - a) + (colour & 255) * a);
+        return 0xFF000000 | r << 16 | g << 8 | b;
+    }
+
+    /** One quad with a colour per corner, both windings. */
+    private static void quad4(PoseStack.Pose p, com.mojang.blaze3d.vertex.VertexConsumer vc, float z, float ax, float ay, int ac, float bx, float by, int bc,
+                              float cx, float cy, int cc, float dx, float dy, int dc) {
+        vc.addVertex(p, ax, ay, z).setColor(ac).setLight(FULL_BRIGHT);
+        vc.addVertex(p, bx, by, z).setColor(bc).setLight(FULL_BRIGHT);
+        vc.addVertex(p, cx, cy, z).setColor(cc).setLight(FULL_BRIGHT);
+        vc.addVertex(p, dx, dy, z).setColor(dc).setLight(FULL_BRIGHT);
+        vc.addVertex(p, dx, dy, z).setColor(dc).setLight(FULL_BRIGHT);
+        vc.addVertex(p, cx, cy, z).setColor(cc).setLight(FULL_BRIGHT);
+        vc.addVertex(p, bx, by, z).setColor(bc).setLight(FULL_BRIGHT);
+        vc.addVertex(p, ax, ay, z).setColor(ac).setLight(FULL_BRIGHT);
     }
 
     /** A ring (or a disc when r0 = 0) from r0 to r1, colour fading from c0 inside to c1 outside. */
