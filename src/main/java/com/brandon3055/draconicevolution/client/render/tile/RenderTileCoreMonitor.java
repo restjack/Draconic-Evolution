@@ -656,11 +656,16 @@ public class RenderTileCoreMonitor implements BlockEntityRenderer<TileCoreMonito
             float x = ICO_V[i][0], y = ICO_V[i][1], z = ICO_V[i][2];
             float x1 = (float) (x * Math.cos(a) + z * Math.sin(a)), z1 = (float) (-x * Math.sin(a) + z * Math.cos(a));
             float y2 = (float) (y * Math.cos(tilt) - z1 * Math.sin(tilt)), z2 = (float) (y * Math.sin(tilt) + z1 * Math.cos(tilt));
-            pr[i] = new float[]{cx + x1 * r, cy - y2 * r, z2};
+            pr[i] = new float[]{cx + x1 * r * 0.96F, cy - y2 * r * 0.96F, z2}; // just inside the rim
         }
+        // Every edge is drawn; its colour slides smoothly from faint purple-on-orange at the back to full purple at the
+        // front, so edges never pop in or out as they turn past the rim. Depth also orders them (front edges on top).
         for (int[] e : ICO_E) {
-            if (pr[e[0]][2] + pr[e[1]][2] <= 0) continue; // back edges are hidden by the sphere
-            line(pose, c, pr[e[0]][0], pr[e[0]][1], pr[e[1]][0], pr[e[1]][1], 1.6F * k + 0.4F, Z_CORE, 0xFFB066FF);
+            float depth = (pr[e[0]][2] + pr[e[1]][2]) / 2; // -1 back .. 1 front
+            float t = Math.max(0, Math.min(1, (depth + 0.35F) / 0.9F));
+            t = t * t * (3 - 2 * t);
+            line(pose, c, pr[e[0]][0], pr[e[0]][1], pr[e[1]][0], pr[e[1]][1], 1.6F * k + 0.4F, Z_CORE + 0.15F * t,
+                    mix(0xFF7A1A, 0xB066FF, 0.22F + 0.78F * t));
         }
         disc(pose, c, cx, cy, 69.5F * k, 71.5F * k + 0.3F, 0xFFD9B3FF, 0xFFD9B3FF, Z_CORE + 0.2F);
         for (int[] d : new int[][]{{0, -1}, {0, 1}, {-1, 0}, {1, 0}}) {
