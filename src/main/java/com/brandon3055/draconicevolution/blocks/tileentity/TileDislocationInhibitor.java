@@ -40,19 +40,36 @@ import java.util.WeakHashMap;
  * Dislocation Normalization Field Projector (restjack fork, unofficial rework; mockup
  * https://claude.ai/artifact/QMWoAA3VJbaUbia96fuap3). Items inside a box around the block can't be pulled by magnets.
  * <p>
+ * The box works like the Evo Tweaks Field Crystal's (unofficial-1.34): per-axis radius r (0..16, 2r+1 blocks wide) and
+ * offset (-16..16) of the box centre from the block. Blocks saved before 1.34 had one cube radius ({@link #RANGES}
+ * index in "range"); the first load turns that into r/r/r with no offset.
+ * <p>
  * Draconic magnets ask {@link #isInhibited} (a per-level list of loaded projectors) instead of scanning blocks around
  * every item. In "all magnets" mode the projector also gives items in its box the standard {@code PreventRemoteMovement}
  * tag that most mods' magnets respect, plus our own marker so we only ever remove tags we added.
  */
 public class TileDislocationInhibitor extends TileBCore implements MenuProvider, IInteractTile {
 
+    /** Old cube radii (pre-1.34 saves, and shift-right-click on the block still steps through them). */
     public static final int[] RANGES = {3, 5, 8, 12, 16};
     public static final int DEFAULT_RANGE = 1; // 5 blocks: what the old block did
+    public static final int RADIUS_MAX = 16, OFFSET_MAX = 16;
     public static final int RS_IGNORE = 0, RS_HIGH = 1, RS_LOW = 2;
-    public static final int SET_RANGE = 0, SET_ALL = 1, SET_AREA = 2, SET_RS = 3;
+    /** SET_RAD + axis (0 x, 1 y, 2 z) and SET_OFF + axis set one value. */
+    public static final int SET_ALL = 1, SET_AREA = 2, SET_RS = 3, SET_RAD = 4, SET_OFF = 7;
     public static final String PREVENT = "PreventRemoteMovement", MARK = "draconicevolution:inhibitor";
 
-    public final ManagedByte range = register(new ManagedByte("range", DEFAULT_RANGE, DataFlags.SAVE_NBT_SYNC_TILE));
+    /** Pre-1.34 cube size, read once by {@link #migrate}. */
+    public final ManagedByte range = register(new ManagedByte("range", DEFAULT_RANGE, DataFlags.SAVE_NBT));
+    public final ManagedBool boxSet = register(new ManagedBool("box_v2", false, DataFlags.SAVE_NBT));
+    private final ManagedByte[] rad = {
+            register(new ManagedByte("rad_x", 5, DataFlags.SAVE_NBT_SYNC_TILE)),
+            register(new ManagedByte("rad_y", 5, DataFlags.SAVE_NBT_SYNC_TILE)),
+            register(new ManagedByte("rad_z", 5, DataFlags.SAVE_NBT_SYNC_TILE))};
+    private final ManagedByte[] off = {
+            register(new ManagedByte("off_x", 0, DataFlags.SAVE_NBT_SYNC_TILE)),
+            register(new ManagedByte("off_y", 0, DataFlags.SAVE_NBT_SYNC_TILE)),
+            register(new ManagedByte("off_z", 0, DataFlags.SAVE_NBT_SYNC_TILE))};
     public final ManagedBool allMagnets = register(new ManagedBool("all_magnets", true, DataFlags.SAVE_NBT_SYNC_TILE));
     public final ManagedBool showArea = register(new ManagedBool("show_area", false, DataFlags.SAVE_NBT_SYNC_TILE));
     /** 0 ignore, 1 needs a signal, 2 needs no signal. */
@@ -86,6 +103,7 @@ public class TileDislocationInhibitor extends TileBCore implements MenuProvider,
     @Override
     public void onLoad() {
         super.onLoad();
+        if (level != null && !level.isClientSide()) migrate();
         if (level != null) LOADED.computeIfAbsent(level, k -> new HashSet<>()).add(this);
     }
 
@@ -118,8 +136,41 @@ public class TileDislocationInhibitor extends TileBCore implements MenuProvider,
 
     //endregion
 
-    public int radius() {
-        return RANGES[Math.floorMod(range.get(), RANGES.length)];
+    /** Pre-1.34 save: old cube radius becomes r/r/r, centred on the block. */
+    private void migrate() {
+        if (boxSet.get()) return;
+        setCube(RANGES[Math.floorMod(range.get(), RANGES.length)]);
+        boxSet.set(true);
+    }
+
+    private void setCube(int r) {
+        for (int i = 0; i < 3; i++) {
+            rad[i].set((byte) r);
+            off[i].set((byte) 0);
+        }
+    }
+
+    public int radius(int axis) {
+        return Math.max(0, Math.min(RADIUS_MAX, rad[axis].get()));
+    }
+
+    public int offset(int axis) {
+        return Math.max(-OFFSET_MAX, Math.min(OFFSET_MAX, off[axis].get()));
+    }
+
+    /** Box relative to the block, inclusive: {minX, minY, minZ, maxX, maxY, maxZ} (Field Crystal's FieldLogic.box). */
+    public int[] box() {
+        int[] b = new int[6];
+        for (int i = 0; i < 3; i++) {
+            b[i] = offset(i) - radius(i);
+            b[i + 3] = offset(i) + radius(i);
+        }
+        return b;
+    }
+
+    /** Box size in blocks on one axis: 2r+1. */
+    public int size(int axis) {
+        return 2 * radius(axis) + 1;
     }
 
     public int redstone() {
@@ -134,16 +185,18 @@ public class TileDislocationInhibitor extends TileBCore implements MenuProvider,
         };
     }
 
-    /** The field: a box of whole blocks, radius blocks out from this one on every side. */
+    /** The field in world space: whole blocks from box min to box max. */
     public AABB area() {
-        return new AABB(worldPosition).inflate(radius());
+        int[] b = box();
+        return new AABB(worldPosition.getX() + b[0], worldPosition.getY() + b[1], worldPosition.getZ() + b[2],
+                worldPosition.getX() + b[3] + 1, worldPosition.getY() + b[4] + 1, worldPosition.getZ() + b[5] + 1);
     }
 
     public boolean covers(Entity e) {
         if (isRemoved() || !active()) return false;
-        int r = radius();
+        int[] b = box();
         double x = e.getX() - worldPosition.getX(), y = e.getY() - worldPosition.getY(), z = e.getZ() - worldPosition.getZ();
-        return x >= -r && x < r + 1 && y >= -r && y < r + 1 && z >= -r && z < r + 1;
+        return x >= b[0] && x < b[3] + 1 && y >= b[1] && y < b[4] + 1 && z >= b[2] && z < b[5] + 1;
     }
 
     @Override
@@ -209,22 +262,26 @@ public class TileDislocationInhibitor extends TileBCore implements MenuProvider,
         }
         int which = data.readByte(), v = data.readByte();
         switch (which) {
-            case SET_RANGE -> range.set((byte) Math.floorMod(v, RANGES.length));
             case SET_ALL -> allMagnets.set(v != 0);
             case SET_AREA -> showArea.set(v != 0);
             case SET_RS -> redstoneMode.set((byte) Math.floorMod(v, 3));
+            case SET_RAD, SET_RAD + 1, SET_RAD + 2 -> rad[which - SET_RAD].set((byte) Math.max(0, Math.min(RADIUS_MAX, v)));
+            case SET_OFF, SET_OFF + 1, SET_OFF + 2 -> off[which - SET_OFF].set((byte) Math.max(-OFFSET_MAX, Math.min(OFFSET_MAX, v)));
         }
         scan();
     }
 
-    /** Right-click opens the screen; shift-right-click (empty hands) cycles the range. */
+    /** Right-click opens the screen; shift-right-click (empty hands) steps a centred cube through 3/5/8/12/16. */
     @Override
     public InteractionResult onBlockUse(BlockState state, Player player, InteractionHand hand, BlockHitResult hit) {
         if (player.isShiftKeyDown()) {
             if (player instanceof ServerPlayer sp) {
-                range.set((byte) ((Math.floorMod(range.get(), RANGES.length) + 1) % RANGES.length));
+                int big = Math.max(radius(0), Math.max(radius(1), radius(2))), next = 0; // next old size above the largest axis
+                while (next < RANGES.length && RANGES[next] <= big) next++;
+                int r = RANGES[next % RANGES.length];
+                setCube(r);
                 scan();
-                sp.sendOverlayMessage(Component.translatable("gui.draconicevolution.dislocation_inhibitor.range_set", radius()).withStyle(ChatFormatting.LIGHT_PURPLE));
+                sp.sendOverlayMessage(Component.translatable("gui.draconicevolution.dislocation_inhibitor.range_set", r, 2 * r + 1).withStyle(ChatFormatting.LIGHT_PURPLE));
             }
             return InteractionResult.SUCCESS;
         }

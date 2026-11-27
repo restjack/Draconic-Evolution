@@ -14,7 +14,13 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 
-/** The block itself is a normal model; this only draws the field outline while "Show area" is on (copy of the Evo Tweaks Field Crystal box). */
+/**
+ * The block itself is a normal model; this only draws the field outline while "Show area" is on (copy of the Evo Tweaks
+ * Field Crystal box, same teal). Renders off screen (global list): blocks placed before unofficial-1.30 had no tile, so
+ * the client makes one only when the screen opens, after the chunk section was built without it, and a section-listed
+ * renderer then never runs (the 1.30-1.33 "Show area does nothing" bug). The global list is filled on add, so it also
+ * keeps the box visible while the block's own section is culled.
+ */
 public class RenderTileDislocationInhibitor implements BlockEntityRenderer<TileDislocationInhibitor, RenderTileDislocationInhibitor.State> {
 
     public RenderTileDislocationInhibitor(BlockEntityRendererProvider.Context context) {}
@@ -33,9 +39,9 @@ public class RenderTileDislocationInhibitor implements BlockEntityRenderer<TileD
     public void extractRenderState(TileDislocationInhibitor tile, State state, float partialTicks, Vec3 cameraPosition,
                                    ModelFeatureRenderer.CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(tile, state, partialTicks, cameraPosition, breakProgress);
-        int r = tile.radius();
-        state.box = tile.showArea.get() ? new AABB(-r, -r, -r, r + 1, r + 1, r + 1).deflate(0.01) : null;
-        state.colour = tile.active() ? 0xFFFF9A1F : 0xFF6A6A6A; // Draconic orange, grey while redstone holds it off
+        int[] b = tile.box();
+        state.box = tile.showArea.get() ? new AABB(b[0], b[1], b[2], b[3] + 1, b[4] + 1, b[5] + 1).deflate(0.01) : null;
+        state.colour = tile.active() ? 0xFF2FD6C8 : 0xFF6A6A6A; // Field Crystal teal, grey while redstone holds it off
     }
 
     @Override
@@ -59,7 +65,12 @@ public class RenderTileDislocationInhibitor implements BlockEntityRenderer<TileD
     @Override
     public AABB getRenderBoundingBox(TileDislocationInhibitor tile) {
         AABB own = new AABB(tile.getBlockPos());
-        return tile.showArea.get() ? tile.area() : own;
+        return tile.showArea.get() ? own.minmax(tile.area()) : own;
+    }
+
+    @Override
+    public boolean shouldRenderOffScreen() {
+        return true;
     }
 
     @Override

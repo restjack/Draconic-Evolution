@@ -29,14 +29,17 @@ import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GeoPa
 
 /**
  * Dislocation Normalization Field Projector screen, Fusion Conductor style (restjack fork; mockup
- * https://claude.ai/artifact/QMWoAA3VJbaUbia96fuap3): range buttons, show-area toggle, Draconic-only / all-magnets pair,
- * redstone cycle, status box. Every click flashes a 2 s line in the status box. 236 x 124, fits 320 x 240.
+ * https://claude.ai/artifact/QMWoAA3VJbaUbia96fuap3), laid out like the Evo Tweaks Field Crystal screen since
+ * unofficial-1.34: area grid (Rad / Off rows, X Y Z columns, -/+ with Shift for 10) on top, toggle row (show area,
+ * Draconic-only / all magnets, redstone) under it, status box below. Every click flashes a 2 s line in the status box.
+ * 236 x 118, fits 320 x 240.
  * Icons: Nextcloud Projects/Draconic-Evolution/tools/make_inhibitor_icons.py -> textures/gui/dislocation_inhibitor/.
  */
 public class DislocationInhibitorGui extends ContainerGuiProvider<DislocationInhibitorMenu> {
     private static final GuiToolkit TOOLKIT = new GuiToolkit("gui.draconicevolution.dislocation_inhibitor");
-    private static final int W = 236, H = 124;
+    private static final int W = 236, H = 118;
     private static final String[] RS_KEYS = {"ignore", "high", "low"};
+    private static final String[] AXES = {"X", "Y", "Z"};
 
     @Override
     public GuiElement<?> createRootElement(ModularGui gui) {
@@ -60,39 +63,19 @@ public class DislocationInhibitorGui extends ContainerGuiProvider<DislocationInh
                 .setTooltip(() -> List.of(TOOLKIT.translate("info"), TOOLKIT.translate("info.1").withStyle(ChatFormatting.GRAY),
                         TOOLKIT.translate("info.2").withStyle(ChatFormatting.GRAY), TOOLKIT.translate("info.3").withStyle(ChatFormatting.GRAY))));
 
-        // Range: five buttons, the chosen one green
-        label(root, "range", 6, 18, 120);
-        for (int i = 0; i < TileDislocationInhibitor.RANGES.length; i++) {
-            int idx = i, r = TileDislocationInhibitor.RANGES[i];
-            Supplier<Boolean> on = () -> Math.floorMod(tile.range.get(), TileDislocationInhibitor.RANGES.length) == idx;
-            GuiButton b = TOOLKIT.createFlat3DButton(root, () -> Component.literal(String.valueOf(r)))
-                    .setTooltip(() -> List.of(TOOLKIT.translate("range.n", r), TOOLKIT.translate("range.info", r, 2 * r + 1).withStyle(ChatFormatting.GRAY)))
-                    .onPress(() -> {
-                        if (on.get()) {
-                            flash.show(TOOLKIT.translate("flash.range_same", r));
-                            return;
-                        }
-                        boolean smaller = r < tile.radius();
-                        set(tile, TileDislocationInhibitor.SET_RANGE, idx);
-                        flash.show(TOOLKIT.translate(smaller ? "flash.range_smaller" : "flash.range", r));
-                    })
-                    .setToggleMode(on);
-            new GuiRectangle(b).fill(0xB040C040).setEnabled(on)
-                    .constrain(LEFT, relative(b.get(LEFT), 1)).constrain(TOP, relative(b.get(TOP), 1))
-                    .constrain(RIGHT, relative(b.get(RIGHT), -1)).constrain(BOTTOM, relative(b.get(BOTTOM), -1));
-            place(b, root, 6 + i * 25, 28, 22, 14);
+        // Area grid: axis header, Rad row, Off row (Field Crystal layout)
+        for (int i = 0; i < 3; i++) {
+            place(new GuiText(root, Component.literal(AXES[i])).setTextColour(Palette.BG::text).setShadow(false), root, 28 + i * 56, 16, 52, 8);
         }
+        areaRow(root, tile, flash, true, 26);
+        areaRow(root, tile, flash, false, 40);
 
-        // Show area
-        label(root, "area", 140, 18, 80);
+        // Toggle row: show area | Draconic only, all magnets | redstone, then the magnet mode in words
         place(toggle(root, "area", tile.showArea::get, () -> {
             boolean v = !tile.showArea.get();
             set(tile, TileDislocationInhibitor.SET_AREA, v ? 1 : 0);
             flash.show(TOOLKIT.translate(v ? "flash.area_on" : "flash.area_off"));
-        }, "area"), root, 140, 27, 16, 16);
-
-        // Which magnets: two toggles, one of them always on
-        label(root, "stops", 6, 50, 120);
+        }, "area"), root, 6, 56, 16, 16);
         place(toggle(root, "mag_de", () -> !tile.allMagnets.get(), () -> {
             if (!tile.allMagnets.get()) {
                 flash.show(TOOLKIT.translate("flash.de_same"));
@@ -100,7 +83,7 @@ public class DislocationInhibitorGui extends ContainerGuiProvider<DislocationInh
             }
             set(tile, TileDislocationInhibitor.SET_ALL, 0);
             flash.show(TOOLKIT.translate("flash.de"));
-        }, "de_only"), root, 6, 60, 16, 16);
+        }, "de_only"), root, 30, 56, 16, 16);
         place(toggle(root, "mag_all", tile.allMagnets::get, () -> {
             if (tile.allMagnets.get()) {
                 flash.show(TOOLKIT.translate("flash.all_same"));
@@ -108,12 +91,7 @@ public class DislocationInhibitorGui extends ContainerGuiProvider<DislocationInh
             }
             set(tile, TileDislocationInhibitor.SET_ALL, 1);
             flash.show(TOOLKIT.translate("flash.all"));
-        }, "all"), root, 24, 60, 16, 16);
-        place(new GuiText(root, () -> TOOLKIT.translate(tile.allMagnets.get() ? "mode.all" : "mode.de_only"))
-                .setTextColour(Palette.BG::text).setShadow(false).setAlignment(Align.LEFT).setTrim(true), root, 44, 64, 90, 9);
-
-        // Redstone cycle: left = next, right = back
-        label(root, "redstone", 140, 50, 90);
+        }, "all"), root, 48, 56, 16, 16);
         GuiButton rs = TOOLKIT.createFlat3DButton(root, null)
                 .setTooltip(() -> List.of(TOOLKIT.translate("redstone"),
                         TOOLKIT.translate("redstone." + RS_KEYS[tile.redstone()]).withStyle(ChatFormatting.GOLD),
@@ -121,25 +99,68 @@ public class DislocationInhibitorGui extends ContainerGuiProvider<DislocationInh
                 .onPress(() -> cycleRs(tile, flash, 1), GuiButton.LEFT_CLICK)
                 .onPress(() -> cycleRs(tile, flash, 2), GuiButton.RIGHT_CLICK);
         Constraints.bind(new GuiTexture(rs, DEGuiTextures.getter(() -> "dislocation_inhibitor/red_" + tile.redstone())), rs);
-        place(rs, root, 140, 60, 16, 16);
-        place(new GuiText(root, () -> TOOLKIT.translate("redstone.short." + RS_KEYS[tile.redstone()]))
-                .setTextColour(Palette.BG::text).setShadow(false).setAlignment(Align.LEFT).setTrim(true), root, 160, 64, 72, 9);
+        place(rs, root, 72, 56, 16, 16);
+        place(new GuiText(root, () -> TOOLKIT.translate("stops_mode", TOOLKIT.translate(tile.allMagnets.get() ? "mode.all" : "mode.de_only")))
+                .setTextColour(Palette.BG::text).setShadow(false).setAlignment(Align.LEFT).setTrim(true)
+                .setTooltip(() -> List.of(TOOLKIT.translate(tile.allMagnets.get() ? "toggle.all.info" : "toggle.de_only.info").withStyle(ChatFormatting.GRAY))),
+                root, 94, 60, W - 100, 9);
 
         // Status box: flash or field state, then range + mode, then outline + redstone
         GuiRectangle status = new GuiRectangle(root)
                 .shadedRect(Palette.SubItem::accentLight, Palette.SubItem::accentDark, Palette.SubItem::fill)
                 .setTooltip(() -> List.of(TOOLKIT.translate("status"), TOOLKIT.translate("status.info").withStyle(ChatFormatting.GRAY)));
-        place(status, root, 6, 82, W - 12, 36);
+        place(status, root, 6, 76, W - 12, 36);
         List<Supplier<Component>> lines = List.of(
                 () -> flash.get() != null ? flash.get() : state(tile),
-                () -> TOOLKIT.translate("summary.range", tile.radius(), 2 * tile.radius() + 1).append("  ")
-                        .append(TOOLKIT.translate(tile.allMagnets.get() ? "mode.all" : "mode.de_only")),
+                () -> boxLine(tile),
                 () -> TOOLKIT.translate("summary.area", onOff(tile.showArea.get())).append("  ")
                         .append(TOOLKIT.translate("summary.rs", TOOLKIT.translate("redstone.short." + RS_KEYS[tile.redstone()]))));
         for (int i = 0; i < lines.size(); i++) {
             place(new GuiText(status, lines.get(i)).setTextColour(Palette.SubItem::text).setShadow(false)
                     .setAlignment(Align.LEFT).setTrim(true), status, 4, 3 + i * 11, W - 20, 9);
         }
+    }
+
+    /** "Box 11 x 11 x 11" plus ", offset 0 2 0" when the box is moved. */
+    private static Component boxLine(TileDislocationInhibitor tile) {
+        MutableComponent c = TOOLKIT.translate("summary.box", tile.size(0), tile.size(1), tile.size(2));
+        if (tile.offset(0) != 0 || tile.offset(1) != 0 || tile.offset(2) != 0) {
+            c.append(TOOLKIT.translate("summary.offset", tile.offset(0), tile.offset(1), tile.offset(2)));
+        }
+        return c;
+    }
+
+    /** Label, then per axis: - [value] +. Click 1, Shift-click 10; radius 0..16, offset -16..16. */
+    private static void areaRow(GuiElement<?> root, TileDislocationInhibitor tile, Flash flash, boolean rad, int y) {
+        String which = rad ? "rad" : "off";
+        place(new GuiText(root, TOOLKIT.translate(which)).setTextColour(Palette.BG::text).setShadow(false).setAlignment(Align.LEFT),
+                root, 6, y + 2, 20, 9);
+        Supplier<List<Component>> tip = () -> List.of(TOOLKIT.translate("tip.area_" + which),
+                TOOLKIT.translate("tip.step").withStyle(ChatFormatting.GRAY));
+        for (int i = 0; i < 3; i++) {
+            int axis = i, x = 28 + i * 56;
+            place(TOOLKIT.createFlat3DButton(root, () -> Component.literal("-")).setTooltip(tip)
+                    .onPress(() -> areaStep(tile, flash, rad, axis, -1)), root, x, y, 12, 12);
+            GuiRectangle box = TOOLKIT.shadedBorder(root).fill(Palette.Slot::fill).setTooltip(tip);
+            place(box, root, x + 13, y, 26, 12);
+            place(new GuiText(box, () -> Component.literal(Integer.toString(rad ? tile.radius(axis) : tile.offset(axis))))
+                    .setTextColour(Palette.Slot::text).setShadow(false), box, 0, 2, 26, 9);
+            place(TOOLKIT.createFlat3DButton(root, () -> Component.literal("+")).setTooltip(tip)
+                    .onPress(() -> areaStep(tile, flash, rad, axis, 1)), root, x + 40, y, 12, 12);
+        }
+    }
+
+    private static void areaStep(TileDislocationInhibitor tile, Flash flash, boolean rad, int axis, int sign) {
+        int lim = rad ? TileDislocationInhibitor.RADIUS_MAX : TileDislocationInhibitor.OFFSET_MAX;
+        int before = rad ? tile.radius(axis) : tile.offset(axis);
+        int after = Math.max(rad ? 0 : -lim, Math.min(lim, before + sign * (net.minecraft.client.Minecraft.getInstance().hasShiftDown() ? 10 : 1)));
+        if (after == before) {
+            flash.show(TOOLKIT.translate(rad ? "flash.radius_limit" : "flash.offset_limit", AXES[axis], lim));
+            return;
+        }
+        set(tile, (rad ? TileDislocationInhibitor.SET_RAD : TileDislocationInhibitor.SET_OFF) + axis, after);
+        flash.show(rad ? TOOLKIT.translate(after < before ? "flash.radius_smaller" : "flash.radius_set", AXES[axis], after, 2 * after + 1)
+                : TOOLKIT.translate("flash.offset_set", AXES[axis], after));
     }
 
     private static Component state(TileDislocationInhibitor tile) {
