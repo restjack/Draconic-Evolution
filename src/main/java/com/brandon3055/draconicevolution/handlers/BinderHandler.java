@@ -142,24 +142,9 @@ public class BinderHandler {
                 return true;
             }
         }
-        if (tile instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileCoreMonitor monitor) {
-            if (!isBound) {
-                ChatHelper.sendIndexed(player, Component.literal("Shift-click an energy core with the binder first.").withStyle(ChatFormatting.RED), TileCrystalBase.MSG_ID);
-                return true;
-            }
-            if (!level.isClientSide()) {
-                if (player instanceof net.minecraft.server.level.ServerPlayer sp && !monitor.canControl(sp)) {
-                    ChatHelper.sendIndexed(player, Component.literal("This monitor belongs to " + monitor.ownerName.get() + ".").withStyle(ChatFormatting.RED), TileCrystalBase.MSG_ID);
-                    return true;
-                }
-                GlobalPos target = getBound(binder);
-                int n = monitor.linkScreen(target, player);
-                ChatHelper.sendIndexed(player, Component.literal("Core Monitor linked (" + n + (n == 1 ? " panel" : " panels") + ") to the core at "
-                        + target.pos().getX() + " " + target.pos().getY() + " " + target.pos().getZ() + ".").withStyle(ChatFormatting.GREEN), TileCrystalBase.MSG_ID);
-            } else {
-                player.swing(hand);
-            }
-            return true;
+        // unofficial-1.36: any block entity can take the saved core (Core Monitor today, add-ons later).
+        if (tile instanceof com.brandon3055.draconicevolution.api.ICoreBinderTarget target) {
+            return target.onCoreBinderUse(player, hand, isBound ? getBound(binder) : null);
         }
 
         //If the tile is linkable and the player is sneaking bind the tile to the tool.

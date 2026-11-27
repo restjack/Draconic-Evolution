@@ -41,7 +41,7 @@ import java.util.Set;
  * near the monitor see them even when the core is in another dimension. If the core's chunk is not loaded the last
  * values stay and {@link #loaded} goes false; the monitor never loads chunks itself.
  */
-public class TileCoreMonitor extends TileBCore implements IInteractTile, net.minecraft.world.MenuProvider, com.brandon3055.brandonscore.lib.IRedstoneEmitter {
+public class TileCoreMonitor extends TileBCore implements IInteractTile, net.minecraft.world.MenuProvider, com.brandon3055.brandonscore.lib.IRedstoneEmitter, com.brandon3055.draconicevolution.api.ICoreBinderTarget {
     public static final int MAX_SIZE = 4;
 
     public final ManagedString linkDim = register(new ManagedString("link_dim", "", DataFlags.SAVE_NBT_SYNC_TILE));
@@ -291,7 +291,7 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
         Set<ServerPlayer> to = new java.util.LinkedHashSet<>();
         ServerPlayer o = sl.getServer().getPlayerList().getPlayer(owner.get());
         if (o != null) to.add(o);
-        if ((alerts.get() & ALERT_TEAM) != 0) to.addAll(teamMembers(sl, owner.get(), o));
+        if ((alerts.get() & ALERT_TEAM) != 0) to.addAll(com.brandon3055.draconicevolution.utils.TeamUtils.teamMembers(sl, owner.get(), o));
         Component chat = Component.literal("[Core Monitor] ").withStyle(ChatFormatting.LIGHT_PURPLE)
                 .append(Component.literal(label() + ": " + what).withStyle(ChatFormatting.RED));
         for (ServerPlayer p : to) {
@@ -304,33 +304,26 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
         }
     }
 
-    /** Online members of the owner's FTB Teams party if that mod is loaded, else of the owner's scoreboard team. */
-    static List<ServerPlayer> teamMembers(ServerLevel sl, UUID owner, @Nullable ServerPlayer ownerPlayer) {
-        List<ServerPlayer> out = new ArrayList<>();
-        if (net.neoforged.fml.ModList.get().isLoaded("ftbteams")) {
-            try { // reflection: no compile dependency on FTB Teams
-                Object api = Class.forName("dev.ftb.mods.ftbteams.api.FTBTeamsAPI").getMethod("api").invoke(null);
-                Object manager = api.getClass().getMethod("getManager").invoke(api);
-                var team = (java.util.Optional<?>) manager.getClass().getMethod("getTeamForPlayerID", UUID.class).invoke(manager, owner);
-                if (team.isPresent()) {
-                    for (Object p : (java.util.Collection<?>) team.get().getClass().getMethod("getOnlineMembers").invoke(team.get())) {
-                        if (p instanceof ServerPlayer sp) out.add(sp);
-                    }
-                    return out;
-                }
-            } catch (ReflectiveOperationException | RuntimeException ignored) {
-            }
+    /** Binder click with a saved energy core: link this screen to it (owner/team/ops only). */
+    @Override
+    public boolean onCoreBinderUse(net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, @Nullable net.minecraft.core.GlobalPos target) {
+        java.util.UUID msg = com.brandon3055.draconicevolution.blocks.energynet.tileentity.TileCrystalBase.MSG_ID;
+        if (target == null) {
+            com.brandon3055.brandonscore.lib.ChatHelper.sendIndexed(player, net.minecraft.network.chat.Component.literal("Shift-click an energy core with the binder first.").withStyle(net.minecraft.ChatFormatting.RED), msg);
+            return true;
         }
-        if (ownerPlayer != null) {
-            var team = sl.getServer().getScoreboard().getPlayersTeam(ownerPlayer.getScoreboardName());
-            if (team != null) {
-                for (String n : team.getPlayers()) {
-                    ServerPlayer p = sl.getServer().getPlayerList().getPlayerByName(n);
-                    if (p != null) out.add(p);
-                }
-            }
+        if (level == null || level.isClientSide()) {
+            player.swing(hand);
+            return true;
         }
-        return out;
+        if (player instanceof ServerPlayer sp && !canControl(sp)) {
+            com.brandon3055.brandonscore.lib.ChatHelper.sendIndexed(player, net.minecraft.network.chat.Component.literal("This monitor belongs to " + ownerName.get() + ".").withStyle(net.minecraft.ChatFormatting.RED), msg);
+            return true;
+        }
+        int n = linkScreen(target, player);
+        com.brandon3055.brandonscore.lib.ChatHelper.sendIndexed(player, net.minecraft.network.chat.Component.literal("Core Monitor linked (" + n + (n == 1 ? " panel" : " panels") + ") to the core at "
+                + target.pos().getX() + " " + target.pos().getY() + " " + target.pos().getZ() + ".").withStyle(net.minecraft.ChatFormatting.GREEN), msg);
+        return true;
     }
 
     // ### Stats

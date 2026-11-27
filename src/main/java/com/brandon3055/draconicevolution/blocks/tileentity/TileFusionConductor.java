@@ -67,7 +67,7 @@ import java.util.function.Consumer;
  * buffer (optional), and collects the result. A Draconic capacitor in the upgrade slot speeds charging and the
  * craft phase up at an energy premium (energy = speed ^ exponent, see DEConfig).
  */
-public class TileFusionConductor extends TileBCore implements MenuProvider, IInteractTile, com.brandon3055.brandonscore.lib.IChangeListener {
+public class TileFusionConductor extends TileBCore implements MenuProvider, IInteractTile, com.brandon3055.brandonscore.lib.IChangeListener, com.brandon3055.draconicevolution.api.IFusionCoreController {
 
     public static final int INPUT = 18, OUTPUT = 9;
     public static final int OUT_START = INPUT, OUT_END = INPUT + OUTPUT, CAP_SLOT = INPUT + OUTPUT;
@@ -531,7 +531,7 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
         if (net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS).test(player.createCommandSourceStack())) return true;
         if (level instanceof ServerLevel sl) {
             ServerPlayer o = sl.getServer().getPlayerList().getPlayer(owner.get());
-            return TileCoreMonitor.teamMembers(sl, owner.get(), o).contains(player)
+            return com.brandon3055.draconicevolution.utils.TeamUtils.teamMembers(sl, owner.get(), o).contains(player)
                     || (o == null && sameScoreboardTeam(sl, player));
         }
         return false;

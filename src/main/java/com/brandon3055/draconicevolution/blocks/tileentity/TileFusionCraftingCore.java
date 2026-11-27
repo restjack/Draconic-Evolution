@@ -564,9 +564,9 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
         craftAnimLength.set((short) length);
     }
 
-    /** A Fusion Conductor on top runs this core (auto-craft, output, injector toggles live on its screen). */
+    /** A controller on top (the Fusion Conductor) runs this core (auto-craft, output, injector toggles live on its screen). */
     public boolean hasConductor() {
-        return level != null && level.getBlockEntity(worldPosition.above()) instanceof TileFusionConductor;
+        return level != null && level.getBlockEntity(worldPosition.above()) instanceof com.brandon3055.draconicevolution.api.IFusionCoreController;
     }
 
     /** Read-only view of the linked injector positions (client uses it for the highlight button). */

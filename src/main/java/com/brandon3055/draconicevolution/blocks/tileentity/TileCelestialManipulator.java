@@ -395,7 +395,7 @@ public class TileCelestialManipulator extends TileBCore implements IChangeListen
         if (owner.isNull() || player.getUUID().equals(owner.get()) || isOp(player)) return true;
         if (level instanceof ServerLevel sl) {
             ServerPlayer o = sl.getServer().getPlayerList().getPlayer(owner.get());
-            if (TileCoreMonitor.teamMembers(sl, owner.get(), o).contains(player)) return true;
+            if (com.brandon3055.draconicevolution.utils.TeamUtils.teamMembers(sl, owner.get(), o).contains(player)) return true;
             var team = sl.getServer().getScoreboard().getPlayersTeam(player.getScoreboardName());
             return o == null && team != null && !ownerName.get().isEmpty() && team.getPlayers().contains(ownerName.get());
         }

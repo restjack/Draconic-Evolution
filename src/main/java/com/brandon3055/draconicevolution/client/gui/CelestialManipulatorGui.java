@@ -85,10 +85,10 @@ public class CelestialManipulatorGui extends ContainerGuiProvider<CelestialManip
 
         // Toggles column (right)
         GuiButton[] column = {
-                FusionConductorGui.toggle(root, "celestial_manipulator/keep_clear", () -> flash.set(tile, TileCelestialManipulator.SET_KEEP_CLEAR, !tile.keepClear.get(), "keep_clear"), tile.keepClear::get, KEY + "keep_clear"),
-                FusionConductorGui.toggle(root, "celestial_manipulator/owner_only", () -> flash.set(tile, TileCelestialManipulator.SET_LOCK, !tile.ownerOnly.get(), "owner_only"), tile.ownerOnly::get, KEY + "owner_only"),
-                FusionConductorGui.toggle(root, "celestial_manipulator/notice", () -> flash.set(tile, TileCelestialManipulator.SET_NOTICE, !tile.notice.get(), "notice"), tile.notice::get, KEY + "notice"),
-                FusionConductorGui.toggle(root, "celestial_manipulator/quiet", () -> flash.set(tile, TileCelestialManipulator.SET_QUIET, !tile.quiet.get(), "quiet"), tile.quiet::get, KEY + "quiet"),
+                DEToggles.toggle(root, "celestial_manipulator/keep_clear", () -> flash.set(tile, TileCelestialManipulator.SET_KEEP_CLEAR, !tile.keepClear.get(), "keep_clear"), tile.keepClear::get, KEY + "keep_clear"),
+                DEToggles.toggle(root, "celestial_manipulator/owner_only", () -> flash.set(tile, TileCelestialManipulator.SET_LOCK, !tile.ownerOnly.get(), "owner_only"), tile.ownerOnly::get, KEY + "owner_only"),
+                DEToggles.toggle(root, "celestial_manipulator/notice", () -> flash.set(tile, TileCelestialManipulator.SET_NOTICE, !tile.notice.get(), "notice"), tile.notice::get, KEY + "notice"),
+                DEToggles.toggle(root, "celestial_manipulator/quiet", () -> flash.set(tile, TileCelestialManipulator.SET_QUIET, !tile.quiet.get(), "quiet"), tile.quiet::get, KEY + "quiet"),
                 redstoneButton(root, tile, flash),
         };
         for (int i = 0; i < column.length; i++) {
@@ -286,7 +286,7 @@ public class CelestialManipulatorGui extends ContainerGuiProvider<CelestialManip
 
         void set(TileCelestialManipulator tile, int which, boolean on, String key) {
             tile.sendPacketToServer(out -> out.writeByte(which).writeBoolean(on), 2);
-            show(FusionConductorGui.onOff(KEY + key, on));
+            show(DEToggles.onOff(KEY + key, on));
         }
     }
 

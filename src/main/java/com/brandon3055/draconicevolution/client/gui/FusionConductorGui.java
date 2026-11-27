@@ -140,16 +140,16 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
 
         // Machine toggles: one row of 16 px buttons under the lock/batch row, all inside the panel at any GUI scale.
         GuiButton[] row = {
-                toggle(root, new ItemStack(Items.REDSTONE_TORCH), () -> flash.set(tile, TileFusionConductor.SET_AUTO, !tile.autoCraft.get(), "auto_craft"), tile.autoCraft::get, "gui.draconicevolution.fusion_conductor.auto_craft"),
-                toggle(root, new ItemStack(Items.HOPPER), () -> flash.set(tile, TileFusionConductor.SET_PUSH, !tile.pushOutput.get(), "push_output"), tile.pushOutput::get, "gui.draconicevolution.fusion_conductor.push_output"),
-                toggle(root, new ItemStack(Items.LIGHTNING_ROD), () -> flash.set(tile, TileFusionConductor.SET_POWER, !tile.powerInjectors.get(), "power_injectors"), tile.powerInjectors::get, "gui.draconicevolution.fusion_conductor.power_injectors"),
+                DEToggles.toggle(root, new ItemStack(Items.REDSTONE_TORCH), () -> flash.set(tile, TileFusionConductor.SET_AUTO, !tile.autoCraft.get(), "auto_craft"), tile.autoCraft::get, "gui.draconicevolution.fusion_conductor.auto_craft"),
+                DEToggles.toggle(root, new ItemStack(Items.HOPPER), () -> flash.set(tile, TileFusionConductor.SET_PUSH, !tile.pushOutput.get(), "push_output"), tile.pushOutput::get, "gui.draconicevolution.fusion_conductor.push_output"),
+                DEToggles.toggle(root, new ItemStack(Items.LIGHTNING_ROD), () -> flash.set(tile, TileFusionConductor.SET_POWER, !tile.powerInjectors.get(), "power_injectors"), tile.powerInjectors::get, "gui.draconicevolution.fusion_conductor.power_injectors"),
                 redstoneButton(root, gui, tile, flash),
                 injectorButton(root, tile, flash),
-                toggle(root, new ItemStack(Items.ENDER_EYE), () -> {
+                DEToggles.toggle(root, new ItemStack(Items.ENDER_EYE), () -> {
                     TileFusionCraftingCore c = tile.getCore();
                     if (c == null) return;
                     FusionCraftingCoreGui.toggleHighlight(c);
-                    flash.show(onOff("gui.draconicevolution.fusion_craft.show_injectors", FusionCraftingCoreGui.highlightOn(c)));
+                    flash.show(DEToggles.onOff("gui.draconicevolution.fusion_craft.show_injectors", FusionCraftingCoreGui.highlightOn(c)));
                 }, () -> tile.getCore() != null && FusionCraftingCoreGui.highlightOn(tile.getCore()), "gui.draconicevolution.fusion_craft.show_injectors"),
         };
         for (int i = 0; i < row.length; i++) {
@@ -266,11 +266,6 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
         return TOOLKIT.translate("speed", TileFusionConductor.speed(tier), TileFusionConductor.trim(TileFusionConductor.energyFactor(tier)));
     }
 
-    static Component onOff(String key, boolean on) {
-        return Component.translatable(key).append(": ").append(Component.translatable(on ? "gui.draconicevolution.toggle.on" : "gui.draconicevolution.toggle.off")
-                .withStyle(on ? ChatFormatting.GREEN : ChatFormatting.RED));
-    }
-
     /** "Auto  Push  Power": each word green when on, red when off. */
     private static Component summaryToggles(TileFusionConductor tile) {
         return Component.empty().append(word("auto", tile.autoCraft.get())).append("  ")
@@ -303,7 +298,7 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
 
         void set(TileFusionConductor tile, int which, boolean on, String key) {
             FusionConductorGui.set(tile, which, on);
-            show(onOff("gui.draconicevolution.fusion_conductor." + key, on));
+            show(DEToggles.onOff("gui.draconicevolution.fusion_conductor." + key, on));
         }
     }
 
@@ -339,38 +334,6 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
                 });
         Constraints.size(b, 16, 16);
         return b;
-    }
-
-    /** 16 px toggle: green with the icon when on; dimmed icon plus a red corner when off. */
-    static GuiButton toggle(GuiElement<?> parent, ItemStack icon, Runnable press, java.util.function.Supplier<Boolean> state, String key) {
-        return toggle(parent, b -> Constraints.bind(new GuiItemStack(b, icon).enableStackToolTip(false), b, 1), press, state, key);
-    }
-
-    /** Same toggle with a 16 px gui-atlas icon (e.g. "celestial_manipulator/quiet") instead of an item. */
-    static GuiButton toggle(GuiElement<?> parent, String texture, Runnable press, java.util.function.Supplier<Boolean> state, String key) {
-        return toggle(parent, b -> Constraints.bind(new GuiTexture(b, com.brandon3055.draconicevolution.client.DEGuiTextures.getter(texture)), b, 0), press, state, key);
-    }
-
-    private static GuiButton toggle(GuiElement<?> parent, java.util.function.Consumer<GuiButton> icon, Runnable press, java.util.function.Supplier<Boolean> state, String key) {
-        GuiButton button = TOOLKIT.createFlat3DButton(parent, null)
-                .setTooltip(() -> List.of(Component.translatable(key),
-                        Component.translatable(state.get() ? "gui.draconicevolution.toggle.on" : "gui.draconicevolution.toggle.off")
-                                .withStyle(state.get() ? ChatFormatting.GREEN : ChatFormatting.RED),
-                        Component.translatable(key + ".info").withStyle(ChatFormatting.GRAY)))
-                .onPress(press)
-                .setToggleMode(state);
-        Constraints.size(button, 16, 16);
-        new GuiRectangle(button).fill(0xB040C040).setEnabled(state)
-                .constrain(LEFT, relative(button.get(LEFT), 1)).constrain(TOP, relative(button.get(TOP), 1))
-                .constrain(RIGHT, relative(button.get(RIGHT), -1)).constrain(BOTTOM, relative(button.get(BOTTOM), -1));
-        icon.accept(button);
-        new GuiRectangle(button).fill(0x90202020).setEnabled(() -> !state.get())
-                .constrain(LEFT, relative(button.get(LEFT), 1)).constrain(TOP, relative(button.get(TOP), 1))
-                .constrain(RIGHT, relative(button.get(RIGHT), -1)).constrain(BOTTOM, relative(button.get(BOTTOM), -1));
-        new GuiRectangle(button).fill(0xFFD03030).setEnabled(() -> !state.get())
-                .constrain(RIGHT, relative(button.get(RIGHT), -1)).constrain(BOTTOM, relative(button.get(BOTTOM), -1))
-                .constrain(WIDTH, literal(4)).constrain(HEIGHT, literal(4));
-        return button;
     }
 
     static final int COL_EMPTY = 0xFF808080, COL_LOADED = 0xFF40D040, COL_FOREIGN = 0xFFE04040;
