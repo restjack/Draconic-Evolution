@@ -46,7 +46,7 @@ import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GeoPa
 public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu> {
     private static final GuiToolkit TOOLKIT = new GuiToolkit("gui.draconicevolution.fusion_conductor");
     public static final int GUI_WIDTH = 226;
-    public static final int GUI_HEIGHT = 264;
+    public static final int GUI_HEIGHT = 276;
     private static final Item[] RS_ICONS = {Items.GUNPOWDER, Items.REDSTONE_TORCH, Items.LEVER, Items.STONE_BUTTON};
     private static final String[] RS_KEYS = {"ignore", "high", "low", "pulse"};
 
@@ -160,7 +160,7 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
         LiveView live = new LiveView(root, tile);
         live.constrain(RIGHT, relative(root.get(RIGHT), -5))
                 .constrain(TOP, relative(lock.get(BOTTOM), 22))
-                .constrain(BOTTOM, relative(playInv.container().get(TOP), -12))
+                .constrain(BOTTOM, relative(playInv.container().get(TOP), -24))
                 .constrain(WIDTH, dynamic(() -> live.ySize()));
         GuiRectangle statusBG = new GuiRectangle(root)
                 .shadedRect(Palette.SubItem::accentLight, Palette.SubItem::accentDark, Palette.SubItem::fill)
@@ -199,6 +199,13 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
                 .constrain(TOP, match(barBG.get(TOP)))
                 .constrain(BOTTOM, match(barBG.get(BOTTOM)))
                 .constrain(WIDTH, dynamic(() -> barBG.xSize() * Math.max(0, Math.min(1, tile.progress.get()))));
+
+        // Legend for the live view, one row under the status box and the view.
+        new Legend(root)
+                .constrain(LEFT, relative(root.get(LEFT), 5))
+                .constrain(RIGHT, relative(root.get(RIGHT), -5))
+                .constrain(TOP, relative(statusBG.get(BOTTOM), 2))
+                .constrain(HEIGHT, literal(9));
 
         // Energy bar runs the full left side, capacitor slot under it (Eli: the old 34 px bar was too small)
         GuiSlots cap = GuiSlots.singleSlot(root, screenAccess, menu.capacitor, 0)
@@ -357,48 +364,94 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
         return button;
     }
 
+    static final int COL_EMPTY = 0xFF808080, COL_LOADED = 0xFF40D040, COL_FOREIGN = 0xFFE04040;
+    static final int COL_CORE_IDLE = 0xFF58C8FF, COL_CORE_CRAFTING = 0xFF9B6BFF, COL_CHARGE = 0xFF9B6BFF;
+
     /**
-     * Top-down map of the core (centre) and its injectors. Green: loaded by the conductor. Red: holds an item placed by
-     * hand (blocks the conductor). Grey: empty. Injectors above or below the core sit on a small ring around the centre.
+     * Top-down map of the core (centre) and its injectors, turned so screen-up is the way the player faced when the
+     * screen opened (snapped to N/E/S/W); "N" marks north. Zooms to fit the injectors actually used. Injectors stacked in
+     * one column (same x/z) share a split marker, highest on top; hover lists them all. Injectors directly above or
+     * below the core sit on a small ring around it. Colours: see {@link Legend}.
      */
     private static class LiveView extends GuiElement<LiveView> implements com.brandon3055.brandonscore.client.gui.modular.lib.BackgroundRender {
         private final TileFusionConductor tile;
+        /** Player's forward (fx, fz) and right (rx, rz) as world x/z steps. */
+        private final int fx, fz, rx, rz;
         private double mx, my;
 
         LiveView(@NotNull GuiParent<?> parent, TileFusionConductor tile) {
             super(parent);
             this.tile = tile;
+            var player = Minecraft.getInstance().player;
+            net.minecraft.core.Direction d = player == null ? net.minecraft.core.Direction.NORTH : player.getDirection();
+            fx = d.getStepX();
+            fz = d.getStepZ();
+            rx = -fz;
+            rz = fx;
             setTooltip(this::hoverText);
         }
 
-        private record Dot(BlockPos pos, double x, double y, TileFusionCraftingInjector inj) {}
+        private record Inj(BlockPos pos, TileFusionCraftingInjector inj) {}
 
-        private List<Dot> dots() {
-            List<Dot> out = new ArrayList<>();
+        private record Marker(double x, double y, double w, double h, List<Inj> list) {
+            boolean hit(double px, double py) {
+                return Math.abs(px - x) <= w / 2 + 1 && Math.abs(py - y) <= h / 2 + 1;
+            }
+        }
+
+        /** World offset from the core (x, z) to screen units (right, down). */
+        private double[] screen(int dx, int dz) {
+            return new double[]{dx * rx + dz * rz, -(dx * fx + dz * fz)};
+        }
+
+        private double cx() { return xMin() + xSize() / 2; }
+
+        private double cy() { return yMin() + ySize() / 2; }
+
+        private List<Marker> markers() {
+            List<Marker> out = new ArrayList<>();
             TileFusionCraftingCore core = tile.getCore();
             if (core == null) return out;
-            double cx = xMin() + xSize() / 2, cy = yMin() + ySize() / 2;
-            double scale = (xSize() / 2 - 4) / Math.max(1, DEConfig.fusionInjectorRange);
+            BlockPos c = core.getBlockPos();
+            // key: x/z column plus 0 = beside the core, 1 = above, 2 = below (ring)
+            java.util.Map<List<Integer>, List<Inj>> cols = new java.util.LinkedHashMap<>();
             for (BlockPos p : core.getInjectorPositions()) {
                 if (!(tile.getLevel().getBlockEntity(p) instanceof TileFusionCraftingInjector inj)) continue;
-                int dx = p.getX() - core.getBlockPos().getX(), dy = p.getY() - core.getBlockPos().getY(), dz = p.getZ() - core.getBlockPos().getZ();
+                int dx = p.getX() - c.getX(), dy = p.getY() - c.getY(), dz = p.getZ() - c.getZ();
+                int ring = Math.abs(dy) > Math.max(Math.abs(dx), Math.abs(dz)) ? (dy > 0 ? 1 : 2) : 0;
+                cols.computeIfAbsent(List.of(dx, dz, ring), k -> new ArrayList<>()).add(new Inj(p, inj));
+            }
+            double spread = 1;
+            for (List<Integer> k : cols.keySet()) {
+                if (k.get(2) != 0) continue;
+                double[] sp = screen(k.get(0), k.get(1));
+                spread = Math.max(spread, Math.max(Math.abs(sp[0]), Math.abs(sp[1])));
+            }
+            // Zoom to the real spread; capped so a 1-block layout does not fly apart, floor keeps markers inside the box.
+            double scale = Math.min(12, (Math.min(xSize(), ySize()) / 2 - 6) / spread);
+            for (var e : cols.entrySet()) {
+                List<Inj> list = e.getValue();
+                list.sort((a, b) -> b.pos().getY() - a.pos().getY());
+                double h = Math.min(12, Math.max(5, 3 * list.size()));
+                int dx = e.getKey().get(0), dz = e.getKey().get(1), ring = e.getKey().get(2);
+                double[] sp = screen(dx, dz);
                 double x, y;
-                if (Math.abs(dy) > Math.max(Math.abs(dx), Math.abs(dz))) {
-                    double a = Math.atan2(dz, dx) + (dy > 0 ? 0 : Math.PI / 4);
-                    x = cx + Math.cos(a) * 6;
-                    y = cy + Math.sin(a) * 6;
+                if (ring == 0) {
+                    x = cx() + sp[0] * scale;
+                    y = cy() + sp[1] * scale;
                 } else {
-                    x = cx + dx * scale;
-                    y = cy + dz * scale;
+                    double a = Math.atan2(sp[1], sp[0]) + (ring == 1 ? 0 : Math.PI / 4);
+                    x = cx() + Math.cos(a) * 9;
+                    y = cy() + Math.sin(a) * 9;
                 }
-                out.add(new Dot(p, x, y, inj));
+                out.add(new Marker(x, y, 5, h, list));
             }
             return out;
         }
 
-        private int colour(Dot d) {
-            if (d.inj().getInjectorStack().isEmpty()) return 0xFF808080;
-            return tile.isLoaded(d.pos()) ? 0xFF40D040 : 0xFFE04040;
+        private int colour(Inj i) {
+            if (i.inj().getInjectorStack().isEmpty()) return COL_EMPTY;
+            return tile.isLoaded(i.pos()) ? COL_LOADED : COL_FOREIGN;
         }
 
         @Override
@@ -406,34 +459,85 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
             mx = mouseX;
             my = mouseY;
             render.borderRect(xMin(), yMin(), xSize(), ySize(), 1, 0xFF1A1A1A, 0xFF555555);
-            double cx = xMin() + xSize() / 2, cy = yMin() + ySize() / 2;
+            double cx = cx(), cy = cy();
+            double[] n = screen(0, -1);
+            double r = Math.min(xSize(), ySize()) / 2 - 5;
+            render.drawString("N", cx + n[0] * r - 2, cy + n[1] * r - 3, 0xFF8A8A8A, false);
             TileFusionCraftingCore core = tile.getCore();
-            render.rect(cx - 2.5, cy - 2.5, 5, 5, core != null && core.isCrafting() ? 0xFF9B6BFF : 0xFF58C8FF);
-            for (Dot d : dots()) {
-                render.rect(d.x() - 1.5, d.y() - 1.5, 3, 3, colour(d));
-                if (d.inj().getEnergyRequirement() > 0) {
-                    double f = Math.min(1, d.inj().getInjectorEnergy() / (double) d.inj().getEnergyRequirement());
-                    render.rect(d.x() - 1.5, d.y() + 2, 3 * f, 1, 0xFF9B6BFF);
+            render.rect(cx - 3.5, cy - 3.5, 7, 7, core != null && core.isCrafting() ? COL_CORE_CRAFTING : COL_CORE_IDLE);
+            for (Marker m : markers()) {
+                int count = m.list().size();
+                double top = m.y() - m.h() / 2, sh = m.h() / count;
+                for (int i = 0; i < count; i++) {
+                    render.rect(m.x() - m.w() / 2, top + i * sh, m.w(), sh, colour(m.list().get(i)));
+                    if (i > 0) render.rect(m.x() - m.w() / 2, top + i * sh - 0.5, m.w(), 1, 0xFF1A1A1A);
                 }
+                long need = 0, have = 0;
+                for (Inj i : m.list()) {
+                    need += i.inj().getEnergyRequirement();
+                    have += Math.min(i.inj().getInjectorEnergy(), i.inj().getEnergyRequirement());
+                }
+                if (need > 0) render.rect(m.x() - m.w() / 2, top + m.h() + 1, m.w() * Math.min(1, have / (double) need), 1, COL_CHARGE);
             }
         }
 
         private List<Component> hoverText() {
-            for (Dot d : dots()) {
-                if (Math.abs(mx - d.x()) <= 2.5 && Math.abs(my - d.y()) <= 2.5) {
-                    List<Component> list = new ArrayList<>();
-                    BlockPos p = d.pos();
-                    list.add(Component.translatable("tech_level.draconicevolution." + d.inj().getInjectorTier().name().toLowerCase())
+            for (Marker m : markers()) {
+                if (!m.hit(mx, my)) continue;
+                List<Component> list = new ArrayList<>();
+                if (m.list().size() > 1) list.add(TOOLKIT.translate("live.column", m.list().size()).withStyle(ChatFormatting.GOLD));
+                for (Inj i : m.list()) {
+                    BlockPos p = i.pos();
+                    list.add(Component.translatable("tech_level.draconicevolution." + i.inj().getInjectorTier().name().toLowerCase())
                             .append(" " + p.getX() + " " + p.getY() + " " + p.getZ()));
-                    ItemStack s = d.inj().getInjectorStack();
-                    list.add(s.isEmpty() ? TOOLKIT.translate("live.empty").withStyle(ChatFormatting.GRAY)
-                            : s.getHoverName().copy().withStyle(tile.isLoaded(p) ? ChatFormatting.GREEN : ChatFormatting.RED));
-                    if (!s.isEmpty() && !tile.isLoaded(p)) list.add(TOOLKIT.translate("live.foreign").withStyle(ChatFormatting.RED));
-                    if (d.inj().getEnergyRequirement() > 0) list.add(Component.literal(Math.round(100D * d.inj().getInjectorEnergy() / d.inj().getEnergyRequirement()) + "%").withStyle(ChatFormatting.LIGHT_PURPLE));
-                    return list;
+                    ItemStack s = i.inj().getInjectorStack();
+                    {
+                        net.minecraft.network.chat.MutableComponent line = Component.literal("  ").append(s.isEmpty() ? TOOLKIT.translate("live.empty").withStyle(ChatFormatting.GRAY)
+                                : s.getHoverName().copy().withStyle(tile.isLoaded(p) ? ChatFormatting.GREEN : ChatFormatting.RED));
+                        if (i.inj().getEnergyRequirement() > 0)
+                            line.append(Component.literal("  " + Math.round(100D * Math.min(1, i.inj().getInjectorEnergy() / (double) i.inj().getEnergyRequirement())) + "%").withStyle(ChatFormatting.LIGHT_PURPLE));
+                        list.add(line);
+                    }
+                    if (!s.isEmpty() && !tile.isLoaded(p)) list.add(Component.literal("  ").append(TOOLKIT.translate("live.foreign").withStyle(ChatFormatting.RED)));
                 }
+                return list;
+            }
+            TileFusionCraftingCore core = tile.getCore();
+            if (core != null && Math.abs(mx - cx()) <= 4.5 && Math.abs(my - cy()) <= 4.5) {
+                return List.of(core.getBlockState().getBlock().getName(),
+                        TOOLKIT.translate(core.isCrafting() ? "live.core.crafting" : "live.core.idle").withStyle(core.isCrafting() ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.AQUA));
             }
             return List.of(TOOLKIT.translate("live"), TOOLKIT.translate("live.info").withStyle(ChatFormatting.GRAY));
+        }
+    }
+
+    /** One-row key for the live view: core, empty, loaded, hand item, charge. Entries that do not fit are left off. */
+    private static class Legend extends GuiElement<Legend> implements com.brandon3055.brandonscore.client.gui.modular.lib.BackgroundRender {
+        Legend(@NotNull GuiParent<?> parent) {
+            super(parent);
+        }
+
+        @Override
+        public void renderBackground(GuiRender render, double mouseX, double mouseY, float partialTicks) {
+            String[] keys = {"core", "empty", "loaded", "foreign", "charge"};
+            int[] cols = {COL_CORE_IDLE, COL_EMPTY, COL_LOADED, COL_FOREIGN, COL_CHARGE};
+            double x = xMin(), y = yMin(), right = xMax();
+            int text = Palette.BG.text();
+            for (int i = 0; i < keys.length; i++) {
+                Component label = TOOLKIT.translate("legend." + keys[i]);
+                double w = 7 + render.font().width(label);
+                if (x + w > right) break;
+                if (i == 0) {
+                    render.rect(x, y + 1, 3, 6, COL_CORE_IDLE);
+                    render.rect(x + 3, y + 1, 3, 6, COL_CORE_CRAFTING);
+                } else if (keys[i].equals("charge")) {
+                    render.rect(x, y + 5, 5, 1, cols[i]);
+                } else {
+                    render.rect(x, y + 2, 5, 5, cols[i]);
+                }
+                render.drawString(label, x + 7, y + 1, text, false);
+                x += w + 4;
+            }
         }
     }
 
