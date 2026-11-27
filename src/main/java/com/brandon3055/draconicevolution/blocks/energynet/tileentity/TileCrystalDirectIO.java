@@ -94,6 +94,9 @@ public class TileCrystalDirectIO extends TileCrystalBase   {
 
         if (outputMode.get() && tile != null) {
             opStorage.extractOP(EnergyUtils.insertEnergy(tile, opStorage.extractOP(opStorage.maxExtract(), true), facing.get().getOpposite(), false), false);
+        } else if (tile != null && !(tile instanceof TileCrystalBase)) {
+            // Input mode also pulls: many FE blocks (cells, batteries, capacitor banks) only push when configured to.
+            EnergyUtils.transferEnergy(tile, facing.get().getOpposite(), opStorage);
         }
     }
 

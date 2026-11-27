@@ -106,86 +106,84 @@ public class GrinderGui extends ContainerGuiProvider<GrinderMenu> {
                 .constrain(WIDTH, literal(14));
         Constraints.placeOutside(TOOLKIT.energySlotArrow(root, false, true), capInv, Constraints.LayoutPos.TOP_CENTER, 0, -1);
 
-        //Weapon Slot
-        GuiTexture weaponBg = new GuiTexture(root, BCGuiTextures.getThemed("bg_dynamic_small"))
-                .dynamicTexture();
-        Constraints.size(weaponBg, 24, 24);
-        Constraints.placeOutside(weaponBg, root, Constraints.LayoutPos.BOTTOM_LEFT, 1, -27);
-
+        //Settings row: weapon slot, AOE size, three icon toggles
         GuiSlots weaponInv = GuiSlots.singleSlot(root, screenAccess, menu.weapon, 0)
                 .setSlotTexture(slot -> BCGuiTextures.getThemed("slot"))
                 .setTooltipSingle(TOOLKIT.translate("weapon_slot"))
-                .setEmptyIcon(BCGuiTextures.get("slots/sword"));
-        Constraints.bind(weaponInv, weaponBg, 2);
+                .setEmptyIcon(BCGuiTextures.get("slots/sword"))
+                .constrain(LEFT, relative(root.get(LEFT), 4))
+                .constrain(TOP, relative(invBG.get(TOP), 1));
 
-        //UI Buttons
-
-        GuiButton aoeSize = TOOLKIT.createFlat3DButton(root, () -> TOOLKIT.translate("aoe").append(" " + getAOEString()))
-                .setTooltipSingle(TOOLKIT.translate("aoe.info"))
+        GuiButton aoeSize = TOOLKIT.createFlat3DButton(root, () -> Component.literal(getAOEString()))
+                .setTooltip(() -> java.util.List.of(TOOLKIT.translate("aoe").append(" " + getAOEString()), TOOLKIT.translate("aoe.info")))
                 .onPress(() -> modifyAOE(Minecraft.getInstance().hasShiftDown()), GuiButton.LEFT_CLICK)
                 .onPress(() -> modifyAOE(true), GuiButton.RIGHT_CLICK)
-                .constrain(HEIGHT, literal(14))
-                .constrain(TOP, match(invBG.get(TOP)))
+                .constrain(WIDTH, literal(23))
+                .constrain(HEIGHT, literal(16))
+                .constrain(TOP, relative(invBG.get(TOP), 2))
+                .constrain(LEFT, relative(root.get(LEFT), 24));
+
+        GuiButton showAOE = iconToggle(root, net.minecraft.world.item.Items.ENDER_EYE, tile.showAOE::invert, tile.showAOE::get,
+                TOOLKIT.translate("show_aoe"))
+                .constrain(LEFT, relative(aoeSize.get(RIGHT), 2))
+                .constrain(TOP, match(aoeSize.get(TOP)));
+        GuiButton collectItems = iconToggle(root, net.minecraft.world.item.Items.HOPPER, tile.collectItems::invert, tile.collectItems::get,
+                TOOLKIT.translate("collect.items"), TOOLKIT.translate("collect.items.info"))
+                .constrain(LEFT, relative(showAOE.get(RIGHT), 1))
+                .constrain(TOP, match(aoeSize.get(TOP)));
+        iconToggle(root, net.minecraft.world.item.Items.EXPERIENCE_BOTTLE, tile.collectXP::invert, tile.collectXP::get,
+                TOOLKIT.translate("collect.xp"), TOOLKIT.translate("collect.xp.info"))
+                .constrain(LEFT, relative(collectItems.get(RIGHT), 1))
+                .constrain(TOP, match(aoeSize.get(TOP)));
+
+        //XP panel: level number + bar like the player's, take / store buttons (Shift 10, Ctrl all)
+        GuiRectangle xpBG = new GuiRectangle(root)
+                .shadedRect(Palette.SubItem::accentLight, Palette.SubItem::accentDark, Palette.SubItem::fill)
                 .constrain(LEFT, relative(root.get(LEFT), 4))
-                .constrain(RIGHT, relative(invBG.get(LEFT), -2));
+                .constrain(RIGHT, relative(invBG.get(LEFT), -2))
+                .constrain(TOP, relative(invBG.get(TOP), 22))
+                .constrain(BOTTOM, match(invBG.get(BOTTOM)));
+        new GuiText(xpBG, TOOLKIT.translate("xp_stored"))
+                .setTextColour(Palette.BG::text).setShadow(false)
+                .constrain(TOP, relative(xpBG.get(TOP), 3))
+                .constrain(LEFT, relative(xpBG.get(LEFT), 2))
+                .constrain(RIGHT, relative(xpBG.get(RIGHT), -2))
+                .constrain(HEIGHT, literal(9));
+        new GuiText(xpBG, () -> Component.literal(String.valueOf((int) TileGrinder.levelOf(tile.storedXP.get()))))
+                .setTextColour(0xFF80FF20).setShadow(true)
+                .setTooltip(() -> java.util.List.of(TOOLKIT.translate("xp_value", tile.storedXP.get())))
+                .constrain(TOP, relative(xpBG.get(TOP), 14))
+                .constrain(LEFT, relative(xpBG.get(LEFT), 2))
+                .constrain(RIGHT, relative(xpBG.get(RIGHT), -2))
+                .constrain(HEIGHT, literal(9));
+        GuiRectangle barBG = new GuiRectangle(xpBG).fill(0xFF000000)
+                .constrain(TOP, relative(xpBG.get(TOP), 25))
+                .constrain(LEFT, relative(xpBG.get(LEFT), 5))
+                .constrain(RIGHT, relative(xpBG.get(RIGHT), -5))
+                .constrain(HEIGHT, literal(5));
+        new GuiRectangle(barBG).fill(0xFF80FF20)
+                .constrain(TOP, relative(barBG.get(TOP), 1))
+                .constrain(BOTTOM, relative(barBG.get(BOTTOM), -1))
+                .constrain(LEFT, relative(barBG.get(LEFT), 1))
+                .constrain(WIDTH, dynamic(() -> {
+                    double l = TileGrinder.levelOf(tile.storedXP.get());
+                    return (barBG.xSize() - 2) * (l - (int) l);
+                }));
 
-        GuiButton showAOE = TOOLKIT.createFlat3DButton(root, () -> TOOLKIT.translate("show_aoe"))
-                .onPress(tile.showAOE::invert)
-                .setToggleMode(tile.showAOE::get)
+        GuiButton take = TOOLKIT.createFlat3DButton(xpBG, () -> TOOLKIT.translate("xp_take"))
+                .setTooltip(TOOLKIT.translate("xp_take.info"), TOOLKIT.translate("xp_modifiers"))
+                .onPress(() -> sendXP(4))
                 .constrain(HEIGHT, literal(14))
-                .constrain(TOP, relative(aoeSize.get(BOTTOM), 1))
-                .constrain(LEFT, relative(root.get(LEFT), 4))
-                .constrain(RIGHT, relative(invBG.get(LEFT), -2));
-
-        GuiButton collectItems = TOOLKIT.createFlat3DButton(root, () -> TOOLKIT.translate("collect.items"))
-                .setTooltip(TOOLKIT.translate("collect.items.info"))
-                .onPress(tile.collectItems::invert)
-                .setToggleMode(tile.collectItems::get)
+                .constrain(TOP, relative(barBG.get(BOTTOM), 4))
+                .constrain(LEFT, relative(xpBG.get(LEFT), 3))
+                .constrain(WIDTH, dynamic(() -> (xpBG.xSize() - 7) / 2D));
+        TOOLKIT.createFlat3DButton(xpBG, () -> TOOLKIT.translate("xp_store"))
+                .setTooltip(TOOLKIT.translate("xp_store.info"), TOOLKIT.translate("xp_modifiers"))
+                .onPress(() -> sendXP(5))
                 .constrain(HEIGHT, literal(14))
-                .constrain(TOP, relative(showAOE.get(BOTTOM), 1))
-                .constrain(LEFT, relative(root.get(LEFT), 4))
-                .constrain(RIGHT, relative(invBG.get(LEFT), -2));
-
-        GuiButton collectXP = TOOLKIT.createFlat3DButton(root, () -> TOOLKIT.translate("collect.xp"))
-                .setTooltip(TOOLKIT.translate("collect.xp.info"))
-                .onPress(tile.collectXP::invert)
-                .setToggleMode(tile.collectXP::get)
-                .constrain(HEIGHT, literal(14))
-                .constrain(TOP, relative(collectItems.get(BOTTOM), 1))
-                .constrain(LEFT, relative(root.get(LEFT), 4))
-                .constrain(RIGHT, relative(invBG.get(LEFT), -2));
-
-        GuiButton claimXP = TOOLKIT.createFlat3DButton(root, () -> TOOLKIT.translate("claim.xp"))
-                .setTooltip(TOOLKIT.translate("claim.xp.info"))
-                .onPress(() -> tile.sendPacketToServer(output -> output.writeByte(0), 1))
-                .constrain(HEIGHT, literal(14))
-                .constrain(TOP, relative(collectXP.get(BOTTOM), 2))
-                .constrain(LEFT, relative(root.get(LEFT), 4))
-                .constrain(RIGHT, relative(invBG.get(LEFT), -2));
-
-        GuiButton level = TOOLKIT.createFlat3DButton(root, () -> Component.literal("1L"))
-                .setTooltip(TOOLKIT.translate("claim.xp.level.info"))
-                .onPress(() -> tile.sendPacketToServer(output -> output.writeByte(1), 1))
-                .constrain(HEIGHT, literal(14))
-                .constrain(WIDTH, dynamic(() -> claimXP.xSize() / 3D))
-                .constrain(TOP, relative(claimXP.get(BOTTOM), 1))
-                .constrain(LEFT, match(claimXP.get(LEFT)));
-
-        GuiButton level5 = TOOLKIT.createFlat3DButton(root, () -> Component.literal("5L"))
-                .setTooltip(TOOLKIT.translate("claim.xp.levels.info", 5))
-                .onPress(() -> tile.sendPacketToServer(output -> output.writeByte(2), 1))
-                .constrain(HEIGHT, literal(14))
-                .constrain(WIDTH, dynamic(() -> claimXP.xSize() / 3D))
-                .constrain(TOP, relative(claimXP.get(BOTTOM), 1))
-                .constrain(LEFT, match(level.get(RIGHT)));
-
-        GuiButton level10 = TOOLKIT.createFlat3DButton(root, () -> Component.literal("10L"))
-                .setTooltip(TOOLKIT.translate("claim.xp.levels.info", 10))
-                .onPress(() -> tile.sendPacketToServer(output -> output.writeByte(3), 1))
-                .constrain(HEIGHT, literal(14))
-                .constrain(WIDTH, dynamic(() -> claimXP.xSize() / 3D))
-                .constrain(TOP, relative(claimXP.get(BOTTOM), 1))
-                .constrain(LEFT, match(level5.get(RIGHT)));
+                .constrain(TOP, match(take.get(TOP)))
+                .constrain(LEFT, relative(take.get(RIGHT), 1))
+                .constrain(RIGHT, relative(xpBG.get(RIGHT), -3));
 
         //Entity Filter
         GuiButton largeViewButton = TOOLKIT.createResizeButton(root)
@@ -214,6 +212,24 @@ public class GrinderGui extends ContainerGuiProvider<GrinderMenu> {
                 .setScrollBarCustomizer(guiSlider -> Constraints.bind(new GuiRectangle(guiSlider).fill(Palette.SubItem::accentDark), guiSlider.getSlider()))
                 .initFilter();
         Constraints.bind(filterUI, filterBG, 2);
+    }
+
+    private GuiButton iconToggle(GuiElement<?> parent, net.minecraft.world.item.Item icon, Runnable invert, java.util.function.Supplier<Boolean> state, Component... tooltip) {
+        GuiButton button = TOOLKIT.createFlat3DButton(parent, null)
+                .setTooltip(tooltip)
+                .onPress(invert)
+                .setToggleMode(state)
+                .constrain(WIDTH, literal(16))
+                .constrain(HEIGHT, literal(16));
+        Constraints.bind(new GuiItemStack(button, new net.minecraft.world.item.ItemStack(icon)).enableStackToolTip(false), button);
+        return button;
+    }
+
+    /** id 4 = take, 5 = store: 1 level, Shift 10, Ctrl all (0). */
+    private void sendXP(int id) {
+        Minecraft mc = Minecraft.getInstance();
+        int levels = mc.hasControlDown() ? 0 : mc.hasShiftDown() ? 10 : 1;
+        tile.sendPacketToServer(output -> output.writeByte(id).writeInt(levels), 1);
     }
 
     private String getAOEString() {

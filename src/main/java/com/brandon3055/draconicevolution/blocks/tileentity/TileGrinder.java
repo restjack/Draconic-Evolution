@@ -470,6 +470,17 @@ public class TileGrinder extends TileBCore implements IRSSwitchable, MenuProvide
                 case 3:
                     levels = 10;
                     break;
+                case 4: // take n levels, n <= 0 = all
+                    levels = data.readInt();
+                    if (levels <= 0) {
+                        client.giveExperiencePoints(storedXP.get());
+                        storedXP.set(0);
+                        return;
+                    }
+                    break;
+                case 5: // store n of the player's levels (a partial level counts as one)
+                    storeLevels(client, data.readInt());
+                    return;
             }
             for (int i = 0; i < levels; i++) {
                 int xp = Math.min(client.getXpNeededForNextLevel(), storedXP.get());
@@ -496,6 +507,37 @@ public class TileGrinder extends TileBCore implements IRSSwitchable, MenuProvide
                 swordFlipFlop = !swordFlipFlop;
             }
         }
+    }
+
+    /** XP needed to go from level to level + 1 (vanilla formula). */
+    public static int xpForNext(int level) {
+        return level >= 30 ? 112 + (level - 30) * 9 : level >= 15 ? 37 + (level - 15) * 5 : 7 + level * 2;
+    }
+
+    /** Total XP points needed to reach level from 0. */
+    public static long totalXp(int level) {
+        long t = 0;
+        for (int i = 0; i < level; i++) t += xpForNext(i);
+        return t;
+    }
+
+    /** Level reached with xp points from 0, and the fraction into the next level. */
+    public static double levelOf(long xp) {
+        int level = 0;
+        while (xp >= xpForNext(level)) xp -= xpForNext(level++);
+        return level + (double) xp / xpForNext(level);
+    }
+
+    private void storeLevels(ServerPlayer player, int levels) {
+        long have = totalXp(player.experienceLevel) + Math.round(player.experienceProgress * player.getXpNeededForNextLevel());
+        int target = levels <= 0 ? 0 : Math.max(0, player.experienceLevel - levels + (player.experienceProgress > 0 ? 1 : 0));
+        long move = Math.min(have - totalXp(target), (long) getXPStorageCapacity() - storedXP.get());
+        if (move <= 0) return;
+        storedXP.add((int) move);
+        double left = levelOf(have - move);
+        player.experienceProgress = (float) (left - (int) left);
+        player.totalExperience = (int) Math.max(0, player.totalExperience - move);
+        player.setExperienceLevels((int) left); // also re-syncs the XP bar
     }
 
     public int getMaxAOE() {
