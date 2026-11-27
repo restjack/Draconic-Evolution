@@ -8,7 +8,6 @@ import com.brandon3055.brandonscore.capability.CapabilityOP;
 
 import com.brandon3055.brandonscore.lib.ChatHelper;
 
-import com.brandon3055.brandonscore.lib.Vec3B;
 
 import com.brandon3055.brandonscore.lib.Vec3D;
 
@@ -82,8 +81,8 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
  */
 public class TileCrystalWirelessIO extends TileCrystalBase {
 
-    protected Map<Vec3B, Direction> receiverSideMap = new HashMap<>();
-    protected LinkedList<Vec3B> linkedReceivers = new LinkedList<>();
+    protected Map<BlockPos, Direction> receiverSideMap = new HashMap<>();
+    protected LinkedList<BlockPos> linkedReceivers = new LinkedList<>();
     protected LinkedList<BlockPos> receiverCache = null;
     protected Map<BlockPos, Direction> receiverFaceCache = null;
     protected List<LinkedDevice> fastList = new ArrayList<>();
@@ -259,7 +258,7 @@ public class TileCrystalWirelessIO extends TileCrystalBase {
             return true;
         }
 
-        Vec3B offset = getOffset(linkTarget);
+        BlockPos offset = getOffset(linkTarget);
 
         if (linkedReceivers.contains(offset)) {
             removeReceiver(linkTarget);
@@ -320,7 +319,7 @@ public class TileCrystalWirelessIO extends TileCrystalBase {
         receiverFaceCache = new HashMap<>();
         fastList.clear();
         slowList.clear();
-        for (Vec3B offset : linkedReceivers) {
+        for (BlockPos offset : linkedReceivers) {
             receiverCache.add(fromOffset(offset));
             receiverFaceCache.put(fromOffset(offset), receiverSideMap.get(offset));
             fastList.add(new LinkedDevice(linkedReceivers.indexOf(offset), fromOffset(offset), receiverSideMap.get(offset)));
@@ -395,7 +394,7 @@ public class TileCrystalWirelessIO extends TileCrystalBase {
     //region sync/save
 
     public void addReceiver(BlockPos pos, Direction side) {
-        Vec3B offset = getOffset(pos);
+        BlockPos offset = getOffset(pos);
         linkedReceivers.add(offset);
         receiverSideMap.put(offset, side);
         reCachePositions();
@@ -403,7 +402,7 @@ public class TileCrystalWirelessIO extends TileCrystalBase {
     }
 
     public void removeReceiver(BlockPos pos) {
-        Vec3B offset = getOffset(pos);
+        BlockPos offset = getOffset(pos);
         linkedReceivers.remove(offset);
         receiverSideMap.remove(offset);
         reCachePositions();
@@ -414,9 +413,9 @@ public class TileCrystalWirelessIO extends TileCrystalBase {
     public void writeExtraNBT(CompoundTag compound) {
         super.writeExtraNBT(compound);
         ListTag list = new ListTag();
-        for (Vec3B vec : linkedReceivers) {
+        for (BlockPos vec : linkedReceivers) {
             CompoundTag receiver = new CompoundTag();
-            receiver.putByteArray("offset", new byte[]{vec.x, vec.y, vec.z});
+            receiver.putIntArray("offset", new int[]{vec.getX(), vec.getY(), vec.getZ()});
             receiver.putByte("side", (byte) receiverSideMap.get(vec).get3DDataValue());
             list.add(receiver);
         }
@@ -431,9 +430,13 @@ public class TileCrystalWirelessIO extends TileCrystalBase {
         receiverSideMap.clear();
         for (int i = 0; i < list.size(); i++) {
             CompoundTag receiver = list.getCompoundOrEmpty(i);
-            byte[] offset = receiver.getByteArray("offset").orElseGet(() -> new byte[0]);
-            if (offset.length != 3) continue;
-            Vec3B vec = new Vec3B(offset[0], offset[1], offset[2]);
+            // New saves: int offsets. Old saves: byte offsets under the same key.
+            int[] ints = receiver.getIntArray("offset").orElse(null);
+            byte[] bytes = receiver.getByteArray("offset").orElseGet(() -> new byte[0]);
+            BlockPos vec;
+            if (ints != null && ints.length == 3) vec = new BlockPos(ints[0], ints[1], ints[2]);
+            else if (bytes.length == 3) vec = new BlockPos(bytes[0], bytes[1], bytes[2]);
+            else continue;
             linkedReceivers.add(vec);
             receiverSideMap.put(vec, Direction.from3DDataValue(receiver.getByteOr("side", (byte) 0)));
         }
