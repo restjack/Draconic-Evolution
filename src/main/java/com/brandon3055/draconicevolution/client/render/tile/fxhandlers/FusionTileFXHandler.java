@@ -192,6 +192,11 @@ public class FusionTileFXHandler implements ITileFXHandler {
             return TimeKeeper.getClientTick() + partialTicks; //TODO Maybe get this from the client side injector so i can have control over anim speed based on charge state.
         }
 
+        /** The ingredient this effect belongs to (what the injector held when the craft started). */
+        public net.minecraft.world.item.ItemStack stack() {
+            return injector.getInjectorStack();
+        }
+
         public float getCharge() {
             return injector.getInjectorEnergy() / (float)injector.getEnergyRequirement();
         }

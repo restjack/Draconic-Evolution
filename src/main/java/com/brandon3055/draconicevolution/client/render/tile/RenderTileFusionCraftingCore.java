@@ -68,6 +68,15 @@ public class RenderTileFusionCraftingCore implements BlockEntityRenderer<TileFus
         final ItemStackRenderState item = new ItemStackRenderState();
         ExtractedModel effects;
         float rotation;
+        // Ingredient items riding the orbit the FX handler already animates (our addition, not upstream).
+        final List<Orbit> orbit = new java.util.ArrayList<>();
+        int orbitCount;
+    }
+
+    static class Orbit {
+        final ItemStackRenderState item = new ItemStackRenderState();
+        double x, y, z;
+        float scale, spin;
     }
 
     @Override public State createRenderState() { return new State(); }
@@ -85,6 +94,27 @@ public class RenderTileFusionCraftingCore implements BlockEntityRenderer<TileFus
                     net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
         }
         state.effects = capture.finish();
+
+        // While crafting the injectors hide their items; show them flying round the core instead,
+        // pulled in and shrinking as the effect dies out.
+        state.orbitCount = 0;
+        if (tile.fxHandler instanceof FusionTileFXHandler handler && handler.renderActive() && tile.getFusionState().ordinal() > 1) {
+            float spin = (TimeKeeper.getClientTick() + partialTicks) * 4F;
+            int i = 0;
+            for (IngredFX fx : handler.getIngredients(partialTicks)) {
+                if (fx.dieOut <= 0 || fx.stack().isEmpty()) continue;
+                if (state.orbitCount == state.orbit.size()) state.orbit.add(new Orbit());
+                Orbit o = state.orbit.get(state.orbitCount++);
+                itemModels.updateForTopItem(o.item, fx.stack(), ItemDisplayContext.FIXED, tile.getLevel(), null, i);
+                double pull = 0.1 + 0.9 * fx.dieOut;
+                o.x = 0.5 + fx.pos.x * pull;
+                o.y = 0.5 + fx.pos.y * pull + Mth.sin(spin / 25F + i) * 0.08F;
+                o.z = 0.5 + fx.pos.z * pull;
+                o.scale = 0.45F * (0.25F + 0.75F * fx.dieOut);
+                o.spin = spin + i * 40;
+                i++;
+            }
+        }
     }
 
     @Override
@@ -95,6 +125,16 @@ public class RenderTileFusionCraftingCore implements BlockEntityRenderer<TileFus
         stack.mulPose(Axis.YP.rotationDegrees(state.rotation));
         state.item.submit(stack, collector, state.lightCoords, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, 0);
         stack.popPose();
+        for (int i = 0; i < state.orbitCount; i++) {
+            Orbit o = state.orbit.get(i);
+            stack.pushPose();
+            stack.translate(o.x, o.y, o.z);
+            stack.scale(o.scale, o.scale, o.scale);
+            stack.mulPose(Axis.YP.rotationDegrees(o.spin));
+            o.item.submit(stack, collector, net.minecraft.util.LightCoordsUtil.FULL_BRIGHT,
+                    net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, 0);
+            stack.popPose();
+        }
         state.effects.submit(stack, collector);
     }
 
