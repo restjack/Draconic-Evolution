@@ -21,8 +21,6 @@ import com.brandon3055.draconicevolution.inventory.CelestialManipulatorMenu;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -64,7 +62,7 @@ public class CelestialManipulatorGui extends ContainerGuiProvider<CelestialManip
 
         com.brandon3055.brandonscore.client.gui.InfoPanel info = com.brandon3055.brandonscore.client.gui.InfoPanel.create(root);
         info.labeledValue(TOOLKIT.translate("info.owner").withStyle(ChatFormatting.GOLD), () -> Component.literal(tile.ownerName.get().isEmpty() ? "-" : tile.ownerName.get()).withStyle(ChatFormatting.GRAY));
-        info.labeledValue(TOOLKIT.translate("info.feed").withStyle(ChatFormatting.GOLD), () -> Component.literal(TileCelestialManipulator.fmt(tile.feed.get()) + " OP/t").withStyle(ChatFormatting.GRAY));
+        info.labeledValue(TOOLKIT.translate("info.feed").withStyle(ChatFormatting.GOLD), () -> tile.feed.get() <= 0 ? TOOLKIT.translate("no_power").withStyle(ChatFormatting.RED) : Component.literal(TileCelestialManipulator.fmt(tile.feed.get()) + " OP/t").withStyle(ChatFormatting.GRAY));
         info.labeledValue(TOOLKIT.translate("info.last").withStyle(ChatFormatting.GOLD), () -> lastRun(tile));
         ButtonRow buttons = ButtonRow.topRightInside(root, Direction.DOWN, 3, 3).setSpacing(1);
         buttons.addButton(TOOLKIT::createThemeButton);
@@ -87,10 +85,10 @@ public class CelestialManipulatorGui extends ContainerGuiProvider<CelestialManip
 
         // Toggles column (right)
         GuiButton[] column = {
-                FusionConductorGui.toggle(root, new ItemStack(Items.SUNFLOWER), () -> flash.set(tile, TileCelestialManipulator.SET_KEEP_CLEAR, !tile.keepClear.get(), "keep_clear"), tile.keepClear::get, KEY + "keep_clear"),
-                FusionConductorGui.toggle(root, new ItemStack(Items.TRIPWIRE_HOOK), () -> flash.set(tile, TileCelestialManipulator.SET_LOCK, !tile.ownerOnly.get(), "owner_only"), tile.ownerOnly::get, KEY + "owner_only"),
-                FusionConductorGui.toggle(root, new ItemStack(Items.BELL), () -> flash.set(tile, TileCelestialManipulator.SET_NOTICE, !tile.notice.get(), "notice"), tile.notice::get, KEY + "notice"),
-                FusionConductorGui.toggle(root, new ItemStack(Items.WHITE_WOOL), () -> flash.set(tile, TileCelestialManipulator.SET_QUIET, !tile.quiet.get(), "quiet"), tile.quiet::get, KEY + "quiet"),
+                FusionConductorGui.toggle(root, "celestial_manipulator/keep_clear", () -> flash.set(tile, TileCelestialManipulator.SET_KEEP_CLEAR, !tile.keepClear.get(), "keep_clear"), tile.keepClear::get, KEY + "keep_clear"),
+                FusionConductorGui.toggle(root, "celestial_manipulator/owner_only", () -> flash.set(tile, TileCelestialManipulator.SET_LOCK, !tile.ownerOnly.get(), "owner_only"), tile.ownerOnly::get, KEY + "owner_only"),
+                FusionConductorGui.toggle(root, "celestial_manipulator/notice", () -> flash.set(tile, TileCelestialManipulator.SET_NOTICE, !tile.notice.get(), "notice"), tile.notice::get, KEY + "notice"),
+                FusionConductorGui.toggle(root, "celestial_manipulator/quiet", () -> flash.set(tile, TileCelestialManipulator.SET_QUIET, !tile.quiet.get(), "quiet"), tile.quiet::get, KEY + "quiet"),
                 redstoneButton(root, tile, flash),
         };
         for (int i = 0; i < column.length; i++) {
@@ -106,7 +104,10 @@ public class CelestialManipulatorGui extends ContainerGuiProvider<CelestialManip
         actionButton(root, tile, flash, 9, 147, 128);
         GuiButton stop = TOOLKIT.createFlat3DButton(root, () -> TOOLKIT.translate("stop_short"))
                 .setTooltipSingle(TOOLKIT.translate("stop"))
-                .onPress(() -> tile.sendPacketToServer(out -> out.writeString("STOP"), 0))
+                .onPress(() -> {
+                    flash.clear();
+                    tile.sendPacketToServer(out -> out.writeString("STOP"), 0);
+                })
                 .constrain(LEFT, relative(root.get(LEFT), 167)).constrain(TOP, relative(root.get(TOP), 128))
                 .constrain(WIDTH, literal(38)).constrain(HEIGHT, literal(18));
         new GuiRectangle(stop).fill(0x90202020).setEnabled(() -> !tile.timeWarpRunning.get())
@@ -146,12 +147,10 @@ public class CelestialManipulatorGui extends ContainerGuiProvider<CelestialManip
                 .constrain(WIDTH, literal(80)).constrain(HEIGHT, literal(9));
     }
 
-    /** 18 px action button: icon (or "+24"), blue while it runs, red corner when it can't run now. */
+    /** 18 px action button: icon, blue while it runs, red corner when it can't run now. */
     private static void actionButton(GuiElement<?> root, TileCelestialManipulator tile, Flash flash, int action, int x, int y) {
         String key = TileCelestialManipulator.KEYS[action];
-        GuiButton b = action == 9
-                ? TOOLKIT.createFlat3DButton(root, () -> Component.literal("+24"))
-                : TOOLKIT.createIconButton(root, 18, DEGuiTextures.getter("celestial_manipulator/" + key));
+        GuiButton b = TOOLKIT.createIconButton(root, 18, DEGuiTextures.getter("celestial_manipulator/" + key));
         b.setTooltip(() -> tooltip(tile, action))
                 .setTooltipDelay(0)
                 // Always ask the server (operators skip the cooldown); its reply shows in the status box.
@@ -212,7 +211,7 @@ public class CelestialManipulatorGui extends ContainerGuiProvider<CelestialManip
         return Component.literal(who + ": ").append(TileCelestialManipulator.label(tile.runAction.get())).withStyle(ChatFormatting.GRAY);
     }
 
-    /** "Clear  Lock  Tell  Quiet": each word green when on, red when off. */
+    /** "Clear Off  Lock Off  Notify Off  Quiet Off": plain label, On green / Off red (fits 216 px at default scale). */
     private static Component summaryToggles(TileCelestialManipulator tile) {
         return Component.empty().append(word("keep", tile.keepClear.get())).append("  ")
                 .append(word("lock", tile.ownerOnly.get())).append("  ")
@@ -221,13 +220,19 @@ public class CelestialManipulatorGui extends ContainerGuiProvider<CelestialManip
     }
 
     private static Component word(String key, boolean on) {
-        return TOOLKIT.translate("summary." + key).withStyle(on ? ChatFormatting.GREEN : ChatFormatting.RED);
+        return TOOLKIT.translate("summary." + key).append(" ").append(Component.translatable(on ? "gui.draconicevolution.toggle.on" : "gui.draconicevolution.toggle.off")
+                .withStyle(on ? ChatFormatting.GREEN : ChatFormatting.RED));
     }
 
-    /** "RS: Off  Fed: 32k OP/t" */
+    /** "RS: Off  Fed: 32k OP/t", or "No power" in red while nothing feeds it. */
     private static Component summaryModes(TileCelestialManipulator tile) {
         return TOOLKIT.translate("summary.rs", rsName(tile.rsAction.get())).append("  ")
-                .append(TOOLKIT.translate("summary.fed", TileCelestialManipulator.fmt(tile.feed.get())));
+                .append(fed(tile));
+    }
+
+    private static Component fed(TileCelestialManipulator tile) {
+        return tile.feed.get() <= 0 ? TOOLKIT.translate("no_power").withStyle(ChatFormatting.RED)
+                : TOOLKIT.translate("summary.fed", TileCelestialManipulator.fmt(tile.feed.get()));
     }
 
     private static Component rsName(int a) {
@@ -243,14 +248,11 @@ public class CelestialManipulatorGui extends ContainerGuiProvider<CelestialManip
                 .onPress(() -> cycleRs(tile, flash, 1), GuiButton.LEFT_CLICK)
                 .onPress(() -> cycleRs(tile, flash, -1), GuiButton.RIGHT_CLICK);
         Constraints.size(b, 16, 16);
-        GuiItemStack dust = new GuiItemStack(b, new ItemStack(Items.REDSTONE)).enableStackToolTip(false);
-        dust.setEnabled(() -> tile.rsAction.get() < 0);
-        Constraints.bind(dust, b, 1);
-        GuiTexture icon = new GuiTexture(b, DEGuiTextures.getter(() -> "celestial_manipulator/" + TileCelestialManipulator.KEYS[Math.max(0, Math.min(8, tile.rsAction.get()))]));
-        icon.setEnabled(() -> tile.rsAction.get() >= 0 && tile.rsAction.get() < 9);
+        GuiTexture icon = new GuiTexture(b, DEGuiTextures.getter(() -> "celestial_manipulator/" + (tile.rsAction.get() < 0 ? "redstone" : TileCelestialManipulator.KEYS[Math.min(9, tile.rsAction.get())])));
         Constraints.bind(icon, b, 0);
-        GuiText plus = new GuiText(b, Component.literal("24")).setEnabled(() -> tile.rsAction.get() == 9);
-        Constraints.bind(plus, b, 0);
+        new GuiRectangle(b).fill(0x90202020).setEnabled(() -> tile.rsAction.get() < 0)
+                .constrain(LEFT, relative(b.get(LEFT), 1)).constrain(TOP, relative(b.get(TOP), 1))
+                .constrain(RIGHT, relative(b.get(RIGHT), -1)).constrain(BOTTOM, relative(b.get(BOTTOM), -1));
         new GuiRectangle(b).fill(0xFFD03030).setEnabled(() -> tile.rsAction.get() < 0)
                 .constrain(RIGHT, relative(b.get(RIGHT), -1)).constrain(BOTTOM, relative(b.get(BOTTOM), -1))
                 .constrain(WIDTH, literal(4)).constrain(HEIGHT, literal(4));
@@ -317,11 +319,11 @@ public class CelestialManipulatorGui extends ContainerGuiProvider<CelestialManip
             }
             if (tile.timeWarpRunning.get()) { // dotted line to the target
                 double[] t = point(tile.targetTime.get(), cx, hz, r);
-                for (int i = 1; i <= 10; i++) render.rect(cx + (t[0] - cx) * i / 10 - 0.5, hz + (t[1] - hz) * i / 10 - 0.5, 1, 1, 0xFF8FB8FF);
+                for (int i = 1; i <= 10; i++) if (hz + (t[1] - hz) * i / 10 < hz) render.rect(cx + (t[0] - cx) * i / 10 - 0.5, hz + (t[1] - hz) * i / 10 - 0.5, 1, 1, 0xFF8FB8FF);
             }
             double[] s = point(now, cx, hz, r), m = point(now + 12000, cx, hz, r);
-            render.rect(s[0] - 3, s[1] - 3, 6, 6, 0xFFFFE58A);
-            render.rect(m[0] - 2, m[1] - 2, 4, 4, 0xFFDFE6F0);
+            if (s[1] < hz) render.rect(s[0] - 3, s[1] - 3, 6, Math.min(6, hz - s[1] + 3), 0xFFFFE58A);
+            if (m[1] < hz) render.rect(m[0] - 2, m[1] - 2, 4, Math.min(4, hz - m[1] + 2), 0xFFDFE6F0);
             if (tile.raining.get()) {
                 long tick = tile.getLevel().getGameTime();
                 int spanX = Math.max(1, (int) (w - 4)), spanY = Math.max(1, (int) (h * 0.8 - 4));

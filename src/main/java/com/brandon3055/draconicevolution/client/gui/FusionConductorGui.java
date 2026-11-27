@@ -343,6 +343,15 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
 
     /** 16 px toggle: green with the icon when on; dimmed icon plus a red corner when off. */
     static GuiButton toggle(GuiElement<?> parent, ItemStack icon, Runnable press, java.util.function.Supplier<Boolean> state, String key) {
+        return toggle(parent, b -> Constraints.bind(new GuiItemStack(b, icon).enableStackToolTip(false), b, 1), press, state, key);
+    }
+
+    /** Same toggle with a 16 px gui-atlas icon (e.g. "celestial_manipulator/quiet") instead of an item. */
+    static GuiButton toggle(GuiElement<?> parent, String texture, Runnable press, java.util.function.Supplier<Boolean> state, String key) {
+        return toggle(parent, b -> Constraints.bind(new GuiTexture(b, com.brandon3055.draconicevolution.client.DEGuiTextures.getter(texture)), b, 0), press, state, key);
+    }
+
+    private static GuiButton toggle(GuiElement<?> parent, java.util.function.Consumer<GuiButton> icon, Runnable press, java.util.function.Supplier<Boolean> state, String key) {
         GuiButton button = TOOLKIT.createFlat3DButton(parent, null)
                 .setTooltip(() -> List.of(Component.translatable(key),
                         Component.translatable(state.get() ? "gui.draconicevolution.toggle.on" : "gui.draconicevolution.toggle.off")
@@ -354,7 +363,7 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
         new GuiRectangle(button).fill(0xB040C040).setEnabled(state)
                 .constrain(LEFT, relative(button.get(LEFT), 1)).constrain(TOP, relative(button.get(TOP), 1))
                 .constrain(RIGHT, relative(button.get(RIGHT), -1)).constrain(BOTTOM, relative(button.get(BOTTOM), -1));
-        Constraints.bind(new GuiItemStack(button, icon).enableStackToolTip(false), button, 1);
+        icon.accept(button);
         new GuiRectangle(button).fill(0x90202020).setEnabled(() -> !state.get())
                 .constrain(LEFT, relative(button.get(LEFT), 1)).constrain(TOP, relative(button.get(TOP), 1))
                 .constrain(RIGHT, relative(button.get(RIGHT), -1)).constrain(BOTTOM, relative(button.get(BOTTOM), -1));
