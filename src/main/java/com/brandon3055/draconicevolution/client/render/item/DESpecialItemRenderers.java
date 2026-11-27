@@ -32,7 +32,7 @@ public final class DESpecialItemRenderers {
                         return com.mojang.serialization.DataResult.success(value);
                     } catch (IllegalArgumentException e) { return com.mojang.serialization.DataResult.error(() -> "Unknown crystal type: " + value); }
                 }).fieldOf("crystal_type").forGetter(EnergyCrystalUnbaked::crystalType),
-                com.mojang.serialization.Codec.intRange(0, 2).fieldOf("tier").forGetter(EnergyCrystalUnbaked::tier)
+                com.mojang.serialization.Codec.intRange(0, 3).fieldOf("tier").forGetter(EnergyCrystalUnbaked::tier)
         ).apply(i, EnergyCrystalUnbaked::new));
         @Override
         public MapCodec<EnergyCrystalUnbaked> type() { return MAP_CODEC; }

@@ -1,0 +1,11 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "draconicevolution:item/chaotic_wireless_crystal",
+    "model": {
+      "type": "draconicevolution:energy_crystal",
+      "crystal_type": "WIRELESS",
+      "tier": 3
+    }
+  }
+}

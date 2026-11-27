@@ -1,0 +1,48 @@
+{
+  "type": "draconicevolution:fusion_crafting",
+  "catalyst": {
+    "neoforge:ingredient_type": "draconicevolution:stack",
+    "count": 4,
+    "items": "draconicevolution:draconic_relay_crystal"
+  },
+  "ingredients": [
+    {
+      "consume": true,
+      "ingredient": "draconicevolution:chaotic_core"
+    },
+    {
+      "consume": true,
+      "ingredient": "draconicevolution:chaos_shard"
+    },
+    {
+      "consume": true,
+      "ingredient": "draconicevolution:draconic_energy_core"
+    },
+    {
+      "consume": true,
+      "ingredient": "draconicevolution:draconic_energy_core"
+    },
+    {
+      "consume": true,
+      "ingredient": "draconicevolution:dragon_heart"
+    },
+    {
+      "consume": true,
+      "ingredient": "draconicevolution:chaos_shard"
+    },
+    {
+      "consume": true,
+      "ingredient": "draconicevolution:draconic_energy_core"
+    },
+    {
+      "consume": true,
+      "ingredient": "draconicevolution:draconic_energy_core"
+    }
+  ],
+  "result": {
+    "count": 4,
+    "id": "draconicevolution:chaotic_relay_crystal"
+  },
+  "techLevel": "chaotic",
+  "totalEnergy": 32000000
+}

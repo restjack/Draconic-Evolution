@@ -49,6 +49,9 @@
     "draconicevolution:wyvern_wireless_crystal",
     "draconicevolution:draconic_wireless_crystal",
     "draconicevolution:flux_gate",
-    "draconicevolution:fluid_gate"
+    "draconicevolution:fluid_gate",
+    "draconicevolution:chaotic_io_crystal",
+    "draconicevolution:chaotic_relay_crystal",
+    "draconicevolution:chaotic_wireless_crystal"
   ]
-}
+}

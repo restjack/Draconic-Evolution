@@ -88,6 +88,14 @@ public class EnergyCrystal extends EntityBlockBCore implements IHudBlock {
     }
 
     @Override
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, List<Component> tooltip) {
+        if (techLevel == TechLevel.CHAOTIC) {
+            tooltip.add(Component.translatable("tooltip.draconicevolution.chaotic_crystal.range").withStyle(ChatFormatting.GRAY));
+        }
+        super.appendHoverText(stack, tooltip);
+    }
+
+    @Override
     public void generateHudText(Level world, BlockPos pos, Player player, List<Component> displayList) {
         BlockEntity te = world.getBlockEntity(pos);
         if (!(te instanceof TileCrystalBase)) return;

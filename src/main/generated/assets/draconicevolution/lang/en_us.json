@@ -8,6 +8,9 @@
   "block.draconicevolution.celestial_manipulator": "Celestial Manipulator",
   "block.draconicevolution.chaos_crystal": "Chaos Crystal",
   "block.draconicevolution.chaotic_crafting_injector": "Chaotic Fusion Crafting Injector",
+  "block.draconicevolution.chaotic_io_crystal": "Chaotic Energy I/O Crystal",
+  "block.draconicevolution.chaotic_relay_crystal": "Chaotic Energy Relay Crystal",
+  "block.draconicevolution.chaotic_wireless_crystal": "Chaotic Wireless Energy Crystal",
   "block.draconicevolution.core_monitor": "Core Monitor",
   "block.draconicevolution.crafting_core": "Fusion Crafting Core",
   "block.draconicevolution.creative_op_capacitor": "Creative Power Source",
@@ -828,5 +831,6 @@
   "tech_level.draconicevolution.wyvern": "Wyvern",
   "tile.draconicevolution.dislocation_inhibitor.info": "Prevents items dropped within 5 blocks from being collected by Item Dislocators.",
   "tooltip.draconicevolution.bow.damage": "%s Max Attack Damage",
-  "tooltip.draconicevolution.bow.energy_per_shot": "%s OP/shot"
+  "tooltip.draconicevolution.bow.energy_per_shot": "%s OP/shot",
+  "tooltip.draconicevolution.chaotic_crystal.range": "Link range 256 blocks. Both ends must be loaded for energy to flow."
 }

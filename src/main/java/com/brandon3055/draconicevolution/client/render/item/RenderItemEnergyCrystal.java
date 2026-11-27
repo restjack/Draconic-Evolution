@@ -101,9 +101,9 @@ public class RenderItemEnergyCrystal implements DEItemRenderer {
         }
     }
 
-    private static float[] r = {0.0F, 0.47F, 1.0F};
-    private static float[] g = {0.2F, 0.0F, 0.4F};
-    private static float[] b = {0.3F, 0.58F, 0.1F};
+    private static float[] r = {0.0F, 0.47F, 1.0F, 0.62F};
+    private static float[] g = {0.2F, 0.0F, 0.4F, 0.03F};
+    private static float[] b = {0.3F, 0.58F, 0.1F, 0.05F};
 
     //@formatter:off //This is not cursed at all! idk what your talking about!
     public static class ITEM_BASIC_IO_CRYSTAL extends RenderItemEnergyCrystal { public ITEM_BASIC_IO_CRYSTAL() { super(EnergyCrystal.CrystalType.CRYSTAL_IO, TechLevel.DRACONIUM);}}
@@ -115,5 +115,8 @@ public class RenderItemEnergyCrystal implements DEItemRenderer {
     public static class ITEM_BASIC_WIRELESS_CRYSTAL extends RenderItemEnergyCrystal { public ITEM_BASIC_WIRELESS_CRYSTAL() { super(EnergyCrystal.CrystalType.WIRELESS, TechLevel.DRACONIUM);}}
     public static class ITEM_WYVERN_WIRELESS_CRYSTAL extends RenderItemEnergyCrystal { public ITEM_WYVERN_WIRELESS_CRYSTAL() { super(EnergyCrystal.CrystalType.WIRELESS, TechLevel.WYVERN);}}
     public static class ITEM_DRACONIC_WIRELESS_CRYSTAL extends RenderItemEnergyCrystal { public ITEM_DRACONIC_WIRELESS_CRYSTAL() { super(EnergyCrystal.CrystalType.WIRELESS, TechLevel.DRACONIC);}}
+    public static class ITEM_CHAOTIC_IO_CRYSTAL extends RenderItemEnergyCrystal { public ITEM_CHAOTIC_IO_CRYSTAL() { super(EnergyCrystal.CrystalType.CRYSTAL_IO, TechLevel.CHAOTIC);}}
+    public static class ITEM_CHAOTIC_RELAY_CRYSTAL extends RenderItemEnergyCrystal { public ITEM_CHAOTIC_RELAY_CRYSTAL() { super(EnergyCrystal.CrystalType.RELAY, TechLevel.CHAOTIC);}}
+    public static class ITEM_CHAOTIC_WIRELESS_CRYSTAL extends RenderItemEnergyCrystal { public ITEM_CHAOTIC_WIRELESS_CRYSTAL() { super(EnergyCrystal.CrystalType.WIRELESS, TechLevel.CHAOTIC);}}
     //@formatter:on
 }

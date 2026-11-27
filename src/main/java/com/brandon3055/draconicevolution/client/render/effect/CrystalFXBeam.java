@@ -79,9 +79,9 @@ public class CrystalFXBeam<T extends BlockEntity & IENetEffectTile> extends Crys
             remove();
         }
 
-        float[] r = {0.0F, 0.8F, 1.0F};
-        float[] g = {0.8F, 0.1F, 0.7F};
-        float[] b = {1F, 1F, 0.2F};
+        float[] r = {0.0F, 0.8F, 1.0F, 1.0F};
+        float[] g = {0.8F, 0.1F, 0.7F, 0.12F};
+        float[] b = {1F, 1F, 0.2F, 0.12F};
 
         rCol = r[tile.getTier()];
         gCol = g[tile.getTier()];
@@ -94,7 +94,7 @@ public class CrystalFXBeam<T extends BlockEntity & IENetEffectTile> extends Crys
     @Override
     public net.minecraft.resources.Identifier texture() {
         if (ClientEventHandler.playerHoldingWrench) return CrystalFXRenderer.HIGHLIGHT;
-        String tier = tile.getTier() == 0 ? "basic" : tile.getTier() == 1 ? "wyvern" : "draconic";
+        String tier = tile.getTier() == 0 ? "basic" : tile.getTier() == 1 ? "wyvern" : tile.getTier() == 2 ? "draconic" : "chaotic";
         return net.minecraft.resources.Identifier.fromNamespaceAndPath("draconicevolution", "textures/particle/energy_beam_" + tier + ".png");
     }
 

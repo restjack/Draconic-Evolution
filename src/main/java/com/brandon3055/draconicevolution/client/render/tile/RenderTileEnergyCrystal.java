@@ -43,7 +43,7 @@ import java.util.Map;
  */
 public class RenderTileEnergyCrystal implements BlockEntityRenderer<TileCrystalBase, RenderTileEnergyCrystal.State> {
 
-    public static float[][] COLOURS = {{0.0F, 0.2F, 0.3F}, {0.47F, 0.0F, 0.58F}, {1.0F, 0.4F, 0.1F}};
+    public static float[][] COLOURS = {{0.0F, 0.2F, 0.3F}, {0.47F, 0.0F, 0.58F}, {1.0F, 0.4F, 0.1F}, {0.62F, 0.03F, 0.05F}};
 
     private static final RenderType fallBackType = RenderTypes.entityTranslucent(Identifier.fromNamespaceAndPath(DraconicEvolution.MODID, "textures/models/crystal_no_shader.png"));
     private static final RenderType fallBackOverlayType = RenderTypes.entityTranslucent(Identifier.fromNamespaceAndPath(DraconicEvolution.MODID, "textures/models/crystal_base.png"));
@@ -143,7 +143,7 @@ public class RenderTileEnergyCrystal implements BlockEntityRenderer<TileCrystalB
 
     }
 
-    private static float[] r = {0.0F, 0.55F, 1.0F};
-    private static float[] g = {0.35F, 0.3F, 0.572F};
-    private static float[] b = {0.65F, 0.9F, 0.172F};
+    private static float[] r = {0.0F, 0.55F, 1.0F, 0.75F};
+    private static float[] g = {0.35F, 0.3F, 0.572F, 0.06F};
+    private static float[] b = {0.65F, 0.9F, 0.172F, 0.08F};
 }

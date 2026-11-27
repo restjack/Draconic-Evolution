@@ -56,9 +56,9 @@ public class CrystalFXRing extends CrystalFXBase<TileCrystalBase> {
             remove();
         }
 
-        float[] r = {0.0F, 0.8F, 1.0F};
-        float[] g = {0.8F, 0.1F, 0.7F};
-        float[] b = {1F, 1F, 0.2F};
+        float[] r = {0.0F, 0.8F, 1.0F, 1.0F};
+        float[] g = {0.8F, 0.1F, 0.7F, 0.12F};
+        float[] b = {1F, 1F, 0.2F, 0.12F};
 
         rCol = r[tile.getTier()];
         gCol = g[tile.getTier()];

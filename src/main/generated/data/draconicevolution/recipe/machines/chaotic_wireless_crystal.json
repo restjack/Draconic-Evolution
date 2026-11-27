@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": "minecraft:ender_pearl",
+    "B": "draconicevolution:particle_generator",
+    "C": "minecraft:ender_eye",
+    "D": "draconicevolution:chaotic_relay_crystal"
+  },
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ABA"
+  ],
+  "result": {
+    "count": 1,
+    "id": "draconicevolution:chaotic_wireless_crystal"
+  }
+}
