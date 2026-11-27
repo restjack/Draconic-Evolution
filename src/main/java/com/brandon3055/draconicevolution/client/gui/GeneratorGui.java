@@ -178,7 +178,11 @@ public class GeneratorGui extends ContainerGuiProvider<GeneratorMenu> {
             double my = (((mouseY - getModularGui().yMin()) / (float) getModularGui().ySize()) - 0.5F) * .1F;
             mat.apply(new Rotation(150 * MathHelper.torad, 1, 0, 0).with(new Rotation(10 * MathHelper.torad, -my, 1 + mx, 0)));
             mat.scale(7.5);
-            storageModel.render(ccrs, mat);
+            // CCModel.render goes through CCL's writeVert, which throws on the GUI format's colour element on 26.1
+            // (crash opening this screen). DEModelEmission handles every element; full-bright so the preview isn't black.
+            ccrs.brightness = 0xF000F0;
+            ccrs.overlay = net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY; // reset() keeps the last user's value
+            com.brandon3055.draconicevolution.client.render.DEModelEmission.render(storageModel, ccrs, mat);
         }
     }
 
