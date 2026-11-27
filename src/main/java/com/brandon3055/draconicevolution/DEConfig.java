@@ -94,7 +94,8 @@ public class DEConfig {
             structureHints = true, pylonModeColours = true;
     public static boolean extrasServer = true, grinderXpPiping = true, guideBookRecipe = true, coreRateHistory = true,
             pylonModeMessage = true, beamForceField = true, beamPush = true, beamAffectsPlayers = true, beamAffectsMobs = true, coreMonitor = true,
-            crusherOreRecipes = true, fusionConductor = true;
+            crusherOreRecipes = true, fusionConductor = true, celestialManipulator = true;
+    public static int celestialCooldown = 60;
     public static double beamDamage = 1.0;
     // Fusion Conductor (unofficial-1.15): index 0 = no capacitor, 1 Wyvern, 2 Draconic, 3 Chaotic.
     public static List<Integer> conductorSpeed = List.of(1, 2, 4, 8);
@@ -142,6 +143,11 @@ public class DEConfig {
                 .setDefaultBoolean(true).onSync((t, r) -> crusherOreRecipes = t.getBoolean());
         server.getValue("fusionConductor").syncTagToClient().setComment("Fusion Conductor block: automates the Fusion Crafting Core it sits on. Off = placed conductors do nothing.")
                 .setDefaultBoolean(true).onSync((t, r) -> fusionConductor = t.getBoolean());
+        server.getValue("celestialManipulator").syncTagToClient().setComment("Celestial Manipulator rules for servers: owner lock, cooldown, chat notice to everyone, keep-skies-clear mode.",
+                        "Off = anyone may use it with no cooldown or notice (the port fixes stay on).")
+                .setDefaultBoolean(true).onSync((t, r) -> celestialManipulator = t.getBoolean());
+        server.getValue("celestialCooldown").syncTagToClient().setComment("Seconds between Celestial Manipulator uses in one dimension (any block). Operators skip it. 0 = no cooldown.")
+                .setDefaultInt(60).onSync((t, r) -> celestialCooldown = Math.max(0, t.getInt()));
         ConfigCategory conductor = server.getCategory("Fusion Conductor").setComment(
                 "Each list: no capacitor, Wyvern, Draconic, Chaotic capacitor in the conductor's upgrade slot.");
         conductor.getValueList("speed").syncTagToClient().setComment("Charge and craft speed multiplier.")
@@ -198,6 +204,7 @@ public class DEConfig {
             case "coreMonitor" -> extrasServer && coreMonitor;
             case "crusherOreRecipes" -> extrasServer && crusherOreRecipes;
             case "fusionConductor" -> extrasServer && fusionConductor;
+            case "celestialManipulator" -> extrasServer && celestialManipulator;
             default -> true;
         };
     }
