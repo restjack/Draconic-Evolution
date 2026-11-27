@@ -155,7 +155,10 @@ public interface IFusionRecipe extends Recipe<IFusionInventory> {
                 long maxRate = inv.getInjectors().stream().filter(e -> !e.getInjectorStack().isEmpty())
                         .mapToLong(e -> perItem / DEConfig.fusionChargeTime.get(e.getInjectorTier().index)).sum();
                 String unit = " " + DEConfig.energyUnit();
+                long leftTicks = (maxRate > 0 ? (long) Math.ceil(Math.max(0, getEnergyCost() - totalCharge) / (double) maxRate) : 0)
+                        + DEConfig.fusionCraftTime.get(inv.getMinimumTier().index);
                 stateMachine.setFusionStatus((double) totalCharge / getEnergyCost(), Component.translatable("fusion_status.draconicevolution.charging", Math.round(((double) totalCharge / getEnergyCost()) * 1000) / 10D).withStyle(ChatFormatting.GREEN)
+                        .append(Component.literal(" (" + duration(leftTicks) + " left)"))
                         .append(Component.literal("\n" + com.brandon3055.brandonscore.utils.Utils.formatNumber(Math.min(totalCharge, getEnergyCost())) + " / " + com.brandon3055.brandonscore.utils.Utils.formatNumber(getEnergyCost()) + unit
                                 + ", " + com.brandon3055.brandonscore.utils.Utils.formatNumber(maxRate) + "/t").withStyle(ChatFormatting.GRAY)));
                 if (totalCharge >= getEnergyCost()) {
@@ -172,7 +175,8 @@ public interface IFusionRecipe extends Recipe<IFusionInventory> {
                 int counter = stateMachine.getCounter();
                 stateMachine.setCraftAnimation(counter / (float)craftTime, craftTime);
                 stateMachine.setCounter(counter + 1);
-                stateMachine.setFusionStatus((double) counter / (double) craftTime, Component.translatable("fusion_status.draconicevolution.crafting", Math.round(((double) counter / (double) craftTime) * 1000) / 10D).withStyle(ChatFormatting.GREEN));
+                stateMachine.setFusionStatus((double) counter / (double) craftTime, Component.translatable("fusion_status.draconicevolution.crafting", Math.round(((double) counter / (double) craftTime) * 1000) / 10D).withStyle(ChatFormatting.GREEN)
+                        .append(Component.literal(" (" + duration(Math.max(0, craftTime - counter)) + " left)")));
 
                 if (counter >= craftTime) {
                     if (inv.getInjectors().stream().anyMatch(e -> !e.validate())) {
@@ -188,6 +192,19 @@ public interface IFusionRecipe extends Recipe<IFusionInventory> {
                 }
                 break;
         }
+    }
+
+    /** Charge time (slowest loaded injector, at full power) + craft time (lowest injector tier), in ticks. */
+    static long totalTicks(IFusionInventory inv) {
+        int charge = inv.getInjectors().stream().filter(e -> !e.getInjectorStack().isEmpty())
+                .mapToInt(e -> DEConfig.fusionChargeTime.get(e.getInjectorTier().index)).max().orElse(0);
+        return charge + DEConfig.fusionCraftTime.get(inv.getMinimumTier().index);
+    }
+
+    /** "45s" / "2m 05s". */
+    static String duration(long ticks) {
+        long sec = (ticks + 19) / 20;
+        return sec < 60 ? sec + "s" : (sec / 60) + "m " + String.format("%02d", sec % 60) + "s";
     }
 
     static void completeCraft(IFusionInventory inv, Level level, IFusionRecipe recipe) {
@@ -266,7 +283,8 @@ public interface IFusionRecipe extends Recipe<IFusionInventory> {
 
         if (userStatus != null) {
             userStatus.accept(Component.translatable("fusion_status.draconicevolution.ready").withStyle(ChatFormatting.GREEN)
-                    .append(Component.literal("\nNeeds " + com.brandon3055.brandonscore.utils.Utils.formatNumber(getEnergyCost()) + " " + DEConfig.energyUnit()).withStyle(ChatFormatting.GRAY)));
+                    .append(Component.literal("\nNeeds " + com.brandon3055.brandonscore.utils.Utils.formatNumber(getEnergyCost()) + " " + DEConfig.energyUnit()
+                            + ", about " + duration(totalTicks(inv))).withStyle(ChatFormatting.GRAY)));
         }
         return true;
     }
