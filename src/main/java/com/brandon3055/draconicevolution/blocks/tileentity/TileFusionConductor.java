@@ -67,7 +67,7 @@ import java.util.function.Consumer;
  * buffer (optional), and collects the result. A Draconic capacitor in the upgrade slot speeds charging and the
  * craft phase up at an energy premium (energy = speed ^ exponent, see DEConfig).
  */
-public class TileFusionConductor extends TileBCore implements MenuProvider, IInteractTile {
+public class TileFusionConductor extends TileBCore implements MenuProvider, IInteractTile, com.brandon3055.brandonscore.lib.IChangeListener {
 
     public static final int INPUT = 18, OUTPUT = 9;
     public static final int OUT_START = INPUT, OUT_END = INPUT + OUTPUT, CAP_SLOT = INPUT + OUTPUT;
