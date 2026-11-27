@@ -37,6 +37,10 @@ public abstract class CrystalFXBase<T extends BlockEntity & IENetEffectTile> ext
     public CrystalFXBase(ClientLevel worldIn, T tile) {
         super(worldIn, tile.getBlockPos().getX() + 0.5, tile.getBlockPos().getY() + 0.5, tile.getBlockPos().getZ() + 0.5);
         this.tile = tile;
+        // Start alive: CrystalFXRenderer ticks new effects in the same client tick, before the tile has called updateFX.
+        // With 0 here a re-created beam removed itself at once, the handler saw a dead beam and re-created all of them
+        // again, forever, so once any beam died (pause, lag) a crystal never showed a flow beam again.
+        this.ticksTillDeath = 4;
     }
 
     //    public CrystalGLFXBase(World worldIn, T tile) {
