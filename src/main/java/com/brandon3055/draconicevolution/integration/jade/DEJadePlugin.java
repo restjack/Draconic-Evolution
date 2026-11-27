@@ -48,6 +48,7 @@ public class DEJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(CoreData.INSTANCE, TileEnergyCoreStabilizer.class);
         registration.registerBlockDataProvider(CoreData.INSTANCE, TileEnergyPylon.class);
         registration.registerBlockDataProvider(CoreData.INSTANCE, TileStructureBlock.class);
+        registration.registerBlockDataProvider(FusionData.INSTANCE, com.brandon3055.draconicevolution.blocks.tileentity.TileFusionCraftingCore.class);
     }
 
     @Override
@@ -57,6 +58,7 @@ public class DEJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(Tooltip.INSTANCE, EnergyPylon.class);
         registration.registerBlockComponent(Tooltip.INSTANCE, StructureBlock.class);
         registration.registerBlockComponent(Tooltip.INSTANCE, com.brandon3055.draconicevolution.blocks.machines.CraftingInjector.class);
+        registration.registerBlockComponent(Tooltip.INSTANCE, com.brandon3055.draconicevolution.blocks.machines.FusionCraftingCore.class);
     }
 
     /** The block the player looks at, resolved through structure blocks (pylon spheres, core shells, big stabilizers) to its controller. */
@@ -84,6 +86,34 @@ public class DEJadePlugin implements IWailaPlugin {
         if (level == null || !LoadedLookup.isLoaded(level, pos)) return null;
         return LoadedLookup.blockEntity(level, pos);
     }
+
+    static final String FUSION_KEY = "de_fusion";
+
+    enum FusionData implements IServerDataProvider<BlockAccessor> {
+        INSTANCE;
+
+        @Override
+        public void appendServerData(CompoundTag data, BlockAccessor accessor) {
+            if (!(accessor.getBlockEntity() instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileFusionCraftingCore core)) return;
+            CompoundTag tag = new CompoundTag();
+            tag.putBoolean("crafting", core.isCrafting());
+            tag.putInt("state", core.getFusionState().ordinal());
+            tag.putFloat("progress", Math.max(0, core.progress.get()));
+            tag.putLong("stored", core.injectorFeed.getOPStored());
+            tag.putLong("needed", core.injectorFeed.getMaxOPStored());
+            tag.putBoolean("output", !core.getOutputStack().isEmpty());
+            tag.putBoolean("auto", core.autoCraft.get());
+            tag.putBoolean("push", core.pushOutput.get());
+            data.put(FUSION_KEY, tag);
+        }
+
+        @Override
+        public Identifier getUid() {
+            return FUSION_UID;
+        }
+    }
+
+    static final Identifier FUSION_UID = Identifier.fromNamespaceAndPath(DraconicEvolution.MODID, "fusion_core");
 
     enum CoreData implements IServerDataProvider<BlockAccessor> {
         INSTANCE;
@@ -116,8 +146,26 @@ public class DEJadePlugin implements IWailaPlugin {
         @Override
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
             BlockEntity tile = resolve(accessor.getBlockEntity());
+            if (tile instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileFusionCraftingCore) {
+                CompoundTag f = accessor.getServerData().getCompoundOrEmpty(FUSION_KEY);
+                if (f.isEmpty()) return;
+                String unit = " " + com.brandon3055.draconicevolution.DEConfig.energyUnit();
+                if (f.getBooleanOr("crafting", false)) {
+                    boolean charging = f.getIntOr("state", 0) < 2;
+                    tooltip.add(Component.literal((charging ? "Charging " : "Crafting ") + Math.round(f.getFloatOr("progress", 0) * 1000) / 10D + "%").withStyle(ChatFormatting.GREEN));
+                    if (charging) tooltip.add(Component.literal(Utils.formatNumber(f.getLongOr("stored", 0)) + " / " + Utils.formatNumber(f.getLongOr("needed", 0)) + unit).withStyle(ChatFormatting.GOLD));
+                } else {
+                    tooltip.add(Component.literal(f.getBooleanOr("output", false) ? "Output ready" : "Idle").withStyle(ChatFormatting.GRAY));
+                }
+                tooltip.add(Component.literal("Auto-craft: " + (f.getBooleanOr("auto", false) ? "on" : "off") + ", push output: " + (f.getBooleanOr("push", false) ? "on" : "off")).withStyle(ChatFormatting.DARK_GRAY));
+                return;
+            }
             if (tile instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileFusionCraftingInjector inj) {
                 tooltip.add(com.brandon3055.draconicevolution.blocks.machines.CraftingInjector.modeText(inj.singleItem.get()));
+                var held = inj.getInjectorStack();
+                if (!held.isEmpty()) tooltip.add(Component.literal(held.getCount() + "x ").append(held.getHoverName()).withStyle(ChatFormatting.WHITE));
+                long need = inj.energyRequired.get();
+                if (need > 0) tooltip.add(Component.literal("Charge: " + Math.min(100, Math.round(inj.energy.get() * 1000D / need) / 10D) + "%").withStyle(ChatFormatting.GOLD));
                 if (accessor.showDetails()) tooltip.add(com.brandon3055.draconicevolution.blocks.machines.CraftingInjector.MODE_INFO[2]);
                 return;
             }

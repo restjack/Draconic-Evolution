@@ -180,6 +180,51 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
 
     public com.brandon3055.draconicevolution.inventory.FusionItemHandler itemHandler = new com.brandon3055.draconicevolution.inventory.FusionItemHandler(this);
     public ITileFXHandler fxHandler;
+    // QoL (our additions): start by itself, push the result out, one energy feed for every injector.
+    public final com.brandon3055.brandonscore.lib.datamanager.ManagedBool autoCraft = register(new com.brandon3055.brandonscore.lib.datamanager.ManagedBool("auto_craft", com.brandon3055.brandonscore.lib.datamanager.DataFlags.SAVE_NBT_SYNC_TILE, com.brandon3055.brandonscore.lib.datamanager.DataFlags.CLIENT_CONTROL));
+    public final com.brandon3055.brandonscore.lib.datamanager.ManagedBool pushOutput = register(new com.brandon3055.brandonscore.lib.datamanager.ManagedBool("push_output", com.brandon3055.brandonscore.lib.datamanager.DataFlags.SAVE_NBT_SYNC_TILE, com.brandon3055.brandonscore.lib.datamanager.DataFlags.CLIENT_CONTROL));
+    private int lastComparator = -2;
+
+    /** Energy given to the core goes straight into the injectors of the running craft (each still capped by its charge rate). */
+    public final com.brandon3055.brandonscore.api.power.OPStorage injectorFeed = new com.brandon3055.brandonscore.api.power.OPStorage(0) {
+        private List<com.brandon3055.brandonscore.api.power.IOPStorage> targets() {
+            List<com.brandon3055.brandonscore.api.power.IOPStorage> list = new ArrayList<>();
+            if (!crafting.get() || level == null) return list;
+            for (IFusionInjector inj : getInjectors()) {
+                if (inj instanceof TileFusionCraftingInjector tile && inj.validate() && inj.getEnergyRequirement() > 0) {
+                    tile.getCapability(com.brandon3055.brandonscore.capability.CapabilityOP.OP, null).ifPresent(list::add);
+                }
+            }
+            return list;
+        }
+
+        @Override
+        public long receiveOP(long maxReceive, boolean simulate) {
+            long got = 0;
+            for (var s : targets()) {
+                if (got >= maxReceive) break;
+                got += s.receiveOP(maxReceive - got, simulate);
+            }
+            return got;
+        }
+
+        @Override
+        public int insert(int amount, net.neoforged.neoforge.transfer.transaction.TransactionContext transaction) {
+            int got = 0;
+            for (var s : targets()) {
+                if (got >= amount) break;
+                if (s instanceof net.neoforged.neoforge.transfer.energy.EnergyHandler h) got += h.insert(amount - got, transaction);
+            }
+            return got;
+        }
+
+        @Override public long extractOP(long maxExtract, boolean simulate) { return 0; }
+        @Override public int extract(int amount, net.neoforged.neoforge.transfer.transaction.TransactionContext transaction) { return 0; }
+        @Override public boolean canExtract() { return false; }
+        @Override public boolean canReceive() { return true; }
+        @Override public long getOPStored() { return level == null ? 0 : getInjectors().stream().mapToLong(IFusionInjector::getInjectorEnergy).sum(); }
+        @Override public long getMaxOPStored() { return level == null ? 0 : getInjectors().stream().mapToLong(IFusionInjector::getEnergyRequirement).sum(); }
+    };
 
     private List<IFusionInjector> injectorCache = null;
     private List<BlockPos> injectorPositions = new ArrayList<>();
@@ -192,6 +237,7 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
         super(DEContent.TILE_CRAFTING_CORE.get(), pos, state);
         capManager.setInternalManaged("inventory", Capabilities.Item.BLOCK, itemHandler).saveBoth();
         capManager.set(Capabilities.Item.BLOCK, itemHandler.automation);
+        capManager.set(com.brandon3055.brandonscore.capability.CapabilityOP.OP, injectorFeed);
         itemHandler.setContentsChangeListener(i -> localInventoryChange());
         itemHandler.setStackValidator((slot, stack) -> slot == 0);
         fxHandler = DraconicEvolution.proxy.createFusionFXHandler(this);
@@ -207,6 +253,7 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
     public static void register(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.Item.BLOCK, DEContent.TILE_CRAFTING_CORE.get(),
                 (tile, side) -> tile.itemHandler.automation);
+        com.brandon3055.brandonscore.capability.CapabilityOP.registerBlockEntity(event, DEContent.TILE_CRAFTING_CORE.get());
     }
 
     public void startCraft() {
@@ -272,6 +319,22 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
                 recipe.value().tickFusionState(this, this, level);
             } else {
                 cancelCraft();
+            }
+        }
+        if (!level.isClientSide()) {
+            long t = level.getGameTime();
+            if (autoCraft.get() && !crafting.get() && t % 20 == 0 && !getCatalystStack().isEmpty()) {
+                RecipeHolder<IFusionRecipe> recipe = findRecipe();
+                if (recipe != null && recipe.value().canStartCraft(this, level, null)) startCraft();
+            }
+            if (pushOutput.get() && t % 10 == 0 && !getOutputStack().isEmpty()) pushOutputItems();
+            if (t % 10 == 0) {
+                // Progress does not mark the block changed, so tell comparators ourselves.
+                int key = crafting.get() ? getComparatorOutput() : getOutputStack().isEmpty() ? -1 : 15;
+                if (key != lastComparator) {
+                    lastComparator = key;
+                    level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+                }
             }
         }
     }
@@ -353,7 +416,7 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
             if (recipe != null) {
                 recipe.value().canStartCraft(this, level, e -> setFusionStatus(-1, e));
             } else {
-                setFusionStatus(-1, Component.translatable("fusion_status.draconicevolution.no_recipe"));
+                setFusionStatus(-1, Component.translatable("fusion_status.draconicevolution.no_recipe").append(missingHint()));
             }
             setActiveRecipe(recipe);
         }
@@ -501,6 +564,56 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
         craftAnimLength.set((short) length);
     }
 
+    /** Read-only view of the linked injector positions (client uses it for the highlight button). */
+    public List<BlockPos> getInjectorPositions() {
+        return java.util.Collections.unmodifiableList(injectorPositions);
+    }
+
+    private void pushOutputItems() {
+        for (Direction dir : Direction.values()) {
+            ItemStack out = getOutputStack();
+            if (out.isEmpty()) return;
+            BlockPos np = worldPosition.relative(dir);
+            if (level.getBlockEntity(np) instanceof TileFusionCraftingInjector) continue;
+            var handler = level.getCapability(Capabilities.Item.BLOCK, np, dir.getOpposite());
+            if (handler == null) continue;
+            try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                int moved = handler.insert(net.neoforged.neoforge.transfer.item.ItemResource.of(out), out.getCount(), tx);
+                if (moved > 0) {
+                    tx.commit();
+                    setOutputStack(out.getCount() == moved ? ItemStack.EMPTY : out.copyWithCount(out.getCount() - moved));
+                }
+            }
+        }
+    }
+
+    /** "Missing: A, B +2" for the closest recipe with this catalyst, or nothing. */
+    private Component missingHint() {
+        ItemStack catalyst = getCatalystStack();
+        if (catalyst.isEmpty() || !(level instanceof net.minecraft.server.level.ServerLevel server)) return Component.empty();
+        List<IFusionRecipe.IFusionIngredient> best = null;
+        for (var holder : server.recipeAccess().recipeMap().byType(DraconicAPI.FUSION_RECIPE_TYPE.get())) {
+            IFusionRecipe recipe = holder.value();
+            if (!recipe.getCatalyst().test(catalyst)) continue;
+            List<ItemStack> have = new ArrayList<>();
+            getInjectors().forEach(e -> { if (!e.getInjectorStack().isEmpty()) have.add(e.getInjectorStack()); });
+            List<IFusionRecipe.IFusionIngredient> missing = new ArrayList<>();
+            for (var ing : recipe.fusionIngredients()) {
+                ItemStack hit = have.stream().filter(s -> ing.get().test(s)).findFirst().orElse(null);
+                if (hit != null) have.remove(hit); else missing.add(ing);
+            }
+            if (!missing.isEmpty() && (best == null || missing.size() < best.size())) best = missing;
+        }
+        if (best == null) return Component.empty();
+        StringBuilder names = new StringBuilder();
+        for (int i = 0; i < Math.min(2, best.size()); i++) {
+            if (i > 0) names.append(", ");
+            names.append(best.get(i).get().items().findFirst().map(h -> new ItemStack(h).getHoverName().getString()).orElse("?"));
+        }
+        if (best.size() > 2) names.append(" +").append(best.size() - 2);
+        return Component.literal("\nMissing: " + names).withStyle(ChatFormatting.GRAY);
+    }
+
     public boolean isCrafting() {
         return crafting.get();
     }
@@ -550,7 +663,9 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
         if (!getOutputStack().isEmpty()) {
             return 15;
         } else if (crafting.get()) {
-            return 1 + getFusionState().ordinal();
+            // 1-7 while charging, 8-14 while crafting, 15 = output ready.
+            int step = Math.round(net.minecraft.util.Mth.clamp(progress.get(), 0F, 1F) * 6);
+            return (getFusionState() == FusionState.CRAFTING ? 8 : 1) + step;
         } else {
             RecipeHolder<IFusionRecipe> recipe = findRecipe();
             if (recipe != null && recipe.value().canStartCraft(this, level, null)) {

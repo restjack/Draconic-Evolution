@@ -92,6 +92,12 @@ public class FusionCraftingCoreGui extends ContainerGuiProvider<FusionCraftingCo
 
         ButtonRow buttonRow = ButtonRow.topRightInside(root, Direction.DOWN, 3, 3).setSpacing(1);
         buttonRow.addButton(TOOLKIT::createThemeButton);
+        buttonRow.addButton(e -> iconButton(e, net.minecraft.world.item.Items.REDSTONE_TORCH, tile.autoCraft::invert, tile.autoCraft::get,
+                "gui.draconicevolution.fusion_craft.auto_craft"));
+        buttonRow.addButton(e -> iconButton(e, net.minecraft.world.item.Items.HOPPER, tile.pushOutput::invert, tile.pushOutput::get,
+                "gui.draconicevolution.fusion_craft.push_output"));
+        buttonRow.addButton(e -> iconButton(e, net.minecraft.world.item.Items.ENDER_EYE, () -> toggleHighlight(tile), () -> highlightOn(tile),
+                "gui.draconicevolution.fusion_craft.show_injectors"));
 
         var playInv = GuiSlots.playerAllSlots(root, screenAccess, menu.main, menu.hotBar, menu.armor, menu.offhand);
         playInv.stream().forEach(e -> e.setSlotTexture(slot -> BCGuiTextures.getThemed("slot")));
@@ -145,6 +151,46 @@ public class FusionCraftingCoreGui extends ContainerGuiProvider<FusionCraftingCo
         });
     }
 
+
+    private static GuiButton iconButton(GuiElement<?> parent, net.minecraft.world.item.Item icon, Runnable press, java.util.function.Supplier<Boolean> state, String key) {
+        GuiButton button = TOOLKIT.createFlat3DButton(parent, null)
+                .setTooltip(Component.translatable(key), Component.translatable(key + ".info"))
+                .onPress(press)
+                .setToggleMode(state);
+        Constraints.size(button, 12, 12);
+        Constraints.bind(new GuiItemStack(button, new ItemStack(icon)).enableStackToolTip(false), button, 1);
+        return button;
+    }
+
+    private static String dim(TileFusionCraftingCore tile) {
+        return tile.getLevel().dimension().identifier().toString();
+    }
+
+    private static boolean highlightOn(TileFusionCraftingCore tile) {
+        return tile.getInjectorPositions().stream().anyMatch(p -> com.brandon3055.draconicevolution.client.render.MonitorHighlight.isOn(dim(tile), p));
+    }
+
+    /** Green = injectors the core uses. Red = injectors in range it ignores (wrong facing, blocked or too close). */
+    private static void toggleHighlight(TileFusionCraftingCore tile) {
+        boolean on = highlightOn(tile);
+        java.util.Set<net.minecraft.core.BlockPos> linked = new java.util.HashSet<>(tile.getInjectorPositions());
+        int range = com.brandon3055.draconicevolution.DEConfig.fusionInjectorRange;
+        net.minecraft.core.BlockPos c = tile.getBlockPos();
+        java.util.Set<net.minecraft.core.BlockPos> all = new java.util.HashSet<>(linked);
+        for (net.minecraft.core.Direction d : net.minecraft.core.Direction.values()) {
+            for (int i = 1; i <= range; i++) {
+                for (int a = -1; a <= 1; a++) for (int b = -1; b <= 1; b++) {
+                    net.minecraft.core.BlockPos p = c.relative(d, i);
+                    p = d.getAxis() == net.minecraft.core.Direction.Axis.X ? p.offset(0, a, b) : d.getAxis() == net.minecraft.core.Direction.Axis.Y ? p.offset(a, 0, b) : p.offset(a, b, 0);
+                    if (tile.getLevel().getBlockEntity(p) instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileFusionCraftingInjector) all.add(p.immutable());
+                }
+            }
+        }
+        for (net.minecraft.core.BlockPos p : all) {
+            boolean lit = com.brandon3055.draconicevolution.client.render.MonitorHighlight.isOn(dim(tile), p);
+            if (lit == on) com.brandon3055.draconicevolution.client.render.MonitorHighlight.toggle(dim(tile), p, linked.contains(p) ? 0x55FF55 : 0xFF5555);
+        }
+    }
 
     private static class IngredRenderer extends GuiElement<IngredRenderer> {
         private TileFusionCraftingCore core;
