@@ -104,6 +104,10 @@ public class TileCrystalDirectIO extends TileCrystalBase   {
         if (player instanceof ServerPlayer && player.isShiftKeyDown()) {
             outputMode.invert();
             updateRotation(facing.get());
+            // No other feedback until the HUD box draws text: say which way it now works.
+            com.brandon3055.brandonscore.lib.ChatHelper.sendIndexed(player, Component.translatable("gui.draconicevolution.energy_net.io_mode").append(" ")
+                    .append(Component.translatable("gui.draconicevolution.energy_net.io_output_" + outputMode.get())
+                            .withStyle(outputMode.get() ? ChatFormatting.GOLD : ChatFormatting.DARK_AQUA)), MSG_ID);
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
