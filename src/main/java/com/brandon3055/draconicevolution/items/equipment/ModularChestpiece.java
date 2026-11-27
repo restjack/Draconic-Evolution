@@ -130,6 +130,12 @@ public class ModularChestpiece extends Item implements IModularArmor, IDEEquipme
 
     private ModularChestpieceModel<?> model_on_armor;
 
+    /** Worn as a curio (slot == null): respect that Curios slot's render toggle. */
+    @Override
+    public boolean shouldRenderInSlot(LivingEntity entity, ItemStack stack, @Nullable EquipmentSlot slot) {
+        return slot != null || EquipmentManager.isCurioVisible(e -> e.getItem() instanceof ModularChestpiece, entity);
+    }
+
     @Override
     public EquippedItemModel getExtendedModel(LivingEntity entity, ItemStack stack, @Nullable EquipmentSlot slot, HumanoidModel<?> parentModel, boolean slim) {
         return ClientRendering.getModel(this, entity, slot, parentModel);
