@@ -659,6 +659,7 @@
   "item_prop.draconicevolution.tree_harvest_mod.range": "Harvest Radius",
   "item_prop.draconicevolution.walk_speed": "Walk Speed",
   "item_prop.draconicevolution.walk_speed.info": "Allows you to adjust the speed boost that's applied when you walk.",
+  "key.category.draconicevolution.main": "Draconic Evolution",
   "key.draconicevolution.dislocator_blink": "Advanced Dislocator Blink",
   "key.draconicevolution.dislocator_down": "Advanced Dislocator Select Down",
   "key.draconicevolution.dislocator_gui": "Advanced Dislocator GUI",
