@@ -66,10 +66,17 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
         GuiText heading = TOOLKIT.createHeading(root, gui.getGuiTitle(), true);
 
         // Right column toggles
+        com.brandon3055.brandonscore.client.gui.InfoPanel info = com.brandon3055.brandonscore.client.gui.InfoPanel.create(root);
+        info.labeledValue(TOOLKIT.translate("stats.crafts").withStyle(ChatFormatting.GOLD), () -> Component.literal(String.valueOf(tile.crafts.get())).withStyle(ChatFormatting.GRAY));
+        info.labeledValue(TOOLKIT.translate("stats.energy").withStyle(ChatFormatting.GOLD), () -> Component.literal(com.brandon3055.brandonscore.utils.Utils.formatNumber(tile.energyUsed.get()) + " OP").withStyle(ChatFormatting.GRAY));
+        info.labeledValue(TOOLKIT.translate("stats.average").withStyle(ChatFormatting.GOLD), () -> Component.literal(tile.crafts.get() == 0 ? "-" : com.brandon3055.brandonscore.utils.Utils.formatNumber(tile.energyUsed.get() / tile.crafts.get()) + " OP").withStyle(ChatFormatting.GRAY));
+        info.labeledValue(TOOLKIT.translate("stats.owner").withStyle(ChatFormatting.GOLD), () -> Component.literal(tile.ownerName.get().isEmpty() ? "-" : tile.ownerName.get()).withStyle(ChatFormatting.GRAY));
+
         ButtonRow buttons = ButtonRow.topRightInside(root, Direction.DOWN, 3, 3).setSpacing(1);
         buttons.addButton(TOOLKIT::createThemeButton);
-        buttons.addButton(e -> toggle(e, new ItemStack(Items.REDSTONE_TORCH), tile.autoCraft::invert, tile.autoCraft::get, "gui.draconicevolution.fusion_conductor.auto_craft"));
-        buttons.addButton(e -> toggle(e, new ItemStack(Items.HOPPER), tile.pushOutput::invert, tile.pushOutput::get, "gui.draconicevolution.fusion_conductor.push_output"));
+        buttons.addButton(e -> TOOLKIT.createInfoButton(e, info));
+        buttons.addButton(e -> toggle(e, new ItemStack(Items.REDSTONE_TORCH), () -> set(tile, TileFusionConductor.SET_AUTO, !tile.autoCraft.get()), tile.autoCraft::get, "gui.draconicevolution.fusion_conductor.auto_craft"));
+        buttons.addButton(e -> toggle(e, new ItemStack(Items.HOPPER), () -> set(tile, TileFusionConductor.SET_PUSH, !tile.pushOutput.get()), tile.pushOutput::get, "gui.draconicevolution.fusion_conductor.push_output"));
         buttons.addButton(e -> toggle(e, new ItemStack(Items.ENDER_EYE), () -> { TileFusionCraftingCore c = tile.getCore(); if (c != null) FusionCraftingCoreGui.toggleHighlight(c); },
                 () -> tile.getCore() != null && FusionCraftingCoreGui.highlightOn(tile.getCore()), "gui.draconicevolution.fusion_craft.show_injectors"));
         buttons.addButton(e -> {
@@ -84,15 +91,15 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
             Constraints.size(b, 12, 12);
             return b;
         });
-        buttons.addButton(e -> toggle(e, new ItemStack(Items.LIGHTNING_ROD), tile.powerInjectors::invert, tile.powerInjectors::get,
+        buttons.addButton(e -> toggle(e, new ItemStack(Items.LIGHTNING_ROD), () -> set(tile, TileFusionConductor.SET_POWER, !tile.powerInjectors.get()), tile.powerInjectors::get,
                 "gui.draconicevolution.fusion_conductor.power_injectors"));
         buttons.addButton(e -> {
             GuiButton b = TOOLKIT.createFlat3DButton(e, null)
                     .setTooltip(() -> List.of(TOOLKIT.translate("redstone"),
                             TOOLKIT.translate("redstone." + RS_KEYS[mode(tile)]).withStyle(ChatFormatting.GOLD),
                             TOOLKIT.translate("redstone.info").withStyle(ChatFormatting.GRAY)))
-                    .onPress(() -> tile.redstoneMode.set((byte) ((mode(tile) + 1) % 4)), GuiButton.LEFT_CLICK)
-                    .onPress(() -> tile.redstoneMode.set((byte) ((mode(tile) + 3) % 4)), GuiButton.RIGHT_CLICK);
+                    .onPress(() -> set(tile, TileFusionConductor.SET_RS, (mode(tile) + 1) % 4), GuiButton.LEFT_CLICK)
+                    .onPress(() -> set(tile, TileFusionConductor.SET_RS, (mode(tile) + 3) % 4), GuiButton.RIGHT_CLICK);
             Constraints.size(b, 12, 12);
             GuiItemStack icon = new GuiItemStack(b, new ItemStack(RS_ICONS[0])).enableStackToolTip(false);
             Constraints.bind(icon, b, 1);
@@ -203,6 +210,14 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
                 .constrain(TOP, match(barBG.get(TOP)))
                 .constrain(BOTTOM, match(barBG.get(BOTTOM)))
                 .constrain(WIDTH, dynamic(() -> barBG.xSize() * Math.max(0, Math.min(1, tile.progress.get()))));
+    }
+
+    private static void set(TileFusionConductor tile, int which, boolean on) {
+        set(tile, which, on ? 1 : 0);
+    }
+
+    private static void set(TileFusionConductor tile, int which, int value) {
+        tile.sendPacketToServer(out -> out.writeByte(which).writeByte(value), 4);
     }
 
     private static int mode(TileFusionConductor tile) {

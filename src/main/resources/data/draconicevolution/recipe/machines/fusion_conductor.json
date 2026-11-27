@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "draconicevolution:config",
+      "key": "fusionConductor"
+    }
+  ],
+  "type": "draconicevolution:fusion_crafting",
+  "catalyst": "draconicevolution:wyvern_relay_crystal",
+  "ingredients": [
+    { "consume": true, "ingredient": "draconicevolution:wyvern_core" },
+    { "consume": true, "ingredient": "minecraft:gold_block" },
+    { "consume": true, "ingredient": "draconicevolution:basic_crafting_injector" },
+    { "consume": true, "ingredient": "draconicevolution:wyvern_core" },
+    { "consume": true, "ingredient": "minecraft:gold_block" },
+    { "consume": true, "ingredient": "draconicevolution:basic_crafting_injector" }
+  ],
+  "result": {
+    "count": 1,
+    "id": "draconicevolution:fusion_conductor"
+  },
+  "techLevel": "wyvern",
+  "totalEnergy": 32000000
+}

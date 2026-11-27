@@ -8,6 +8,9 @@ import com.brandon3055.brandonscore.lib.datamanager.DataFlags;
 import com.brandon3055.brandonscore.lib.datamanager.ManagedBool;
 import com.brandon3055.brandonscore.lib.datamanager.ManagedByte;
 import com.brandon3055.brandonscore.lib.datamanager.ManagedInt;
+import com.brandon3055.brandonscore.lib.datamanager.ManagedLong;
+import com.brandon3055.brandonscore.lib.datamanager.ManagedString;
+import com.brandon3055.brandonscore.lib.datamanager.ManagedUUID;
 import com.brandon3055.brandonscore.lib.datamanager.ManagedResource;
 import codechicken.lib.data.MCDataInput;
 import net.minecraft.core.Direction;
@@ -69,7 +72,7 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
     public static final int INPUT = 18, OUTPUT = 9;
     public static final int OUT_START = INPUT, OUT_END = INPUT + OUTPUT, CAP_SLOT = INPUT + OUTPUT;
 
-    public final ManagedBool powerInjectors = register(new ManagedBool("power_injectors", true, DataFlags.SAVE_NBT_SYNC_TILE, DataFlags.CLIENT_CONTROL));
+    public final ManagedBool powerInjectors = register(new ManagedBool("power_injectors", true, DataFlags.SAVE_NBT_SYNC_TILE));
     /** True while energy flows to injectors (client draws the beams). */
     public final ManagedBool powering = register(new ManagedBool("powering", DataFlags.SYNC_TILE));
     public final ManagedTextComponent status = register(new ManagedTextComponent("status", DataFlags.SAVE_NBT_SYNC_CONTAINER));
@@ -78,10 +81,18 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
     public final ManagedResource recipeLock = register(new ManagedResource("recipe_lock", DataFlags.SAVE_NBT_SYNC_TILE));
     public final ManagedInt batch = register(new ManagedInt("batch", DataFlags.SAVE_NBT_SYNC_CONTAINER));
     public final ManagedInt batchLeft = register(new ManagedInt("batch_left", DataFlags.SAVE_NBT_SYNC_CONTAINER));
-    public final ManagedBool autoCraft = register(new ManagedBool("auto_craft", true, DataFlags.SAVE_NBT_SYNC_TILE, DataFlags.CLIENT_CONTROL));
-    public final ManagedBool pushOutput = register(new ManagedBool("push_output", DataFlags.SAVE_NBT_SYNC_TILE, DataFlags.CLIENT_CONTROL));
+    // Settings change only through packet 4 (owner check), never CLIENT_CONTROL (that path has no player to check).
+    public final ManagedBool autoCraft = register(new ManagedBool("auto_craft", true, DataFlags.SAVE_NBT_SYNC_TILE));
+    public final ManagedBool pushOutput = register(new ManagedBool("push_output", DataFlags.SAVE_NBT_SYNC_TILE));
     /** 0 ignore, 1 run while powered, 2 run while unpowered, 3 one craft per pulse. */
-    public final ManagedByte redstoneMode = register(new ManagedByte("redstone_mode", DataFlags.SAVE_NBT_SYNC_TILE, DataFlags.CLIENT_CONTROL));
+    public final ManagedByte redstoneMode = register(new ManagedByte("redstone_mode", DataFlags.SAVE_NBT_SYNC_TILE));
+    // Stage 3: owner lock + stats + computer start.
+    public final ManagedUUID owner = register(new ManagedUUID("owner", (java.util.UUID) null, DataFlags.SAVE_NBT_SYNC_TILE));
+    public final ManagedString ownerName = register(new ManagedString("owner_name", "", DataFlags.SAVE_NBT_SYNC_TILE));
+    public final ManagedLong crafts = register(new ManagedLong("crafts", DataFlags.SAVE_NBT_SYNC_CONTAINER));
+    public final ManagedLong energyUsed = register(new ManagedLong("energy_used", DataFlags.SAVE_NBT_SYNC_CONTAINER));
+    private final ManagedInt oneShot = register(new ManagedInt("one_shot", DataFlags.SAVE_NBT));
+    public static final int SET_POWER = 0, SET_AUTO = 1, SET_PUSH = 2, SET_RS = 3;
     private final ManagedBool rsPowered = register(new ManagedBool("rs_powered", DataFlags.SAVE_NBT));
     private final ManagedInt pulses = register(new ManagedInt("pulses", DataFlags.SAVE_NBT));
     /** True from a craft this conductor started until it is collected. */
@@ -205,7 +216,10 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
         if (!collect(core)) return;
         if (running.get()) {
             running.set(false);
-            if (finished && batch.get() > 0 && batchLeft.get() > 0) batchLeft.subtract(1);
+            if (finished) {
+                crafts.add(1);
+                if (batch.get() > 0 && batchLeft.get() > 0) batchLeft.subtract(1);
+            }
         }
         if (pushOutput.get()) pushOutputItems();
         Component wait = waitReason();
@@ -219,6 +233,7 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
     /** Why the conductor may not start a craft right now (auto-craft, batch, redstone), or null. */
     @Nullable
     private Component waitReason() {
+        if (oneShot.get() > 0) return null;
         if (!autoCraft.get()) return Component.translatable("fusion_conductor.draconicevolution.paused").withStyle(ChatFormatting.GRAY);
         if (batch.get() > 0 && batchLeft.get() <= 0) return Component.translatable("fusion_conductor.draconicevolution.batch_done", batch.get()).withStyle(ChatFormatting.GREEN);
         boolean powered = rsPowered.get();
@@ -295,7 +310,7 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
                 long give = Math.min(want, (long) (opStorage.getOPStored() / factor));
                 if (give <= 0) continue; // low power: wait, never cancel
                 tile.energy.add(give);
-                opStorage.modifyEnergyStored(-Math.min(opStorage.getOPStored(), (long) Math.ceil(give * factor)));
+                energyUsed.add(opStorage.modifyEnergyStored(-Math.min(opStorage.getOPStored(), (long) Math.ceil(give * factor))));
             }
             powering.set(needed);
         } else {
@@ -460,7 +475,8 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
         core.startCraft();
         if (core.isCrafting()) {
             running.set(true);
-            if (redstoneMode.get() == RS_PULSE && pulses.get() > 0) pulses.subtract(1);
+            if (oneShot.get() > 0) oneShot.subtract(1);
+            else if (redstoneMode.get() == RS_PULSE && pulses.get() > 0) pulses.subtract(1);
         } else {
             // Next collect puts everything back; wait a bit so we don't load/unload every half second.
             cooldown = 100;
@@ -509,19 +525,65 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
         return null;
     }
 
+    /** Owner, the owner's FTB Teams party (or vanilla scoreboard team), or an operator. Unowned = anyone. */
+    public boolean canControl(ServerPlayer player) {
+        if (owner.isNull() || player.getUUID().equals(owner.get())) return true;
+        if (net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS).test(player.createCommandSourceStack())) return true;
+        if (level instanceof ServerLevel sl) {
+            ServerPlayer o = sl.getServer().getPlayerList().getPlayer(owner.get());
+            return TileCoreMonitor.teamMembers(sl, owner.get(), o).contains(player)
+                    || (o == null && sameScoreboardTeam(sl, player));
+        }
+        return false;
+    }
+
+    /** Owner offline: compare scoreboard teams by name (FTB Teams lists online members only). */
+    private boolean sameScoreboardTeam(ServerLevel sl, ServerPlayer player) {
+        var team = sl.getServer().getScoreboard().getPlayersTeam(player.getScoreboardName());
+        return team != null && !ownerName.get().isEmpty() && team.getPlayers().contains(ownerName.get());
+    }
+
+    public void setOwner(@Nullable Player player) {
+        owner.set(player == null ? null : player.getUUID());
+        ownerName.set(player == null ? "" : player.getName().getString());
+    }
+
+    /** Computer / API: start one craft now, even with auto-craft off or the redstone mode waiting. */
+    public void requestCraft() {
+        oneShot.set(Math.min(64, oneShot.get() + 1));
+    }
+
+    public void setLock(@Nullable Identifier rid) {
+        recipeLock.set(rid != null && recipes(level).stream().anyMatch(h -> h.id().identifier().equals(rid)) ? rid : null);
+    }
+
+    public void setBatch(int v) {
+        v = Math.max(0, Math.min(9999, v));
+        batch.set(v);
+        batchLeft.set(v);
+    }
+
     @Override
     public void receivePacketFromClient(MCDataInput data, ServerPlayer client, int id) {
+        if (id >= 1 && id <= 4 && !canControl(client)) {
+            client.sendOverlayMessage(Component.translatable("fusion_conductor.draconicevolution.not_owner", ownerName.get().isEmpty() ? "the owner" : ownerName.get()).withStyle(ChatFormatting.RED));
+            return;
+        }
         switch (id) {
+            case 4 -> { // setting: byte which, byte value
+                int which = data.readByte(), v = data.readByte();
+                switch (which) {
+                    case SET_POWER -> powerInjectors.set(v != 0);
+                    case SET_AUTO -> autoCraft.set(v != 0);
+                    case SET_PUSH -> pushOutput.set(v != 0);
+                    case SET_RS -> redstoneMode.set((byte) Math.floorMod(v, 4));
+                }
+            }
             case 1 -> { // set recipe lock ("" = clear)
                 String key = data.readString();
-                Identifier rid = key.isEmpty() ? null : Identifier.tryParse(key);
-                recipeLock.set(rid != null && recipes(level).stream().anyMatch(h -> h.id().identifier().equals(rid)) ? rid : null);
+                setLock(key.isEmpty() ? null : Identifier.tryParse(key));
             }
-            case 2 -> { // batch delta; resets the count left
-                int v = Math.max(0, Math.min(9999, batch.get() + data.readInt()));
-                batch.set(v);
-                batchLeft.set(v);
-            }
+            case 2 -> setBatch(batch.get() + data.readInt()); // batch delta; resets the count left
             case 3 -> { // every injector of the core: single item (true) / stack
                 boolean single = data.readBoolean();
                 TileFusionCraftingCore core = getCore();

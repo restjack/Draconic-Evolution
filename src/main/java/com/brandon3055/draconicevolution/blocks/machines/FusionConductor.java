@@ -37,6 +37,33 @@ public class FusionConductor extends EntityBlockBCore {
         return SHAPE;
     }
 
+    public static final net.minecraft.network.chat.Component[] INFO = {
+            net.minecraft.network.chat.Component.translatable("fusion_conductor.draconicevolution.info.place").withStyle(net.minecraft.ChatFormatting.GRAY),
+            net.minecraft.network.chat.Component.translatable("fusion_conductor.draconicevolution.info.io").withStyle(net.minecraft.ChatFormatting.GRAY),
+            net.minecraft.network.chat.Component.translatable("fusion_conductor.draconicevolution.info.capacitor").withStyle(net.minecraft.ChatFormatting.GRAY)
+    };
+
+    public static final net.minecraft.network.chat.Component[] JEI_INFO = {
+            net.minecraft.network.chat.Component.translatable("fusion_conductor.draconicevolution.jei.1"),
+            net.minecraft.network.chat.Component.translatable("fusion_conductor.draconicevolution.jei.2"),
+            net.minecraft.network.chat.Component.translatable("fusion_conductor.draconicevolution.jei.3"),
+            net.minecraft.network.chat.Component.translatable("fusion_conductor.draconicevolution.jei.4")
+    };
+
+    @Override
+    public void appendHoverText(net.minecraft.world.item.ItemStack stack, java.util.List<net.minecraft.network.chat.Component> tooltip) {
+        java.util.Collections.addAll(tooltip, INFO);
+        super.appendHoverText(stack, tooltip);
+    }
+
+    /** Placer becomes the owner (owner + team + operators may change settings). */
+    @Override
+    public void setPlacedBy(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, @Nullable net.minecraft.world.entity.LivingEntity placer, net.minecraft.world.item.ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (!level.isClientSide() && placer instanceof net.minecraft.world.entity.player.Player p
+                && level.getBlockEntity(pos) instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileFusionConductor t) t.setOwner(p);
+    }
+
     @Override
     public boolean hasAnalogOutputSignal(BlockState state) {
         return true;

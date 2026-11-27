@@ -305,7 +305,7 @@ public class TileCoreMonitor extends TileBCore implements IInteractTile, net.min
     }
 
     /** Online members of the owner's FTB Teams party if that mod is loaded, else of the owner's scoreboard team. */
-    private static List<ServerPlayer> teamMembers(ServerLevel sl, UUID owner, @Nullable ServerPlayer ownerPlayer) {
+    static List<ServerPlayer> teamMembers(ServerLevel sl, UUID owner, @Nullable ServerPlayer ownerPlayer) {
         List<ServerPlayer> out = new ArrayList<>();
         if (net.neoforged.fml.ModList.get().isLoaded("ftbteams")) {
             try { // reflection: no compile dependency on FTB Teams

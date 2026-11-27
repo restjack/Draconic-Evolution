@@ -79,6 +79,7 @@ public class DEJeiPlugin implements IModPlugin {
     public void registerRecipes(IRecipeRegistration registration) {
         registration.addRecipes(FUSION, ClientEventHandler.fusionRecipes);
         registration.addIngredientInfo(DEContent.INFO_TABLET.get(), InfoTablet.JEI_INFO);
+        registration.addIngredientInfo(DEContent.FUSION_CONDUCTOR.get(), com.brandon3055.draconicevolution.blocks.machines.FusionConductor.JEI_INFO);
         registration.addIngredientInfo(java.util.List.of(DEContent.BASIC_CRAFTING_INJECTOR.get().asItem().getDefaultInstance(),
                         DEContent.WYVERN_CRAFTING_INJECTOR.get().asItem().getDefaultInstance(),
                         DEContent.AWAKENED_CRAFTING_INJECTOR.get().asItem().getDefaultInstance(),
