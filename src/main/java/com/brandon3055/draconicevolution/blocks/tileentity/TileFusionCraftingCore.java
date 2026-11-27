@@ -277,6 +277,13 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
 
     @Override
     public void receivePacketFromClient(MCDataInput data, ServerPlayer client, int id) {
+        if (id == 3) { // set every linked injector to single item (true) or stack (false) mode
+            boolean single = data.readBoolean();
+            for (IFusionInjector inj : getInjectors()) {
+                if (inj instanceof TileFusionCraftingInjector tile) tile.singleItem.set(single);
+            }
+            return;
+        }
         startCraft();
     }
 

@@ -221,6 +221,10 @@ public class GrinderGui extends ContainerGuiProvider<GrinderMenu> {
                 .setToggleMode(state)
                 .constrain(WIDTH, literal(16))
                 .constrain(HEIGHT, literal(16));
+        // Green while on, plus an On/Off line, so the state is obvious (the pressed shading alone was not).
+        new GuiRectangle(button).fill(0xB040C040).setEnabled(state)
+                .constrain(LEFT, relative(button.get(LEFT), 1)).constrain(TOP, relative(button.get(TOP), 1))
+                .constrain(RIGHT, relative(button.get(RIGHT), -1)).constrain(BOTTOM, relative(button.get(BOTTOM), -1));
         Constraints.bind(new GuiItemStack(button, new net.minecraft.world.item.ItemStack(icon)).enableStackToolTip(false), button);
         return button;
     }
