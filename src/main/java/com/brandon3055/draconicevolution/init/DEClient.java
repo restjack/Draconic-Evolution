@@ -140,6 +140,7 @@ public class DEClient {
         event.registerBlockEntityRenderer(DEContent.TILE_REACTOR_INJECTOR.get(), RenderTileReactorComponent::new);
         event.registerBlockEntityRenderer(DEContent.TILE_REACTOR_STABILIZER.get(), RenderTileReactorComponent::new);
         event.registerBlockEntityRenderer(DEContent.TILE_CRAFTING_CORE.get(), RenderTileFusionCraftingCore::new);
+        event.registerBlockEntityRenderer(DEContent.TILE_FUSION_CONDUCTOR.get(), com.brandon3055.draconicevolution.client.render.tile.RenderTileFusionConductor::new);
         event.registerBlockEntityRenderer(DEContent.TILE_CRAFTING_INJECTOR.get(), RenderTileCraftingInjector::new);
         event.registerBlockEntityRenderer(DEContent.TILE_POTENTIOMETER.get(), RenderTilePotentiometer::new);
         event.registerBlockEntityRenderer(DEContent.TILE_ENERGY_TRANSFUSER.get(), RenderTileEnergyTransfuser::new);
@@ -173,6 +174,7 @@ public class DEClient {
         event.register(DEContent.MENU_CELESTIAL_MANIPULATOR.get(), CelestialManipulatorGui.Screen::new);
         event.register(DEContent.MENU_DISENCHANTER.get(), DisenchanterGui.Screen::new);
         event.register(DEContent.MENU_FUSION_CRAFTING_CORE.get(), FusionCraftingCoreGui.Screen::new);
+        event.register(DEContent.MENU_FUSION_CONDUCTOR.get(), com.brandon3055.draconicevolution.client.gui.FusionConductorGui.Screen::new);
         event.register(DEContent.MENU_FLOW_GATE.get(), FlowGateGui.Screen::new);
         event.register(DEContent.MENU_ENTITY_DETECTOR.get(), EntityDetectorGui.Screen::new);
         event.register(DEContent.MENU_ENERGY_TRANSFUSER.get(), EnergyTransfuserGui.Screen::new);

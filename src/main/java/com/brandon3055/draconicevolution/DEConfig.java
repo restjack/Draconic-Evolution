@@ -94,8 +94,13 @@ public class DEConfig {
             structureHints = true, pylonModeColours = true;
     public static boolean extrasServer = true, grinderXpPiping = true, guideBookRecipe = true, coreRateHistory = true,
             pylonModeMessage = true, beamForceField = true, beamPush = true, beamAffectsPlayers = true, beamAffectsMobs = true, coreMonitor = true,
-            crusherOreRecipes = true;
+            crusherOreRecipes = true, fusionConductor = true;
     public static double beamDamage = 1.0;
+    // Fusion Conductor (unofficial-1.15): index 0 = no capacitor, 1 Wyvern, 2 Draconic, 3 Chaotic.
+    public static List<Integer> conductorSpeed = List.of(1, 2, 4, 8);
+    public static List<Double> conductorEnergy = List.of(0D, 0D, 0D, 0D);
+    public static List<Long> conductorBuffer = List.of(10_000_000L, 100_000_000L, 1_000_000_000L, 10_000_000_000L);
+    public static double conductorEnergyExponent = 2.0;
 
     private static void loadExtras() {
         ConfigCategory extras = config.getCategory("Extras").setComment(
@@ -135,6 +140,18 @@ public class DEConfig {
                         "ore must be mined. Applies to everyone on the server; takes effect after a server restart (or a /reload after the",
                         "config file has been reloaded).")
                 .setDefaultBoolean(true).onSync((t, r) -> crusherOreRecipes = t.getBoolean());
+        server.getValue("fusionConductor").syncTagToClient().setComment("Fusion Conductor block: automates the Fusion Crafting Core it sits on. Off = placed conductors do nothing.")
+                .setDefaultBoolean(true).onSync((t, r) -> fusionConductor = t.getBoolean());
+        ConfigCategory conductor = server.getCategory("Fusion Conductor").setComment(
+                "Each list: no capacitor, Wyvern, Draconic, Chaotic capacitor in the conductor's upgrade slot.");
+        conductor.getValueList("speed").syncTagToClient().setComment("Charge and craft speed multiplier.")
+                .setDefaultInts(com.google.common.collect.Lists.newArrayList(1, 2, 4, 8)).onSync((t, r) -> conductorSpeed = padInts(t.getInts(), conductorSpeed));
+        conductor.getValueList("energy").syncTagToClient().setComment("Energy multiplier per craft. 0 = speed ^ energyExponent.")
+                .setDefaultDoubles(com.google.common.collect.Lists.newArrayList(0D, 0D, 0D, 0D)).onSync((t, r) -> conductorEnergy = padDoubles(t.getDoubles(), conductorEnergy));
+        conductor.getValue("energyExponent").syncTagToClient().setComment("Energy multiplier = speed ^ this (when the energy list says 0). 2.0 = Wyvern 4x, Draconic 16x, Chaotic 64x.")
+                .setDefaultDouble(2.0).onSync((t, r) -> conductorEnergyExponent = t.getDouble());
+        conductor.getValueList("buffer").syncTagToClient().setComment("Energy buffer size in OP.")
+                .setDefaultLongs(com.google.common.collect.Lists.newArrayList(10_000_000L, 100_000_000L, 1_000_000_000L, 10_000_000_000L)).onSync((t, r) -> conductorBuffer = padLongs(t.getLongs(), conductorBuffer));
         server.getValue("beamForceField").syncTagToClient().setComment("Stabilizer beams of an active energy core push out and hurt players and mobs inside them.")
                 .setDefaultBoolean(true).onSync((t, r) -> beamForceField = t.getBoolean());
         server.getValue("beamDamage").setComment("Damage per hit from a stabilizer beam (every half second). 1.0 = half a heart, 0 = no damage.")
@@ -145,6 +162,25 @@ public class DEConfig {
                 .setDefaultBoolean(true).onSync((t, r) -> beamAffectsPlayers = t.getBoolean());
         server.getValue("beamAffectsMobs").setComment("Stabilizer beams affect mobs and other living entities.")
                 .setDefaultBoolean(true).onSync((t, r) -> beamAffectsMobs = t.getBoolean());
+    }
+
+    /** Config lists shorter than 4 keep the defaults for the missing tiers. */
+    private static List<Integer> padInts(List<Integer> in, List<Integer> def) {
+        List<Integer> out = new java.util.ArrayList<>(def);
+        for (int i = 0; i < Math.min(in.size(), out.size()); i++) out.set(i, in.get(i));
+        return List.copyOf(out);
+    }
+
+    private static List<Double> padDoubles(List<Double> in, List<Double> def) {
+        List<Double> out = new java.util.ArrayList<>(def);
+        for (int i = 0; i < Math.min(in.size(), out.size()); i++) out.set(i, in.get(i));
+        return List.copyOf(out);
+    }
+
+    private static List<Long> padLongs(List<Long> in, List<Long> def) {
+        List<Long> out = new java.util.ArrayList<>(def);
+        for (int i = 0; i < Math.min(in.size(), out.size()); i++) out.set(i, in.get(i));
+        return List.copyOf(out);
     }
 
     public static boolean extra(String key) {
@@ -161,6 +197,7 @@ public class DEConfig {
             case "beamForceField" -> extrasServer && beamForceField;
             case "coreMonitor" -> extrasServer && coreMonitor;
             case "crusherOreRecipes" -> extrasServer && crusherOreRecipes;
+            case "fusionConductor" -> extrasServer && fusionConductor;
             default -> true;
         };
     }
