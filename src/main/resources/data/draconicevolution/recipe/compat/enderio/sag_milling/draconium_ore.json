@@ -8,6 +8,10 @@
     {
       "type": "neoforge:mod_loaded",
       "modid": "enderio"
+    },
+    {
+      "type": "draconicevolution:config",
+      "key": "crusherOreRecipes"
     }
   ],
   "energy": 2400,

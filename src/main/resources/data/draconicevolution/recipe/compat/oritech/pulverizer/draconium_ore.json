@@ -8,6 +8,10 @@
     {
       "type": "neoforge:mod_loaded",
       "modid": "oritech"
+    },
+    {
+      "type": "draconicevolution:config",
+      "key": "crusherOreRecipes"
     }
   ],
   "itemInputs": [

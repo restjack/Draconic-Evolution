@@ -4,7 +4,7 @@
 > Our own fixes are also offered upstream as [TasteFu1/Draconic-Evolution#1](https://github.com/TasteFu1/Draconic-Evolution/pull/1).
 > Not affiliated with or endorsed by brandon3055. All credit for Draconic Evolution goes to him; the port itself is TasteFu1's and MehanikTMYT's work.
 
-Current build: **`3.1.4-unofficial-1.2`** (jar `Draconic-Evolution-26.1.2-3.1.4-unofficial-1.2.jar`; earlier builds were named `port.3-eli.N`).
+Current build: **`3.1.4-unofficial-1.3`** (jar `Draconic-Evolution-26.1.2-3.1.4-unofficial-1.3.jar`; earlier builds were named `port.3-eli.N`).
 
 ## A look at it
 
@@ -59,10 +59,10 @@ More: [Display tab](.github/readme/monitor-settings-display.png) · [Pylons tab]
 | Stabilizer beam force field | Living things in a stabilizer beam are pushed out and take half a heart (server options: damage, push, players, mobs). |
 | Jade tooltips | Core, pylons and stabilizers (Shift for in/out and time to full/empty). |
 | In-game guide | A Patchouli book (*Draconic Evolution Guide*, 41 entries) and the same guide for GuideME (hold **G** over an item). Crafted from a Book and Draconium Dust; the Information Tablet opens it too. |
-| Ore crusher compat | Draconium ore crushes into 3 Draconium Dust (plus each machine's usual bonus) in EnderIO's SAG Mill, Oritech's Pulverizer, Energized Power's Pulverizer, FTB IC's Macerator and LTXI's grinder. Each recipe loads only when that mod is installed (`data/draconicevolution/recipe/compat/`). |
+| Ore crusher compat | Draconium ore crushes into 3 Draconium Dust (plus each machine's usual bonus) in EnderIO's SAG Mill, Oritech's Pulverizer, Energized Power's Pulverizer, FTB IC's Macerator and LTXI's grinder. Each recipe loads only when that mod is installed (`data/draconicevolution/recipe/compat/`). Switch: `crusherOreRecipes`. |
 | HD textures | Two built-in resource packs, *Draconic Evolution: core & pylons 32×* and *64×*, plus *Classic 16×16*. |
 
-Mod version string: `3.1.4-unofficial-1.2` (Brandon's Core `3.2.1+26.1.2-port.2`). Needs NeoForge **26.1.2.126 or newer** (below 26.2), Minecraft 26.1.2, Java 25.
+Mod version string: `3.1.4-unofficial-1.3` (Brandon's Core `3.2.1+26.1.2-port.2`). Needs NeoForge **26.1.2.126 or newer** (below 26.2), Minecraft 26.1.2, Java 25.
 
 ## Installing
 
@@ -70,7 +70,7 @@ There are **no prebuilt downloads**. Draconic Evolution's licence does not allow
 
 | File (from the build) | Provides |
 | --- | --- |
-| `Draconic-Evolution-26.1.2-3.1.4-unofficial-1.2.jar` | Draconic Evolution |
+| `Draconic-Evolution-26.1.2-3.1.4-unofficial-1.3.jar` | Draconic Evolution |
 | `BrandonsCore-3.2.1+26.1.2-port.2.jar` | Brandon's Core |
 | `codechickenlib-4.7.0+26.1.2-port.2.jar` | CodeChickenLib |
 
@@ -103,7 +103,7 @@ Output: `.gradle/port-work/Draconic-Evolution/build/libs/` (the mod) and `.gradl
 Our own features (not the bug fixes) each have a switch in `config/brandon3055/DraconicEvolution.cfg`, section `Extras`:
 
 - `Client` (per player): `extras` (master), `coreScreenDetails`, `coreGraph`, `coreUnitToggle` (OP/RF button), `structureHints`, `pylonModeColours`.
-- `Server` (synced to joining clients): `extras` (master), `grinderXpPiping`, `guideBookRecipe`, `coreRateHistory`, `pylonModeMessage`, `coreMonitor` (block, recipe and everything it does), `beamForceField` with `beamPush`, `beamAffectsPlayers`, `beamAffectsMobs` and `beamDamage` (damage points: 1 = half a heart, 0 = none).
+- `Server` (synced to joining clients): `extras` (master), `grinderXpPiping`, `guideBookRecipe`, `coreRateHistory`, `pylonModeMessage`, `coreMonitor` (block, recipe and everything it does), `crusherOreRecipes` (other mods' crushers grind Draconium ore; off = mine it, like the original mod), `beamForceField` with `beamPush`, `beamAffectsPlayers`, `beamAffectsMobs` and `beamDamage` (damage points: 1 = half a heart, 0 = none).
 
 Each part's master `extras` switch off gives the official mod's behaviour.
 

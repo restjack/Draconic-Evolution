@@ -27,6 +27,8 @@ Bug fixes are not in this list and are always on.
 - **coreRateHistory**: cores record their graph data.
 - **pylonModeMessage**: the pylon INPUT/OUTPUT message.
 - **coreMonitor**: the Core Monitor block.
+- **crusherOreRecipes**: other mods' crushers grind Draconium ore.
+
 - **beamForceField**: stabilizer beams push and hurt (plus **beamDamage**, **beamPush**, **beamAffectsPlayers**, **beamAffectsMobs**).
 
 The server's choices reach your game when you join.

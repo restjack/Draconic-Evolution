@@ -8,6 +8,10 @@
     {
       "type": "neoforge:mod_loaded",
       "modid": "ltxi"
+    },
+    {
+      "type": "draconicevolution:config",
+      "key": "crusherOreRecipes"
     }
   ],
   "item_inputs": [
