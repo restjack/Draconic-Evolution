@@ -434,7 +434,7 @@ public class TileEnergyCore extends TileBCore implements MenuProvider, IInteract
             active.set(true);
             updateStabilizers(true);
             energy.validateStorage();
-            level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyCore.ACTIVE, true));
+            if (level.getBlockState(worldPosition).hasProperty(EnergyCore.ACTIVE)) level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyCore.ACTIVE, true));
             linkUUID.set(UUID.randomUUID());
         }
     }
@@ -459,7 +459,7 @@ public class TileEnergyCore extends TileBCore implements MenuProvider, IInteract
             return;
         }
         linkUUID.set(null);
-        level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyCore.ACTIVE, false));
+        if (level.getBlockState(worldPosition).hasProperty(EnergyCore.ACTIVE)) level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyCore.ACTIVE, false));
         MultiBlockDefinition definition = getMultiBlockDef();
         if (definition == null) {
             return;

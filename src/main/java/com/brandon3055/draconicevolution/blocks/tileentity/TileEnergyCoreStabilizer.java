@@ -186,7 +186,7 @@ public class TileEnergyCoreStabilizer extends TileBCore implements IInteractTile
             }
         }
 
-        level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyCoreStabilizer.LARGE, true));
+        if (level.getBlockState(worldPosition).hasProperty(EnergyCoreStabilizer.LARGE)) level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyCoreStabilizer.LARGE, true));
         isValidMultiBlock.set(true);
         multiBlockAxis.set(axis);
         StructureBlock.buildingLock = false;
@@ -239,7 +239,7 @@ public class TileEnergyCoreStabilizer extends TileBCore implements IInteractTile
         }
 
         if (level.getBlockState(worldPosition).is(DEContent.ENERGY_CORE_STABILIZER.get())) {
-            level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyCoreStabilizer.LARGE, false));
+            if (level.getBlockState(worldPosition).hasProperty(EnergyCoreStabilizer.LARGE)) level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyCoreStabilizer.LARGE, false));
         }
         isValidMultiBlock.set(false);
 

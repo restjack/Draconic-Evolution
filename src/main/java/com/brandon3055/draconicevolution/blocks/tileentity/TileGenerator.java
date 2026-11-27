@@ -153,7 +153,7 @@ public class TileGenerator extends TileBCore implements IRSSwitchable, MenuProvi
         boolean last = active.get();
         active.set(fuelRemaining.get() > 0 && opStorage.getOPStored() < opStorage.getMaxOPStored() && isTileEnabled());
         if (active.get() != last) {
-            level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(Generator.ACTIVE, active.get()));
+            if (level.getBlockState(worldPosition).hasProperty(Generator.ACTIVE)) level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(Generator.ACTIVE, active.get()));
         }
 
         opStorage.modifyEnergyStored(-sendEnergyToAll(opStorage.maxExtract(), opStorage.getOPStored()));

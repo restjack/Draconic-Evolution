@@ -290,13 +290,16 @@ public class TileGrinder extends TileBCore implements IRSSwitchable, MenuProvide
             isActive = false;
         }
 
-        level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(Grinder.ACTIVE, isActive));
+        if (level.getBlockState(worldPosition).hasProperty(Grinder.ACTIVE)) level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(Grinder.ACTIVE, isActive));
         return active.set(isActive);
     }
 
     public void validateKillZone(boolean forceReCalc) {
         if (forceReCalc || killZone == null) {
-            BlockState state = level.getBlockState(worldPosition);
+            // The tile's own state, not the world's: when the grinder is broken the client may still extract it for one
+            // frame while the world already holds air there (crash "Cannot get property facing ... minecraft:air").
+            BlockState state = getBlockState();
+            if (!state.hasProperty(Grinder.FACING)) return; // keep the last zone
             Direction facing = state.getValue(Grinder.FACING);
             int aoe = this.aoe.get();
             BlockPos pos1 = worldPosition.offset(-(aoe - 1), -(aoe - 1), -(aoe - 1));

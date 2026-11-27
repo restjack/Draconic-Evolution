@@ -273,7 +273,7 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
 
     public void toggleMode() {
         ioMode.set(ioMode.get().reverse());
-        level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyPylon.MODE, ioMode.get()));
+        if (level.getBlockState(worldPosition).hasProperty(EnergyPylon.MODE)) level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyPylon.MODE, ioMode.get()));
     }
 
     // eli.8 Core Monitor: OP moved through this pylon in the last full tick.
@@ -380,7 +380,7 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
                 if (testState.is(Tags.Blocks.GLASS_BLOCKS)) {
                     colour.set(getGlassColour(testState));
                     StructureBlock.buildingLock = true;
-                    level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyPylon.FACING, dir));
+                    if (level.getBlockState(worldPosition).hasProperty(EnergyPylon.FACING)) level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyPylon.FACING, dir));
                     level.setBlockAndUpdate(pos, DEContent.STRUCTURE_BLOCK.get().defaultBlockState());
                     StructureBlock.buildingLock = false;
                     if (level.getBlockEntity(pos) instanceof TileStructureBlock tile) {
@@ -395,7 +395,7 @@ public class TileEnergyPylon extends TileBCore implements MultiBlockController {
 
             debug("Glass block found: " + found);
             if (!found) {
-                level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyPylon.FACING, Direction.UP));
+                if (level.getBlockState(worldPosition).hasProperty(EnergyPylon.FACING)) level.setBlockAndUpdate(worldPosition, level.getBlockState(worldPosition).setValue(EnergyPylon.FACING, Direction.UP));
                 colour.set(null);
             }
         }

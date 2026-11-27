@@ -75,7 +75,7 @@ public class RenderTileGrinder implements BlockEntityRenderer<TileGrinder, Rende
                                    ModelFeatureRenderer.CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(tile, state, partialTicks, cameraPosition, breakProgress);
         BlockState block = tile.getBlockState();
-        state.valid = block.is(DEContent.GRINDER.get());
+        state.valid = !tile.isRemoved() && block.is(DEContent.GRINDER.get());
         if (!state.valid) return;
         state.facing = block.getValue(Grinder.FACING);
         state.tilePos = Vector3.fromTileCenter(tile);
@@ -87,7 +87,7 @@ public class RenderTileGrinder implements BlockEntityRenderer<TileGrinder, Rende
         state.killZone = null;
         if (tile.aoeDisplay > 0.51) {
             tile.validateKillZone(true);
-            state.killZone = tile.killZone.move(-tile.getBlockPos().getX(), -tile.getBlockPos().getY(), -tile.getBlockPos().getZ())
+            if (tile.killZone != null) state.killZone = tile.killZone.move(-tile.getBlockPos().getX(), -tile.getBlockPos().getY(), -tile.getBlockPos().getZ())
                     .deflate(0.01).deflate(tile.aoe.get() - tile.aoeDisplay);
         }
     }
