@@ -167,16 +167,8 @@ public class Magnet extends Item /*implements IBauble*/ {
                     continue;
                 }
 
-                BlockPos pos = itemEntity.blockPosition();
-                boolean blocked = false;
-                for (BlockPos checkPos : BlockPos.betweenClosed(pos.offset(-5, -5, -5), pos.offset(5, 5, 5))) {
-                    if (world.getBlockState(checkPos).getBlock() == DEContent.DISLOCATION_INHIBITOR.get()) {
-                        blocked = true;
-                        break;
-                    }
-                }
-
-                if (blocked) {
+                // unofficial-1.30: ask the loaded projectors instead of reading 1,331 blocks around every item every tick.
+                if (com.brandon3055.draconicevolution.blocks.tileentity.TileDislocationInhibitor.isInhibited(world, itemEntity)) {
                     continue;
                 }
 
