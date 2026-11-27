@@ -92,12 +92,12 @@ public class FusionCraftingCoreGui extends ContainerGuiProvider<FusionCraftingCo
 
         ButtonRow buttonRow = ButtonRow.topRightInside(root, Direction.DOWN, 3, 3).setSpacing(1);
         buttonRow.addButton(TOOLKIT::createThemeButton);
-        buttonRow.addButton(e -> iconButton(e, net.minecraft.world.item.Items.REDSTONE_TORCH, tile.autoCraft::invert, tile.autoCraft::get,
-                "gui.draconicevolution.fusion_craft.auto_craft"));
-        buttonRow.addButton(e -> iconButton(e, net.minecraft.world.item.Items.HOPPER, tile.pushOutput::invert, tile.pushOutput::get,
-                "gui.draconicevolution.fusion_craft.push_output"));
-        buttonRow.addButton(e -> iconButton(e, net.minecraft.world.item.Items.ENDER_EYE, () -> toggleHighlight(tile), () -> highlightOn(tile),
-                "gui.draconicevolution.fusion_craft.show_injectors"));
+        buttonRow.addButton(e -> conductorHides(tile, iconButton(e, net.minecraft.world.item.Items.REDSTONE_TORCH, tile.autoCraft::invert, tile.autoCraft::get,
+                "gui.draconicevolution.fusion_craft.auto_craft")));
+        buttonRow.addButton(e -> conductorHides(tile, iconButton(e, net.minecraft.world.item.Items.HOPPER, tile.pushOutput::invert, tile.pushOutput::get,
+                "gui.draconicevolution.fusion_craft.push_output")));
+        buttonRow.addButton(e -> conductorHides(tile, iconButton(e, net.minecraft.world.item.Items.ENDER_EYE, () -> toggleHighlight(tile), () -> highlightOn(tile),
+                "gui.draconicevolution.fusion_craft.show_injectors")));
         buttonRow.addButton(e -> {
             GuiButton b = TOOLKIT.createFlat3DButton(e, () -> Component.literal(allSingle(tile) ? "1" : "64"))
                     .setTooltip(() -> java.util.List.of(Component.translatable("gui.draconicevolution.fusion_craft.injector_mode"),
@@ -108,7 +108,7 @@ public class FusionCraftingCoreGui extends ContainerGuiProvider<FusionCraftingCo
                         tile.sendPacketToServer(out -> out.writeBoolean(single), 3);
                     });
             Constraints.size(b, 12, 12);
-            return b;
+            return conductorHides(tile, b);
         });
 
         var playInv = GuiSlots.playerAllSlots(root, screenAccess, menu.main, menu.hotBar, menu.armor, menu.offhand);
@@ -181,8 +181,13 @@ public class FusionCraftingCoreGui extends ContainerGuiProvider<FusionCraftingCo
         return button;
     }
 
+    /** A Fusion Conductor on top takes these toggles over (they move to its screen). */
+    private static GuiButton conductorHides(TileFusionCraftingCore tile, GuiButton button) {
+        return button.setEnabled(() -> !tile.hasConductor());
+    }
+
     /** True when every linked injector is in single item mode (the client has their synced mode). */
-    private static boolean allSingle(TileFusionCraftingCore tile) {
+    static boolean allSingle(TileFusionCraftingCore tile) {
         boolean any = false;
         for (net.minecraft.core.BlockPos p : tile.getInjectorPositions()) {
             if (tile.getLevel().getBlockEntity(p) instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileFusionCraftingInjector inj) {
@@ -197,12 +202,12 @@ public class FusionCraftingCoreGui extends ContainerGuiProvider<FusionCraftingCo
         return tile.getLevel().dimension().identifier().toString();
     }
 
-    private static boolean highlightOn(TileFusionCraftingCore tile) {
+    static boolean highlightOn(TileFusionCraftingCore tile) {
         return tile.getInjectorPositions().stream().anyMatch(p -> com.brandon3055.draconicevolution.client.render.MonitorHighlight.isOn(dim(tile), p));
     }
 
     /** Green = injectors the core uses. Red = injectors in range it ignores (wrong facing, blocked or too close). */
-    private static void toggleHighlight(TileFusionCraftingCore tile) {
+    static void toggleHighlight(TileFusionCraftingCore tile) {
         boolean on = highlightOn(tile);
         java.util.Set<net.minecraft.core.BlockPos> linked = new java.util.HashSet<>(tile.getInjectorPositions());
         int range = com.brandon3055.draconicevolution.DEConfig.fusionInjectorRange;

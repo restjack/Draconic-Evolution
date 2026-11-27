@@ -6,6 +6,12 @@ import com.brandon3055.brandonscore.capability.CapabilityOP;
 import com.brandon3055.brandonscore.lib.IInteractTile;
 import com.brandon3055.brandonscore.lib.datamanager.DataFlags;
 import com.brandon3055.brandonscore.lib.datamanager.ManagedBool;
+import com.brandon3055.brandonscore.lib.datamanager.ManagedByte;
+import com.brandon3055.brandonscore.lib.datamanager.ManagedInt;
+import com.brandon3055.brandonscore.lib.datamanager.ManagedResource;
+import codechicken.lib.data.MCDataInput;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.Identifier;
 import com.brandon3055.brandonscore.lib.datamanager.ManagedFloat;
 import com.brandon3055.brandonscore.lib.datamanager.ManagedTextComponent;
 import com.brandon3055.draconicevolution.DEConfig;
@@ -68,6 +74,19 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
     public final ManagedBool powering = register(new ManagedBool("powering", DataFlags.SYNC_TILE));
     public final ManagedTextComponent status = register(new ManagedTextComponent("status", DataFlags.SAVE_NBT_SYNC_CONTAINER));
     public final ManagedFloat progress = register(new ManagedFloat("progress", -1, DataFlags.SYNC_CONTAINER));
+    // Stage 2: lock, batch, redstone, toggles moved over from the core screen.
+    public final ManagedResource recipeLock = register(new ManagedResource("recipe_lock", DataFlags.SAVE_NBT_SYNC_TILE));
+    public final ManagedInt batch = register(new ManagedInt("batch", DataFlags.SAVE_NBT_SYNC_CONTAINER));
+    public final ManagedInt batchLeft = register(new ManagedInt("batch_left", DataFlags.SAVE_NBT_SYNC_CONTAINER));
+    public final ManagedBool autoCraft = register(new ManagedBool("auto_craft", true, DataFlags.SAVE_NBT_SYNC_TILE, DataFlags.CLIENT_CONTROL));
+    public final ManagedBool pushOutput = register(new ManagedBool("push_output", DataFlags.SAVE_NBT_SYNC_TILE, DataFlags.CLIENT_CONTROL));
+    /** 0 ignore, 1 run while powered, 2 run while unpowered, 3 one craft per pulse. */
+    public final ManagedByte redstoneMode = register(new ManagedByte("redstone_mode", DataFlags.SAVE_NBT_SYNC_TILE, DataFlags.CLIENT_CONTROL));
+    private final ManagedBool rsPowered = register(new ManagedBool("rs_powered", DataFlags.SAVE_NBT));
+    private final ManagedInt pulses = register(new ManagedInt("pulses", DataFlags.SAVE_NBT));
+    /** True from a craft this conductor started until it is collected. */
+    private final ManagedBool running = register(new ManagedBool("running", DataFlags.SAVE_NBT));
+    public static final int RS_IGNORE = 0, RS_HIGH = 1, RS_LOW = 2, RS_PULSE = 3;
 
     public final ManagedItemHandler itemHandler = new ManagedItemHandler(this, INPUT + OUTPUT + 1);
     /** Pipes, hoppers, AE2: insert into input only, extract from output only. */
@@ -79,6 +98,7 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
     private boolean loadedCatalyst = false;
     private int cooldown = 0;
     private float ring, prevRing;
+    private int lastComparator = -1;
 
     public TileFusionConductor(BlockPos pos, BlockState state) {
         super(DEContent.TILE_FUSION_CONDUCTOR.get(), pos, state);
@@ -86,7 +106,7 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
         // Tile only: breaking the block drops the items, it never packs them into the item.
         capManager.setInternalManaged("inventory", Capabilities.Item.BLOCK, itemHandler).saveTile();
         capManager.set(Capabilities.Item.BLOCK, automation);
-        itemHandler.setStackValidator((slot, stack) -> slot < INPUT ? usedByFusion(level, stack) : slot == CAP_SLOT ? capacitorTier(stack) > 0 : true);
+        itemHandler.setStackValidator((slot, stack) -> slot < INPUT ? acceptsInput(stack) : slot == CAP_SLOT ? capacitorTier(stack) > 0 : true);
         itemHandler.setContentsChangeListener(slot -> {
             if (slot == CAP_SLOT) updateCapacity();
             setChanged();
@@ -160,6 +180,13 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
             powering.set(false);
             return;
         }
+        if (onInterval(10)) {
+            int key = getComparatorOutput();
+            if (key != lastComparator) {
+                lastComparator = key;
+                level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+            }
+        }
         TileFusionCraftingCore core = getCore();
         if (core == null) {
             setStatus(Component.translatable("fusion_conductor.draconicevolution.no_core").withStyle(ChatFormatting.RED), -1);
@@ -174,8 +201,62 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
         powering.set(false);
         if (cooldown > 0) cooldown--;
         if (!onInterval(10)) return;
+        boolean finished = running.get() && !core.getOutputStack().isEmpty();
         if (!collect(core)) return;
+        if (running.get()) {
+            running.set(false);
+            if (finished && batch.get() > 0 && batchLeft.get() > 0) batchLeft.subtract(1);
+        }
+        if (pushOutput.get()) pushOutputItems();
+        Component wait = waitReason();
+        if (wait != null) {
+            setStatus(wait, -1);
+            return;
+        }
         if (cooldown <= 0) tryStart(core);
+    }
+
+    /** Why the conductor may not start a craft right now (auto-craft, batch, redstone), or null. */
+    @Nullable
+    private Component waitReason() {
+        if (!autoCraft.get()) return Component.translatable("fusion_conductor.draconicevolution.paused").withStyle(ChatFormatting.GRAY);
+        if (batch.get() > 0 && batchLeft.get() <= 0) return Component.translatable("fusion_conductor.draconicevolution.batch_done", batch.get()).withStyle(ChatFormatting.GREEN);
+        boolean powered = rsPowered.get();
+        return switch (redstoneMode.get()) {
+            case RS_HIGH -> powered ? null : Component.translatable("fusion_conductor.draconicevolution.rs_wait_high").withStyle(ChatFormatting.GRAY);
+            case RS_LOW -> powered ? Component.translatable("fusion_conductor.draconicevolution.rs_wait_low").withStyle(ChatFormatting.GRAY) : null;
+            case RS_PULSE -> pulses.get() > 0 ? null : Component.translatable("fusion_conductor.draconicevolution.rs_wait_pulse").withStyle(ChatFormatting.GRAY);
+            default -> null;
+        };
+    }
+
+    @Override
+    public void onNeighborChange(BlockPos neighbor) {
+        super.onNeighborChange(neighbor);
+        if (level == null || level.isClientSide()) return;
+        boolean now = level.hasNeighborSignal(worldPosition);
+        if (now && !rsPowered.get() && redstoneMode.get() == RS_PULSE) pulses.set(Math.min(64, pulses.get() + 1));
+        rsPowered.set(now);
+    }
+
+    /** Push output into adjacent inventories (never into the core below). */
+    private void pushOutputItems() {
+        for (Direction dir : Direction.values()) {
+            if (dir == Direction.DOWN) continue;
+            var handler = level.getCapability(Capabilities.Item.BLOCK, worldPosition.relative(dir), dir.getOpposite());
+            if (handler == null) continue;
+            for (int i = OUT_START; i < OUT_END; i++) {
+                ItemStack out = itemHandler.getStackInSlot(i);
+                if (out.isEmpty()) continue;
+                try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+                    int moved = handler.insert(ItemResource.of(out), out.getCount(), tx);
+                    if (moved > 0) {
+                        tx.commit();
+                        itemHandler.setStackInSlot(i, out.copyWithCount(out.getCount() - moved));
+                    }
+                }
+            }
+        }
     }
 
     private void setStatus(Component text, float prog) {
@@ -248,6 +329,7 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
                 if (!inj.getInjectorStack().isEmpty()) return blockedReturn();
             }
             loaded.remove(pos);
+            updateBlock();
         }
         setChanged();
         return true;
@@ -322,6 +404,7 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
         Component reason = null;
         int bestMissing = Integer.MAX_VALUE;
         for (RecipeHolder<IFusionRecipe> holder : recipes(level)) {
+            if (recipeLock.get() != null && !recipeLock.get().equals(holder.id().identifier())) continue;
             IFusionRecipe recipe = holder.value();
             int[] avail = new int[INPUT];
             for (int i = 0; i < INPUT; i++) avail[i] = itemHandler.getStackInSlot(i).getCount();
@@ -373,8 +456,12 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
             loaded.add(inj.getBlockPos().immutable());
         }
         setChanged();
+        updateBlock();
         core.startCraft();
-        if (!core.isCrafting()) {
+        if (core.isCrafting()) {
+            running.set(true);
+            if (redstoneMode.get() == RS_PULSE && pulses.get() > 0) pulses.subtract(1);
+        } else {
             // Next collect puts everything back; wait a bit so we don't load/unload every half second.
             cooldown = 100;
             setStatus(core.userStatus.get() == null ? Component.translatable("fusion_conductor.draconicevolution.no_recipe") : core.userStatus.get(), -1);
@@ -396,6 +483,63 @@ public class TileFusionConductor extends TileBCore implements MenuProvider, IInt
     //endregion
 
     //region Recipes / input filter
+
+    /** Input filter: the locked recipe's items, or any item some fusion recipe uses. */
+    public boolean acceptsInput(ItemStack stack) {
+        RecipeHolder<IFusionRecipe> lock = lockedRecipe();
+        if (lock == null) return usedByFusion(level, stack);
+        IFusionRecipe r = lock.value();
+        return r.getCatalyst().test(stack.copyWithCount(count(r.getCatalyst()))) || r.fusionIngredients().stream().anyMatch(i -> i.get().test(stack.copyWithCount(count(i.get()))));
+    }
+
+    @Nullable
+    public RecipeHolder<IFusionRecipe> lockedRecipe() {
+        Identifier id = recipeLock.get();
+        if (id == null || level == null) return null;
+        for (RecipeHolder<IFusionRecipe> h : recipes(level)) if (h.id().identifier().equals(id)) return h;
+        return null;
+    }
+
+    /** First fusion recipe whose result is this item (client side helper for the ghost slot). */
+    @Nullable
+    public static RecipeHolder<IFusionRecipe> recipeFor(Level level, ItemStack result) {
+        for (RecipeHolder<IFusionRecipe> h : recipes(level)) {
+            if (ItemStack.isSameItem(h.value().getResultItem(level.registryAccess()), result)) return h;
+        }
+        return null;
+    }
+
+    @Override
+    public void receivePacketFromClient(MCDataInput data, ServerPlayer client, int id) {
+        switch (id) {
+            case 1 -> { // set recipe lock ("" = clear)
+                String key = data.readString();
+                Identifier rid = key.isEmpty() ? null : Identifier.tryParse(key);
+                recipeLock.set(rid != null && recipes(level).stream().anyMatch(h -> h.id().identifier().equals(rid)) ? rid : null);
+            }
+            case 2 -> { // batch delta; resets the count left
+                int v = Math.max(0, Math.min(9999, batch.get() + data.readInt()));
+                batch.set(v);
+                batchLeft.set(v);
+            }
+            case 3 -> { // every injector of the core: single item (true) / stack
+                boolean single = data.readBoolean();
+                TileFusionCraftingCore core = getCore();
+                if (core != null) for (IFusionInjector inj : core.getInjectors()) if (inj instanceof TileFusionCraftingInjector t) t.singleItem.set(single);
+            }
+            default -> super.receivePacketFromClient(data, client, id);
+        }
+    }
+
+    /** Comparator: the core's 1-14 while crafting, 0 otherwise. */
+    public int getComparatorOutput() {
+        TileFusionCraftingCore core = getCore();
+        return core != null && core.isCrafting() ? Math.min(14, core.getComparatorOutput()) : 0;
+    }
+
+    public boolean isLoaded(BlockPos pos) {
+        return loaded.contains(pos);
+    }
 
     public static Collection<RecipeHolder<IFusionRecipe>> recipes(Level level) {
         if (level instanceof ServerLevel server) return server.recipeAccess().recipeMap().byType(DraconicAPI.FUSION_RECIPE_TYPE.get());

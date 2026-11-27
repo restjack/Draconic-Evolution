@@ -47,6 +47,34 @@ public class DEJeiPlugin implements IModPlugin {
         registration.addRecipeCategories(new FusionCategory(registration.getJeiHelpers().getGuiHelper().createDrawableItemLike(DEContent.CRAFTING_CORE.get())));
     }
 
+    /** Fusion Conductor (unofficial-1.16): JEI's "+" on a fusion recipe sets the conductor's recipe lock (moves no items). */
+    @Override
+    public void registerRecipeTransferHandlers(mezz.jei.api.registration.IRecipeTransferRegistration registration) {
+        registration.addRecipeTransferHandler(new mezz.jei.api.recipe.transfer.IRecipeTransferHandler<com.brandon3055.draconicevolution.inventory.FusionConductorMenu, net.minecraft.world.item.crafting.RecipeHolder<IFusionRecipe>>() {
+            @Override
+            public Class<? extends com.brandon3055.draconicevolution.inventory.FusionConductorMenu> getContainerClass() {
+                return com.brandon3055.draconicevolution.inventory.FusionConductorMenu.class;
+            }
+
+            @Override
+            public java.util.Optional<net.minecraft.world.inventory.MenuType<com.brandon3055.draconicevolution.inventory.FusionConductorMenu>> getMenuType() {
+                return java.util.Optional.of(DEContent.MENU_FUSION_CONDUCTOR.get());
+            }
+
+            @Override
+            public mezz.jei.api.recipe.types.IRecipeType<net.minecraft.world.item.crafting.RecipeHolder<IFusionRecipe>> getRecipeType() {
+                return FUSION;
+            }
+
+            @Override
+            public mezz.jei.api.recipe.transfer.IRecipeTransferError transferRecipe(com.brandon3055.draconicevolution.inventory.FusionConductorMenu menu, net.minecraft.world.item.crafting.RecipeHolder<IFusionRecipe> recipe,
+                                                                                   mezz.jei.api.gui.ingredient.IRecipeSlotsView slots, net.minecraft.world.entity.player.Player player, boolean maxTransfer, boolean doTransfer) {
+                if (doTransfer) menu.tile.sendPacketToServer(out -> out.writeString(recipe.id().identifier().toString()), 1);
+                return null;
+            }
+        }, FUSION);
+    }
+
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         registration.addRecipes(FUSION, ClientEventHandler.fusionRecipes);

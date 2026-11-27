@@ -330,11 +330,11 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
         }
         if (!level.isClientSide()) {
             long t = level.getGameTime();
-            if (autoCraft.get() && !crafting.get() && t % 20 == 0 && !getCatalystStack().isEmpty()) {
+            if (autoCraft.get() && !crafting.get() && t % 20 == 0 && !getCatalystStack().isEmpty() && !hasConductor()) {
                 RecipeHolder<IFusionRecipe> recipe = findRecipe();
                 if (recipe != null && recipe.value().canStartCraft(this, level, null)) startCraft();
             }
-            if (pushOutput.get() && t % 10 == 0 && !getOutputStack().isEmpty()) pushOutputItems();
+            if (pushOutput.get() && t % 10 == 0 && !getOutputStack().isEmpty() && !hasConductor()) pushOutputItems();
             if (t % 10 == 0) {
                 // Progress does not mark the block changed, so tell comparators ourselves.
                 int key = crafting.get() ? getComparatorOutput() : getOutputStack().isEmpty() ? -1 : 15;
@@ -569,6 +569,11 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
     public void setCraftAnimation(float progress, int length) {
         craftAnimProgress.set(progress);
         craftAnimLength.set((short) length);
+    }
+
+    /** A Fusion Conductor on top takes over auto-craft, output and the screen toggles. */
+    public boolean hasConductor() {
+        return level != null && level.getBlockEntity(worldPosition.above()) instanceof TileFusionConductor;
     }
 
     /** Read-only view of the linked injector positions (client uses it for the highlight button). */

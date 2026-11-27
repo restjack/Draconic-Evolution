@@ -38,6 +38,21 @@ public class FusionConductor extends EntityBlockBCore {
     }
 
     @Override
+    public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, net.minecraft.core.Direction direction) {
+        return level.getBlockEntity(pos) instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileFusionConductor t ? t.getComparatorOutput() : 0;
+    }
+
+    @Override
+    public boolean canConnectRedstone(BlockState state, BlockGetter level, BlockPos pos, @Nullable net.minecraft.core.Direction side) {
+        return true;
+    }
+
+    @Override
     protected RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;
     }
