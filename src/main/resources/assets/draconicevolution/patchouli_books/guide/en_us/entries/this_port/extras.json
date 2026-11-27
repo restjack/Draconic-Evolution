@@ -16,7 +16,7 @@
     {
       "type": "patchouli:text",
       "title": "Server (everyone)",
-      "text": "$(li)$(l)grinderXpPiping$(): liquid XP out of the Mob Grinder.$(li)$(l)guideBookRecipe$(): this book's recipe.$(li)$(l)coreRateHistory$(): cores record their graph data.$(li)$(l)pylonModeMessage$(): the pylon INPUT/OUTPUT message.$(li)$(l)coreMonitor$(): the Core Monitor block.$(li)$(l)crusherOreRecipes$(): other mods' crushers grind Draconium ore."
+      "text": "$(li)$(l)grinderXpPiping$(): liquid XP out of the Mob Grinder.$(li)$(l)guideBookRecipe$(): this book's recipe.$(li)$(l)coreRateHistory$(): cores record their graph data.$(li)$(l)pylonModeMessage$(): the pylon INPUT/OUTPUT message.$(li)$(l)coreMonitor$(): the Core Monitor block."
     },
     {
       "type": "patchouli:text",

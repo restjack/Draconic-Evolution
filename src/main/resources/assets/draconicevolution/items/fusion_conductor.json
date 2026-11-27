@@ -1,9 +1,0 @@
-{
-  "model": {
-    "type": "minecraft:special",
-    "base": "draconicevolution:item/wyvern_relay_crystal",
-    "model": {
-      "type": "draconicevolution:fusion_conductor"
-    }
-  }
-}

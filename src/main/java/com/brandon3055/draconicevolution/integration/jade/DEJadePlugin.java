@@ -49,7 +49,6 @@ public class DEJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(CoreData.INSTANCE, TileEnergyPylon.class);
         registration.registerBlockDataProvider(CoreData.INSTANCE, TileStructureBlock.class);
         registration.registerBlockDataProvider(FusionData.INSTANCE, com.brandon3055.draconicevolution.blocks.tileentity.TileFusionCraftingCore.class);
-        registration.registerBlockDataProvider(ConductorData.INSTANCE, com.brandon3055.draconicevolution.blocks.tileentity.TileFusionConductor.class);
     }
 
     @Override
@@ -60,7 +59,6 @@ public class DEJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(Tooltip.INSTANCE, StructureBlock.class);
         registration.registerBlockComponent(Tooltip.INSTANCE, com.brandon3055.draconicevolution.blocks.machines.CraftingInjector.class);
         registration.registerBlockComponent(Tooltip.INSTANCE, com.brandon3055.draconicevolution.blocks.machines.FusionCraftingCore.class);
-        registration.registerBlockComponent(Tooltip.INSTANCE, com.brandon3055.draconicevolution.blocks.machines.FusionConductor.class);
     }
 
     /** The block the player looks at, resolved through structure blocks (pylon spheres, core shells, big stabilizers) to its controller. */
@@ -114,33 +112,6 @@ public class DEJadePlugin implements IWailaPlugin {
     }
 
     static final Identifier FUSION_UID = Identifier.fromNamespaceAndPath(DraconicEvolution.MODID, "fusion_core");
-    static final Identifier CONDUCTOR_UID = Identifier.fromNamespaceAndPath(DraconicEvolution.MODID, "fusion_conductor");
-    static final String CONDUCTOR_KEY = "de_conductor";
-
-    enum ConductorData implements IServerDataProvider<BlockAccessor> {
-        INSTANCE;
-
-        @Override
-        public void appendServerData(CompoundTag data, BlockAccessor accessor) {
-            if (!(accessor.getBlockEntity() instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileFusionConductor c)) return;
-            CompoundTag tag = new CompoundTag();
-            tag.putString("status", c.status.get() == null ? "" : c.status.get().getString());
-            tag.putLong("stored", c.opStorage.getOPStored());
-            tag.putLong("max", c.opStorage.getMaxOPStored());
-            tag.putInt("tier", c.tier());
-            tag.putBoolean("power", c.powerInjectors.get());
-            tag.putString("owner", c.ownerName.get());
-            tag.putLong("crafts", c.crafts.get());
-            var lock = c.lockedRecipe();
-            if (lock != null) tag.putString("lock", lock.value().getResultItem(c.getLevel().registryAccess()).getHoverName().getString());
-            data.put(CONDUCTOR_KEY, tag);
-        }
-
-        @Override
-        public Identifier getUid() {
-            return CONDUCTOR_UID;
-        }
-    }
 
     enum CoreData implements IServerDataProvider<BlockAccessor> {
         INSTANCE;
@@ -185,22 +156,6 @@ public class DEJadePlugin implements IWailaPlugin {
                     tooltip.add(Component.literal(f.getBooleanOr("output", false) ? "Output ready" : "Idle").withStyle(ChatFormatting.GRAY));
                 }
                 if (((com.brandon3055.draconicevolution.blocks.tileentity.TileFusionCraftingCore) tile).hasConductor()) tooltip.add(Component.literal("Run by the Fusion Conductor above").withStyle(ChatFormatting.LIGHT_PURPLE));
-                return;
-            }
-            if (tile instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileFusionConductor) {
-                CompoundTag f = accessor.getServerData().getCompoundOrEmpty(CONDUCTOR_KEY);
-                if (f.isEmpty()) return;
-                for (String line : f.getStringOr("status", "").split("\n")) if (!line.isBlank()) tooltip.add(Component.literal(line).withStyle(ChatFormatting.GRAY));
-                tooltip.add(Component.literal(Utils.formatNumber(f.getLongOr("stored", 0)) + " / " + Utils.formatNumber(f.getLongOr("max", 0)) + " " + com.brandon3055.draconicevolution.DEConfig.energyUnit()).withStyle(ChatFormatting.GOLD));
-                int tier = f.getIntOr("tier", 0);
-                tooltip.add(Component.literal("Speed " + com.brandon3055.draconicevolution.blocks.tileentity.TileFusionConductor.speed(tier) + "x, energy "
-                        + com.brandon3055.draconicevolution.blocks.tileentity.TileFusionConductor.trim(com.brandon3055.draconicevolution.blocks.tileentity.TileFusionConductor.energyFactor(tier)) + "x"
-                        + (f.getBooleanOr("power", true) ? "" : " (power injectors off)")).withStyle(ChatFormatting.DARK_PURPLE));
-                if (f.contains("lock")) tooltip.add(Component.literal("Locked: " + f.getStringOr("lock", "")).withStyle(ChatFormatting.LIGHT_PURPLE));
-                if (accessor.showDetails()) {
-                    tooltip.add(Component.literal("Crafts: " + f.getLongOr("crafts", 0)).withStyle(ChatFormatting.DARK_GRAY));
-                    if (!f.getStringOr("owner", "").isEmpty()) tooltip.add(Component.literal("Owner: " + f.getStringOr("owner", "")).withStyle(ChatFormatting.DARK_GRAY));
-                }
                 return;
             }
             if (tile instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileFusionCraftingInjector inj) {

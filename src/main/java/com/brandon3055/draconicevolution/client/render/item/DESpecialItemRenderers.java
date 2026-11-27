@@ -44,16 +44,6 @@ public final class DESpecialItemRenderers {
         }
     }
 
-    public record FusionConductorUnbaked() implements SpecialModelRenderer.Unbaked<ExtractedModel> {
-        public static final MapCodec<FusionConductorUnbaked> MAP_CODEC = MapCodec.unit(new FusionConductorUnbaked());
-        @Override
-        public MapCodec<FusionConductorUnbaked> type() { return MAP_CODEC; }
-        @Override
-        public SpecialModelRenderer<ExtractedModel> bake(SpecialModelRenderer.BakingContext context) {
-            return new Renderer(new RenderItemFusionConductor());
-        }
-    }
-
     private record Renderer(DEItemRenderer renderer) implements SpecialModelRenderer<ExtractedModel> {
         @Override
         public ExtractedModel extractArgument(ItemStack stack) {

@@ -14,8 +14,6 @@ public class ComputerCraftCompatEventHandler {
 		event.registerBlockEntity(PeripheralCapability.get(), DEContent.TILE_REACTOR_STABILIZER.get(), (be, direction) -> new PeripheralReactorComponent(be));
 
 		event.registerBlockEntity(PeripheralCapability.get(), DEContent.TILE_ENERGY_PYLON.get(), (be, direction) -> new PeripheralEnergyPylon(be));
-		event.registerBlockEntity(PeripheralCapability.get(), DEContent.TILE_CORE_MONITOR.get(), (be, direction) -> new PeripheralCoreMonitor(be));
-		event.registerBlockEntity(PeripheralCapability.get(), DEContent.TILE_FUSION_CONDUCTOR.get(), (be, direction) -> new PeripheralFusionConductor(be));
 		event.registerBlockEntity(PeripheralCapability.get(), DEContent.TILE_FLUID_GATE.get(), (be, direction) -> new PeripheralFluidGate(be));
 		event.registerBlockEntity(PeripheralCapability.get(), DEContent.TILE_FLUX_GATE.get(), (be, direction) -> new PeripheralFluxGate(be));
     }

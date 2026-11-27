@@ -145,7 +145,7 @@ public class FusionCraftingCoreGui extends ContainerGuiProvider<FusionCraftingCo
 
 
     /** True when every linked injector is in single item mode (the client has their synced mode). */
-    static boolean allSingle(TileFusionCraftingCore tile) {
+    public static boolean allSingle(TileFusionCraftingCore tile) {
         boolean any = false;
         for (net.minecraft.core.BlockPos p : tile.getInjectorPositions()) {
             if (tile.getLevel().getBlockEntity(p) instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileFusionCraftingInjector inj) {
@@ -160,12 +160,12 @@ public class FusionCraftingCoreGui extends ContainerGuiProvider<FusionCraftingCo
         return tile.getLevel().dimension().identifier().toString();
     }
 
-    static boolean highlightOn(TileFusionCraftingCore tile) {
+    public static boolean highlightOn(TileFusionCraftingCore tile) {
         return tile.getInjectorPositions().stream().anyMatch(p -> com.brandon3055.draconicevolution.client.render.MonitorHighlight.isOn(dim(tile), p));
     }
 
     /** Green = injectors the core uses. Red = injectors in range it ignores (wrong facing, blocked or too close). */
-    static void toggleHighlight(TileFusionCraftingCore tile) {
+    public static void toggleHighlight(TileFusionCraftingCore tile) {
         boolean on = highlightOn(tile);
         java.util.Set<net.minecraft.core.BlockPos> linked = new java.util.HashSet<>(tile.getInjectorPositions());
         int range = com.brandon3055.draconicevolution.DEConfig.fusionInjectorRange;

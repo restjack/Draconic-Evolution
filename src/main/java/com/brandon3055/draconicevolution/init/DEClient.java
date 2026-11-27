@@ -75,9 +75,6 @@ public class DEClient {
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent event) ->
                 event.register(net.minecraft.resources.Identifier.fromNamespaceAndPath(MODID, "energy_crystal"),
                         com.brandon3055.draconicevolution.client.render.item.DESpecialItemRenderers.EnergyCrystalUnbaked.MAP_CODEC));
-        modBus.addListener((net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent event) ->
-                event.register(net.minecraft.resources.Identifier.fromNamespaceAndPath(MODID, "fusion_conductor"),
-                        com.brandon3055.draconicevolution.client.render.item.DESpecialItemRenderers.FusionConductorUnbaked.MAP_CODEC));
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterItemModelsEvent event) ->
                 event.register(net.minecraft.resources.Identifier.fromNamespaceAndPath(MODID, "machine_item"),
                         com.brandon3055.draconicevolution.client.render.item.MachineItemModel.Unbaked.MAP_CODEC));
@@ -130,7 +127,6 @@ public class DEClient {
         event.registerBlockEntityRenderer(DEContent.TILE_GRINDER.get(), RenderTileGrinder::new);
         event.registerBlockEntityRenderer(DEContent.TILE_DRACONIUM_CHEST.get(), DraconiumChestTileRenderer::new);
         event.registerBlockEntityRenderer(DEContent.TILE_STORAGE_CORE.get(), RenderTileEnergyCore::new);
-        event.registerBlockEntityRenderer(DEContent.TILE_CORE_MONITOR.get(), com.brandon3055.draconicevolution.client.render.tile.RenderTileCoreMonitor::new); // eli.8
         event.registerBlockEntityRenderer(DEContent.TILE_STRUCTURE_BLOCK.get(), com.brandon3055.draconicevolution.client.render.tile.RenderTileStructureBlock::new); // eli.8
         event.registerBlockEntityRenderer(DEContent.TILE_ENERGY_PYLON.get(), RenderTileEnergyPylon::new);
         event.registerBlockEntityRenderer(DEContent.TILE_CORE_STABILIZER.get(), RenderEnergyCoreStabilizer::new);
@@ -143,7 +139,6 @@ public class DEClient {
         event.registerBlockEntityRenderer(DEContent.TILE_REACTOR_INJECTOR.get(), RenderTileReactorComponent::new);
         event.registerBlockEntityRenderer(DEContent.TILE_REACTOR_STABILIZER.get(), RenderTileReactorComponent::new);
         event.registerBlockEntityRenderer(DEContent.TILE_CRAFTING_CORE.get(), RenderTileFusionCraftingCore::new);
-        event.registerBlockEntityRenderer(DEContent.TILE_FUSION_CONDUCTOR.get(), com.brandon3055.draconicevolution.client.render.tile.RenderTileFusionConductor::new);
         event.registerBlockEntityRenderer(DEContent.TILE_DISLOCATION_INHIBITOR.get(), com.brandon3055.draconicevolution.client.render.tile.RenderTileDislocationInhibitor::new); // unofficial-1.30
         event.registerBlockEntityRenderer(DEContent.TILE_CRAFTING_INJECTOR.get(), RenderTileCraftingInjector::new);
         event.registerBlockEntityRenderer(DEContent.TILE_POTENTIOMETER.get(), RenderTilePotentiometer::new);
@@ -172,13 +167,11 @@ public class DEClient {
 
         event.register(DEContent.MENU_DRACONIUM_CHEST.get(), DraconiumChestGui.Screen::new);
         event.register(DEContent.MENU_ENERGY_CORE.get(), EnergyCoreGui.Screen::new);
-        event.register(DEContent.MENU_CORE_MONITOR.get(), com.brandon3055.draconicevolution.client.gui.CoreMonitorGui.Screen::new);
         event.register(DEContent.MENU_REACTOR.get(), ReactorGui.Screen::new);
 
         event.register(DEContent.MENU_CELESTIAL_MANIPULATOR.get(), CelestialManipulatorGui.Screen::new);
         event.register(DEContent.MENU_DISENCHANTER.get(), DisenchanterGui.Screen::new);
         event.register(DEContent.MENU_FUSION_CRAFTING_CORE.get(), FusionCraftingCoreGui.Screen::new);
-        event.register(DEContent.MENU_FUSION_CONDUCTOR.get(), com.brandon3055.draconicevolution.client.gui.FusionConductorGui.Screen::new);
         event.register(DEContent.MENU_DISLOCATION_INHIBITOR.get(), com.brandon3055.draconicevolution.client.gui.DislocationInhibitorGui.Screen::new); // unofficial-1.30
         event.register(DEContent.MENU_FLOW_GATE.get(), FlowGateGui.Screen::new);
         event.register(DEContent.MENU_ENTITY_DETECTOR.get(), EntityDetectorGui.Screen::new);

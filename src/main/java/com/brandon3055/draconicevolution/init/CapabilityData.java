@@ -144,7 +144,6 @@ public class CapabilityData {
         TilePlacedItem.register(event);
         TileFusionCraftingInjector.register(event);
         TileFusionCraftingCore.register(event);
-        com.brandon3055.draconicevolution.blocks.tileentity.TileFusionConductor.register(event);
         TileEnergyCore.register(event);
         TileEnergyPylon.register(event);
         TileReactorStabilizer.register(event);

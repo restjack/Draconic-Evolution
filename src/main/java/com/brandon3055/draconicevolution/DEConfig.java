@@ -94,7 +94,7 @@ public class DEConfig {
             structureHints = true, pylonModeColours = true;
     public static boolean extrasServer = true, grinderXpPiping = true, guideBookRecipe = true, coreRateHistory = true,
             pylonModeMessage = true, beamForceField = true, beamPush = true, beamAffectsPlayers = true, beamAffectsMobs = true, coreMonitor = true,
-            crusherOreRecipes = true, fusionConductor = true, celestialManipulator = true;
+            fusionConductor = true, celestialManipulator = true;
     public static int celestialCooldown = 60;
     public static double beamDamage = 1.0;
     // Fusion Conductor (unofficial-1.15): index 0 = no capacitor, 1 Wyvern, 2 Draconic, 3 Chaotic.
@@ -135,12 +135,6 @@ public class DEConfig {
                 .setDefaultBoolean(true).onSync((t, r) -> pylonModeMessage = t.getBoolean());
         server.getValue("coreMonitor").syncTagToClient().setComment("Core Monitor block: recipe and its live data. Off = no recipe; placed monitors show 'disabled'.")
                 .setDefaultBoolean(true).onSync((t, r) -> coreMonitor = t.getBoolean());
-        server.getValue("crusherOreRecipes").syncTagToClient().setComment(
-                        "Lets other mods' crushers turn Draconium ore into dust: EnderIO SAG Mill, Oritech and Energized Power pulverizers,",
-                        "FTB IC macerator, LTXI grinder (3 dust plus the machine's usual bonus). false = like the original mod, where the",
-                        "ore must be mined. Applies to everyone on the server; takes effect after a server restart (or a /reload after the",
-                        "config file has been reloaded).")
-                .setDefaultBoolean(true).onSync((t, r) -> crusherOreRecipes = t.getBoolean());
         server.getValue("fusionConductor").syncTagToClient().setComment("Fusion Conductor block: automates the Fusion Crafting Core it sits on. Off = placed conductors do nothing.")
                 .setDefaultBoolean(true).onSync((t, r) -> fusionConductor = t.getBoolean());
         server.getValue("celestialManipulator").syncTagToClient().setComment("Celestial Manipulator rules for servers: owner lock, cooldown, chat notice to everyone, keep-skies-clear mode.",
@@ -202,7 +196,6 @@ public class DEConfig {
             case "pylonModeMessage" -> extrasServer && pylonModeMessage;
             case "beamForceField" -> extrasServer && beamForceField;
             case "coreMonitor" -> extrasServer && coreMonitor;
-            case "crusherOreRecipes" -> extrasServer && crusherOreRecipes;
             case "fusionConductor" -> extrasServer && fusionConductor;
             case "celestialManipulator" -> extrasServer && celestialManipulator;
             default -> true;
