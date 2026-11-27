@@ -15,7 +15,7 @@ index 5e68ef0..1813d65 100644
      mavenLocal()
      maven { url "https://maven.covers1624.net/" }
 diff --git a/gradle.properties b/gradle.properties
-index 9125669..0dc45ed 100644
+index 9125669..ee5d6ab 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -12,4 +12,4 @@ neo_version_range=[26.1.2.122,26.2)
@@ -23,7 +23,7 @@ index 9125669..0dc45ed 100644
  
  mod_id=brandonscore
 -mod_version=3.2.1+26.1.2-port.1
-+mod_version=3.2.1+26.1.2-port.2
++mod_version=3.2.1+26.1.2-port.3
 diff --git a/src/main/java/com/brandon3055/brandonscore/blocks/TileBCore.java b/src/main/java/com/brandon3055/brandonscore/blocks/TileBCore.java
 index 227c374..f884c2b 100644
 --- a/src/main/java/com/brandon3055/brandonscore/blocks/TileBCore.java
@@ -120,6 +120,42 @@ index b010519..f0852d5 100644
          GuiRender render = GuiRender.convert(graphics);
          modularGui.render(render, partialTicks);
          //Ensure we render overlay on top of things like JEI
+diff --git a/src/main/java/com/brandon3055/brandonscore/client/gui/modular/lib/GuiRender.java b/src/main/java/com/brandon3055/brandonscore/client/gui/modular/lib/GuiRender.java
+index 868d5ce..ee0183d 100644
+--- a/src/main/java/com/brandon3055/brandonscore/client/gui/modular/lib/GuiRender.java
++++ b/src/main/java/com/brandon3055/brandonscore/client/gui/modular/lib/GuiRender.java
+@@ -1159,6 +1159,11 @@ public class GuiRender {
+ 
+     //=== Strings ===//
+ 
++    // 26.1 skips text whose alpha byte is 0; older code passes plain 0xRRGGBB, which used to mean opaque.
++    private static int opaque(int colour) {
++        return (colour & 0xFC000000) == 0 ? colour | 0xFF000000 : colour;
++    }
++
+     /**
+      * Draw string with shadow.
+      */
+@@ -1168,7 +1173,8 @@ public class GuiRender {
+ 
+     public int drawString(@Nullable String message, double x, double y, int colour, boolean shadow) {
+         if (message == null) return 0;
+-        extract(() -> extractor.text(font(), message, (int) x, (int) y, colour, shadow));
++        int argb = opaque(colour);
++        extract(() -> extractor.text(font(), message, (int) x, (int) y, argb, shadow));
+         return (int) x + font().width(message);
+     }
+ 
+@@ -1180,7 +1186,8 @@ public class GuiRender {
+     }
+ 
+     public int drawString(FormattedCharSequence message, double x, double y, int colour, boolean shadow) {
+-        extract(() -> extractor.text(font(), message, (int) x, (int) y, colour, shadow));
++        int argb = opaque(colour);
++        extract(() -> extractor.text(font(), message, (int) x, (int) y, argb, shadow));
+         return (int) x + font().width(message);
+     }
+ 
 diff --git a/src/main/java/com/brandon3055/brandonscore/client/gui/modular/sprite/ModAtlasHolder.java b/src/main/java/com/brandon3055/brandonscore/client/gui/modular/sprite/ModAtlasHolder.java
 index 812b918..2f43d62 100644
 --- a/src/main/java/com/brandon3055/brandonscore/client/gui/modular/sprite/ModAtlasHolder.java
