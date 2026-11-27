@@ -38,14 +38,15 @@ import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Const
 import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GeoParam.*;
 
 /**
- * Fusion Conductor screen: energy + capacitor, input 6x3, output 3x3, recipe lock + batch row, status box with progress,
- * live view of the injectors, and the toggles (theme, auto-craft, push output, show injectors, injector mode, power
- * injectors, redstone mode).
+ * Fusion Conductor screen: tall energy bar + capacitor (left), input 6x3, output 3x3, recipe lock + batch row, one row of
+ * machine toggles (auto-craft, push output, power injectors, redstone mode, injector mode, show injectors), status box
+ * with a settings summary and progress, live view of the injectors. Theme + info stay top right.
+ * Layout v2 (Eli 2026-11-26): the old right-hand button column ran into the live view and clipped "64".
  */
 public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu> {
     private static final GuiToolkit TOOLKIT = new GuiToolkit("gui.draconicevolution.fusion_conductor");
     public static final int GUI_WIDTH = 226;
-    public static final int GUI_HEIGHT = 246;
+    public static final int GUI_HEIGHT = 264;
     private static final Item[] RS_ICONS = {Items.GUNPOWDER, Items.REDSTONE_TORCH, Items.LEVER, Items.STONE_BUTTON};
     private static final String[] RS_KEYS = {"ignore", "high", "low", "pulse"};
 
@@ -75,37 +76,7 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
         ButtonRow buttons = ButtonRow.topRightInside(root, Direction.DOWN, 3, 3).setSpacing(1);
         buttons.addButton(TOOLKIT::createThemeButton);
         buttons.addButton(e -> TOOLKIT.createInfoButton(e, info));
-        buttons.addButton(e -> toggle(e, new ItemStack(Items.REDSTONE_TORCH), () -> set(tile, TileFusionConductor.SET_AUTO, !tile.autoCraft.get()), tile.autoCraft::get, "gui.draconicevolution.fusion_conductor.auto_craft"));
-        buttons.addButton(e -> toggle(e, new ItemStack(Items.HOPPER), () -> set(tile, TileFusionConductor.SET_PUSH, !tile.pushOutput.get()), tile.pushOutput::get, "gui.draconicevolution.fusion_conductor.push_output"));
-        buttons.addButton(e -> toggle(e, new ItemStack(Items.ENDER_EYE), () -> { TileFusionCraftingCore c = tile.getCore(); if (c != null) FusionCraftingCoreGui.toggleHighlight(c); },
-                () -> tile.getCore() != null && FusionCraftingCoreGui.highlightOn(tile.getCore()), "gui.draconicevolution.fusion_craft.show_injectors"));
-        buttons.addButton(e -> {
-            GuiButton b = TOOLKIT.createFlat3DButton(e, () -> Component.literal(allSingle(tile) ? "1" : "64"))
-                    .setTooltip(() -> List.of(Component.translatable("gui.draconicevolution.fusion_craft.injector_mode"),
-                            com.brandon3055.draconicevolution.blocks.machines.CraftingInjector.modeText(allSingle(tile)),
-                            Component.translatable("gui.draconicevolution.fusion_craft.injector_mode.info").withStyle(ChatFormatting.GRAY)))
-                    .onPress(() -> {
-                        boolean single = !allSingle(tile);
-                        tile.sendPacketToServer(out -> out.writeBoolean(single), 3);
-                    });
-            Constraints.size(b, 12, 12);
-            return b;
-        });
-        buttons.addButton(e -> toggle(e, new ItemStack(Items.LIGHTNING_ROD), () -> set(tile, TileFusionConductor.SET_POWER, !tile.powerInjectors.get()), tile.powerInjectors::get,
-                "gui.draconicevolution.fusion_conductor.power_injectors"));
-        buttons.addButton(e -> {
-            GuiButton b = TOOLKIT.createFlat3DButton(e, null)
-                    .setTooltip(() -> List.of(TOOLKIT.translate("redstone"),
-                            TOOLKIT.translate("redstone." + RS_KEYS[mode(tile)]).withStyle(ChatFormatting.GOLD),
-                            TOOLKIT.translate("redstone.info").withStyle(ChatFormatting.GRAY)))
-                    .onPress(() -> set(tile, TileFusionConductor.SET_RS, (mode(tile) + 1) % 4), GuiButton.LEFT_CLICK)
-                    .onPress(() -> set(tile, TileFusionConductor.SET_RS, (mode(tile) + 3) % 4), GuiButton.RIGHT_CLICK);
-            Constraints.size(b, 12, 12);
-            GuiItemStack icon = new GuiItemStack(b, new ItemStack(RS_ICONS[0])).enableStackToolTip(false);
-            Constraints.bind(icon, b, 1);
-            gui.onTick(() -> icon.setStack(new ItemStack(RS_ICONS[mode(tile)])));
-            return b;
-        });
+        Flash flash = new Flash();
 
         // Player inventory
         var playInv = GuiSlots.player(root, screenAccess, menu.main, menu.hotBar);
@@ -126,19 +97,6 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
                 .constrain(LEFT, relative(input.get(RIGHT), 2)).constrain(RIGHT, relative(output.get(LEFT), -2))
                 .constrain(TOP, relative(input.get(TOP), 22)).constrain(HEIGHT, literal(10));
 
-        // Energy bar + capacitor slot (left)
-        GuiSlots cap = GuiSlots.singleSlot(root, screenAccess, menu.capacitor, 0)
-                .setSlotTexture(slot -> BCGuiTextures.getThemed("slot"))
-                .setEmptyIcon(BCGuiTextures.get("slots/energy"))
-                .setTooltip(() -> List.of(TOOLKIT.translate("capacitor"), speedLine(tile).copy().withStyle(ChatFormatting.DARK_PURPLE), TOOLKIT.translate("capacitor.info").withStyle(ChatFormatting.GRAY)))
-                .constrain(LEFT, relative(root.get(LEFT), 5))
-                .constrain(BOTTOM, match(input.get(BOTTOM)));
-        var energyBar = TOOLKIT.createEnergyBar(root, tile.opStorage);
-        energyBar.container()
-                .constrain(TOP, relative(heading.get(BOTTOM), 4))
-                .constrain(LEFT, relative(root.get(LEFT), 7))
-                .constrain(BOTTOM, relative(cap.get(TOP), -2))
-                .constrain(WIDTH, literal(14));
 
         // Row: recipe lock ghost slot + clear, batch - N +, left N
         GuiButton lock = TOOLKIT.createFlat3DButton(root, null)
@@ -180,25 +138,56 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
                 .constrain(LEFT, relative(plus.get(RIGHT), 3)).constrain(TOP, relative(plus.get(TOP), 2))
                 .constrain(WIDTH, literal(40)).constrain(HEIGHT, literal(9));
 
+        // Machine toggles: one row of 16 px buttons under the lock/batch row, all inside the panel at any GUI scale.
+        GuiButton[] row = {
+                toggle(root, new ItemStack(Items.REDSTONE_TORCH), () -> flash.set(tile, TileFusionConductor.SET_AUTO, !tile.autoCraft.get(), "auto_craft"), tile.autoCraft::get, "gui.draconicevolution.fusion_conductor.auto_craft"),
+                toggle(root, new ItemStack(Items.HOPPER), () -> flash.set(tile, TileFusionConductor.SET_PUSH, !tile.pushOutput.get(), "push_output"), tile.pushOutput::get, "gui.draconicevolution.fusion_conductor.push_output"),
+                toggle(root, new ItemStack(Items.LIGHTNING_ROD), () -> flash.set(tile, TileFusionConductor.SET_POWER, !tile.powerInjectors.get(), "power_injectors"), tile.powerInjectors::get, "gui.draconicevolution.fusion_conductor.power_injectors"),
+                redstoneButton(root, gui, tile, flash),
+                injectorButton(root, tile, flash),
+                toggle(root, new ItemStack(Items.ENDER_EYE), () -> {
+                    TileFusionCraftingCore c = tile.getCore();
+                    if (c == null) return;
+                    FusionCraftingCoreGui.toggleHighlight(c);
+                    flash.show(onOff("gui.draconicevolution.fusion_craft.show_injectors", FusionCraftingCoreGui.highlightOn(c)));
+                }, () -> tile.getCore() != null && FusionCraftingCoreGui.highlightOn(tile.getCore()), "gui.draconicevolution.fusion_craft.show_injectors"),
+        };
+        for (int i = 0; i < row.length; i++) {
+            row[i].constrain(LEFT, relative(input.get(LEFT), i * 18)).constrain(TOP, relative(lock.get(BOTTOM), 3));
+        }
+
         // Live view (right) + status box (left of it)
         LiveView live = new LiveView(root, tile);
         live.constrain(RIGHT, relative(root.get(RIGHT), -5))
-                .constrain(TOP, relative(lock.get(BOTTOM), 3))
+                .constrain(TOP, relative(lock.get(BOTTOM), 22))
                 .constrain(BOTTOM, relative(playInv.container().get(TOP), -12))
                 .constrain(WIDTH, dynamic(() -> live.ySize()));
         GuiRectangle statusBG = new GuiRectangle(root)
                 .shadedRect(Palette.SubItem::accentLight, Palette.SubItem::accentDark, Palette.SubItem::fill)
-                .constrain(LEFT, relative(root.get(LEFT), 5))
+                .constrain(LEFT, match(input.get(LEFT)))
                 .constrain(RIGHT, relative(live.get(LEFT), -3))
                 .constrain(TOP, match(live.get(TOP)))
                 .constrain(BOTTOM, match(live.get(BOTTOM)));
-        new GuiText(statusBG, () -> tile.status.get() == null ? Component.empty() : tile.status.get())
+        GuiText modes = new GuiText(statusBG, () -> summaryModes(tile))
+                .setShadow(false).setTextColour(Palette.SubItem::text).setAlignment(Align.LEFT)
+                .constrain(LEFT, relative(statusBG.get(LEFT), 3))
+                .constrain(RIGHT, relative(statusBG.get(RIGHT), -3))
+                .constrain(BOTTOM, relative(statusBG.get(BOTTOM), -6))
+                .constrain(HEIGHT, literal(9));
+        GuiText toggles = new GuiText(statusBG, () -> summaryToggles(tile))
+                .setShadow(false).setTextColour(Palette.SubItem::text).setAlignment(Align.LEFT)
+                .constrain(LEFT, relative(statusBG.get(LEFT), 3))
+                .constrain(RIGHT, relative(statusBG.get(RIGHT), -3))
+                .constrain(BOTTOM, match(modes.get(TOP)))
+                .constrain(HEIGHT, literal(9));
+        // A click shows what it changed for 2 s, then the machine status comes back.
+        new GuiText(statusBG, () -> flash.get() != null ? flash.get() : tile.status.get() == null ? Component.empty() : tile.status.get())
                 .setWrap(true).setShadow(false).setTextColour(Palette.SubItem::text)
                 .setAlignment(Align.LEFT)
                 .constrain(LEFT, relative(statusBG.get(LEFT), 3))
                 .constrain(RIGHT, relative(statusBG.get(RIGHT), -3))
                 .constrain(TOP, relative(statusBG.get(TOP), 3))
-                .constrain(BOTTOM, relative(statusBG.get(BOTTOM), -7));
+                .constrain(BOTTOM, relative(toggles.get(TOP), -1));
         GuiRectangle barBG = new GuiRectangle(statusBG).fill(0xFF202020)
                 .constrain(LEFT, relative(statusBG.get(LEFT), 3))
                 .constrain(RIGHT, relative(statusBG.get(RIGHT), -3))
@@ -210,6 +199,20 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
                 .constrain(TOP, match(barBG.get(TOP)))
                 .constrain(BOTTOM, match(barBG.get(BOTTOM)))
                 .constrain(WIDTH, dynamic(() -> barBG.xSize() * Math.max(0, Math.min(1, tile.progress.get()))));
+
+        // Energy bar runs the full left side, capacitor slot under it (Eli: the old 34 px bar was too small)
+        GuiSlots cap = GuiSlots.singleSlot(root, screenAccess, menu.capacitor, 0)
+                .setSlotTexture(slot -> BCGuiTextures.getThemed("slot"))
+                .setEmptyIcon(BCGuiTextures.get("slots/energy"))
+                .setTooltip(() -> List.of(TOOLKIT.translate("capacitor"), speedLine(tile).copy().withStyle(ChatFormatting.DARK_PURPLE), TOOLKIT.translate("capacitor.info").withStyle(ChatFormatting.GRAY)))
+                .constrain(LEFT, relative(root.get(LEFT), 5))
+                .constrain(BOTTOM, match(statusBG.get(BOTTOM)));
+        var energyBar = TOOLKIT.createEnergyBar(root, tile.opStorage);
+        energyBar.container()
+                .constrain(TOP, relative(heading.get(BOTTOM), 4))
+                .constrain(LEFT, relative(root.get(LEFT), 5))
+                .constrain(BOTTOM, relative(cap.get(TOP), -2))
+                .constrain(WIDTH, literal(18));
     }
 
     private static void set(TileFusionConductor tile, int which, boolean on) {
@@ -256,6 +259,82 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
         return TOOLKIT.translate("speed", TileFusionConductor.speed(tier), TileFusionConductor.trim(TileFusionConductor.energyFactor(tier)));
     }
 
+    static Component onOff(String key, boolean on) {
+        return Component.translatable(key).append(": ").append(Component.translatable(on ? "gui.draconicevolution.toggle.on" : "gui.draconicevolution.toggle.off")
+                .withStyle(on ? ChatFormatting.GREEN : ChatFormatting.RED));
+    }
+
+    /** "Auto  Push  Power": each word green when on, red when off. */
+    private static Component summaryToggles(TileFusionConductor tile) {
+        return Component.empty().append(word("auto", tile.autoCraft.get())).append("  ")
+                .append(word("push", tile.pushOutput.get())).append("  ").append(word("power", tile.powerInjectors.get()));
+    }
+
+    private static Component word(String key, boolean on) {
+        return TOOLKIT.translate("summary." + key).withStyle(on ? ChatFormatting.GREEN : ChatFormatting.RED);
+    }
+
+    /** "RS: Ignore  Inj: 64" */
+    private static Component summaryModes(TileFusionConductor tile) {
+        return TOOLKIT.translate("summary.rs", TOOLKIT.translate("summary.rs." + RS_KEYS[mode(tile)])).append("  ")
+                .append(TOOLKIT.translate("summary.inj", allSingle(tile) ? "1" : "64"));
+    }
+
+    /** Short "Auto-craft: Off" line in the status box after a click, so the change shows at once. */
+    private static class Flash {
+        private Component text;
+        private long until;
+
+        void show(Component c) {
+            text = c;
+            until = System.currentTimeMillis() + 2000;
+        }
+
+        Component get() {
+            return System.currentTimeMillis() < until ? text : null;
+        }
+
+        void set(TileFusionConductor tile, int which, boolean on, String key) {
+            FusionConductorGui.set(tile, which, on);
+            show(onOff("gui.draconicevolution.fusion_conductor." + key, on));
+        }
+    }
+
+    private static GuiButton redstoneButton(GuiElement<?> parent, ModularGui gui, TileFusionConductor tile, Flash flash) {
+        GuiButton b = TOOLKIT.createFlat3DButton(parent, null)
+                .setTooltip(() -> List.of(TOOLKIT.translate("redstone"),
+                        TOOLKIT.translate("redstone." + RS_KEYS[mode(tile)]).withStyle(ChatFormatting.GOLD),
+                        TOOLKIT.translate("redstone.info").withStyle(ChatFormatting.GRAY)))
+                .onPress(() -> cycleRs(tile, flash, 1), GuiButton.LEFT_CLICK)
+                .onPress(() -> cycleRs(tile, flash, 3), GuiButton.RIGHT_CLICK);
+        Constraints.size(b, 16, 16);
+        GuiItemStack icon = new GuiItemStack(b, new ItemStack(RS_ICONS[0])).enableStackToolTip(false);
+        Constraints.bind(icon, b, 1);
+        gui.onTick(() -> icon.setStack(new ItemStack(RS_ICONS[mode(tile)])));
+        return b;
+    }
+
+    private static void cycleRs(TileFusionConductor tile, Flash flash, int step) {
+        int next = (mode(tile) + step) % 4;
+        set(tile, TileFusionConductor.SET_RS, next);
+        flash.show(TOOLKIT.translate("redstone").append(": ").append(TOOLKIT.translate("redstone." + RS_KEYS[next]).withStyle(ChatFormatting.GOLD)));
+    }
+
+    private static GuiButton injectorButton(GuiElement<?> parent, TileFusionConductor tile, Flash flash) {
+        GuiButton b = TOOLKIT.createFlat3DButton(parent, () -> Component.literal(allSingle(tile) ? "1" : "64"))
+                .setTooltip(() -> List.of(Component.translatable("gui.draconicevolution.fusion_craft.injector_mode"),
+                        com.brandon3055.draconicevolution.blocks.machines.CraftingInjector.modeText(allSingle(tile)),
+                        Component.translatable("gui.draconicevolution.fusion_craft.injector_mode.info").withStyle(ChatFormatting.GRAY)))
+                .onPress(() -> {
+                    boolean single = !allSingle(tile);
+                    tile.sendPacketToServer(out -> out.writeBoolean(single), 3);
+                    flash.show(com.brandon3055.draconicevolution.blocks.machines.CraftingInjector.modeText(single));
+                });
+        Constraints.size(b, 16, 16);
+        return b;
+    }
+
+    /** 16 px toggle: green with the icon when on; dimmed icon plus a red corner when off. */
     static GuiButton toggle(GuiElement<?> parent, ItemStack icon, Runnable press, java.util.function.Supplier<Boolean> state, String key) {
         GuiButton button = TOOLKIT.createFlat3DButton(parent, null)
                 .setTooltip(() -> List.of(Component.translatable(key),
@@ -264,11 +343,17 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
                         Component.translatable(key + ".info").withStyle(ChatFormatting.GRAY)))
                 .onPress(press)
                 .setToggleMode(state);
-        Constraints.size(button, 12, 12);
+        Constraints.size(button, 16, 16);
         new GuiRectangle(button).fill(0xB040C040).setEnabled(state)
                 .constrain(LEFT, relative(button.get(LEFT), 1)).constrain(TOP, relative(button.get(TOP), 1))
                 .constrain(RIGHT, relative(button.get(RIGHT), -1)).constrain(BOTTOM, relative(button.get(BOTTOM), -1));
         Constraints.bind(new GuiItemStack(button, icon).enableStackToolTip(false), button, 1);
+        new GuiRectangle(button).fill(0x90202020).setEnabled(() -> !state.get())
+                .constrain(LEFT, relative(button.get(LEFT), 1)).constrain(TOP, relative(button.get(TOP), 1))
+                .constrain(RIGHT, relative(button.get(RIGHT), -1)).constrain(BOTTOM, relative(button.get(BOTTOM), -1));
+        new GuiRectangle(button).fill(0xFFD03030).setEnabled(() -> !state.get())
+                .constrain(RIGHT, relative(button.get(RIGHT), -1)).constrain(BOTTOM, relative(button.get(BOTTOM), -1))
+                .constrain(WIDTH, literal(4)).constrain(HEIGHT, literal(4));
         return button;
     }
 

@@ -35,7 +35,7 @@ When the craft is done the result goes to the output, and leftovers go back.
 
 ## Power
 
-With **Power injectors** on (the lightning button) it charges the injectors itself from its energy buffer, with purple beams. Feed it OP, RF or FE from any side.
+With **Power injectors** on (the lightning button) it charges the injectors itself from its energy buffer, with ice-blue beams. Feed it OP, RF or FE from any side.
 
 Turn it off to use your own crystals or pylons on the injectors instead.
 

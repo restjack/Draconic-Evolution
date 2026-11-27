@@ -33,15 +33,21 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Map;
 
 /**
- * Fusion Conductor: purple energy crystal with a gold ring that spins faster while working, a beam down into the core
- * while it crafts, and thin purple beams to each injector it powers.
+ * Fusion Conductor, "Storm Arc" look (Eli 2026-11-26): ice-white energy crystal with a steel ring that spins faster while
+ * working, lightning arcs from the crystal tip to the core frame's top corners (now and then when idle, constantly while
+ * crafting), and thin ice-blue beams to each injector it powers. The item icon draws the same crystal and ring
+ * ({@link #body}).
  */
 public class RenderTileFusionConductor implements BlockEntityRenderer<TileFusionConductor, RenderTileFusionConductor.State> {
     private static final RenderType CRYSTAL = RenderTileEnergyCrystal.crystalType;
-    private static final RenderType RING = RenderTypes.entitySolid(Identifier.withDefaultNamespace("textures/block/gold_block.png"));
-    private static final RenderType BEAM = RenderTypes.entityTranslucentEmissive(Identifier.fromNamespaceAndPath(DraconicEvolution.MODID, "textures/particle/energy_beam_wyvern.png"));
+    private static final RenderType RING = RenderTypes.entitySolid(Identifier.withDefaultNamespace("textures/block/iron_block.png"));
+    private static final RenderType BEAM = RenderTypes.entityTranslucentEmissive(Identifier.fromNamespaceAndPath(DraconicEvolution.MODID, "textures/particle/energy_beam_basic.png"));
     private static final int LIGHT = 0xF000F0;
     private static final float CX = 0.5F, CY = 0.5F, CZ = 0.5F;
+    /** Shader colour of the Conductor crystal: pale ice white, distinct from every tier colour. */
+    public static final float[] ICE = {0.55F, 0.62F, 0.52F};
+    /** Top corners of the core frame below, relative to the Conductor's block. */
+    private static final float[][] CORNERS = {{0.06F, 0.06F}, {0.94F, 0.06F}, {0.06F, 0.94F}, {0.94F, 0.94F}};
 
     private final CCModel crystal;
 
@@ -72,34 +78,14 @@ public class RenderTileFusionConductor implements BlockEntityRenderer<TileFusion
         float time = ClientEventHandler.elapsedTicks + partialTicks;
         float bob = (float) Math.sin(time / 20F) * 0.04F;
 
-        // Crystal (DE energy crystal shader, Wyvern purple)
-        CCRenderState ccrs = CCRenderState.instance();
-        ccrs.reset();
-        ccrs.brightness = 240;
-        ccrs.overlay = OverlayTexture.NO_OVERLAY;
-        ccrs.baseColour = 0xFFFFFFFF;
-        DEShaders.ENERGY_CRYSTAL.setMipmap(0F);
-        DEShaders.ENERGY_CRYSTAL.setColour(RenderTileEnergyCrystal.COLOURS[1][0], RenderTileEnergyCrystal.COLOURS[1][1], RenderTileEnergyCrystal.COLOURS[1][2]);
-        Matrix4 mat = new Matrix4();
-        mat.translate(CX, CY + bob, CZ);
-        mat.rotate(180 * MathHelper.torad, new Vector3(1, 0, 0));
-        mat.scale(-0.3);
-        mat.rotate(time / 200F, new Vector3(0, 1, 0));
-        ccrs.bind(CRYSTAL, capture);
-        DEModelEmission.render(crystal, ccrs, mat);
+        body(crystal, CRYSTAL, capture, time, CY + bob, tile.ringAngle(partialTicks), 0xFFFFFFFF);
 
-        // Gold ring
-        ring(capture.getBuffer(RING), tile.ringAngle(partialTicks), CY + bob);
-
-        // Beams
         VertexConsumer beam = capture.getBuffer(BEAM);
         TileFusionCraftingCore core = tile.getCore();
         BlockPos pos = tile.getBlockPos();
-        if (core != null && core.isCrafting()) {
-            beam(beam, new Vector3(CX, CY + bob - 0.2, CZ), new Vector3(0.5, -0.5, 0.5), 0.09F, time);
-        }
+        if (core != null) arcs(beam, pos, core.isCrafting(), time, CY + bob - 0.22F);
         for (BlockPos target : tile.beamTargets()) {
-            beam(beam, new Vector3(CX, CY + bob, CZ), new Vector3(target.getX() - pos.getX() + 0.5, target.getY() - pos.getY() + 0.5, target.getZ() - pos.getZ() + 0.5), 0.035F, time);
+            beam(beam, new Vector3(CX, CY + bob, CZ), new Vector3(target.getX() - pos.getX() + 0.5, target.getY() - pos.getY() + 0.5, target.getZ() - pos.getZ() + 0.5), 0.035F, time, 150, 215, 255, 220);
         }
         state.geometry = capture.finish();
     }
@@ -109,7 +95,62 @@ public class RenderTileFusionConductor implements BlockEntityRenderer<TileFusion
         if (state.geometry != null) state.geometry.submit(poseStack, collector);
     }
 
-    /** Flat gold band, 24 segments, radius 0.3, tilted a little so it reads as a ring from the side. */
+    /** Crystal + steel ring, shared by the block and the item icon. */
+    public static void body(CCModel crystal, RenderType crystalType, net.minecraft.client.renderer.MultiBufferSource buffers, float time, float y, float ringDeg, int baseColour) {
+        CCRenderState ccrs = CCRenderState.instance();
+        ccrs.reset();
+        ccrs.brightness = 240;
+        ccrs.overlay = OverlayTexture.NO_OVERLAY;
+        ccrs.baseColour = baseColour;
+        DEShaders.ENERGY_CRYSTAL.setMipmap(0F);
+        DEShaders.ENERGY_CRYSTAL.setColour(ICE[0], ICE[1], ICE[2]);
+        Matrix4 mat = new Matrix4();
+        mat.translate(CX, y, CZ);
+        mat.rotate(180 * MathHelper.torad, new Vector3(1, 0, 0));
+        mat.scale(-0.3);
+        mat.rotate(time / 200F, new Vector3(0, 1, 0));
+        ccrs.bind(crystalType, buffers);
+        DEModelEmission.render(crystal, ccrs, mat);
+        ring(buffers.getBuffer(RING), ringDeg, y);
+    }
+
+    /**
+     * Lightning from the crystal tip to the core's top corners. Shapes come from a seed per time slot, so every frame in
+     * a slot draws the same arc instead of a new one each frame. Idle: one arc for 3 ticks every 36 ticks. Crafting: two
+     * arcs, a new shape every 1.5 ticks.
+     */
+    private static void arcs(VertexConsumer b, BlockPos pos, boolean crafting, float time, float tipY) {
+        long slot;
+        int count;
+        if (crafting) {
+            slot = (long) (time / 1.5F);
+            count = 2;
+        } else {
+            if (time % 36F > 3F) return;
+            slot = (long) (time / 36F);
+            count = 1;
+        }
+        java.util.Random r = new java.util.Random(pos.asLong() * 31L + slot);
+        for (int n = 0; n < count; n++) {
+            float[] c = CORNERS[r.nextInt(4)];
+            Vector3 from = new Vector3(CX, tipY, CZ), to = new Vector3(c[0], -0.06, c[1]);
+            Vector3 prev = from;
+            int segs = 8;
+            for (int i = 1; i <= segs; i++) {
+                double t = i / (double) segs;
+                Vector3 p = from.copy().add(to.copy().subtract(from).multiply(t));
+                if (i < segs) {
+                    double amp = Math.sin(Math.PI * t) * 0.18;
+                    p.add((r.nextDouble() - 0.5) * amp, (r.nextDouble() - 0.5) * amp * 0.5, (r.nextDouble() - 0.5) * amp);
+                }
+                beam(b, prev, p, 0.035F, time, 140, 210, 255, 110);
+                beam(b, prev, p, 0.012F, time, 235, 250, 255, 255);
+                prev = p;
+            }
+        }
+    }
+
+    /** Flat steel band, 24 segments, radius 0.3, tilted a little so it reads as a ring from the side. */
     private static void ring(VertexConsumer b, float angleDeg, float y) {
         int seg = 24;
         float rOut = 0.3F, rIn = 0.26F, h = 0.025F;
@@ -148,7 +189,7 @@ public class RenderTileFusionConductor implements BlockEntityRenderer<TileFusion
     }
 
     /** Two crossed quads from a to b with a scrolling beam texture (both sides drawn). */
-    private static void beam(VertexConsumer b, Vector3 from, Vector3 to, float width, float time) {
+    private static void beam(VertexConsumer b, Vector3 from, Vector3 to, float width, float time, int cr, int cg, int cb, int ca) {
         Vector3 dir = to.copy().subtract(from);
         double len = dir.mag();
         if (len < 0.01) return;
@@ -158,12 +199,13 @@ public class RenderTileFusionConductor implements BlockEntityRenderer<TileFusion
         float v0 = time / -15F, v1 = v0 + (float) len * 0.2F;
         for (Vector3 off : new Vector3[]{pa, pb}) {
             Vector3 a1 = from.copy().add(off), a2 = from.copy().subtract(off), b1 = to.copy().add(off), b2 = to.copy().subtract(off);
-            bv(b, a1, 0, v0); bv(b, a2, 1, v0); bv(b, b2, 1, v1); bv(b, b1, 0, v1);
-            bv(b, b1, 0, v1); bv(b, b2, 1, v1); bv(b, a2, 1, v0); bv(b, a1, 0, v0);
+            int[] c = {cr, cg, cb, ca};
+            bv(b, a1, 0, v0, c); bv(b, a2, 1, v0, c); bv(b, b2, 1, v1, c); bv(b, b1, 0, v1, c);
+            bv(b, b1, 0, v1, c); bv(b, b2, 1, v1, c); bv(b, a2, 1, v0, c); bv(b, a1, 0, v0, c);
         }
     }
 
-    private static void bv(VertexConsumer b, Vector3 p, float u, float v) {
-        b.addVertex((float) p.x, (float) p.y, (float) p.z).setColor(200, 120, 255, 220).setUv(u * 0.53F, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LIGHT).setNormal(0, 1, 0);
+    private static void bv(VertexConsumer b, Vector3 p, float u, float v, int[] c) {
+        b.addVertex((float) p.x, (float) p.y, (float) p.z).setColor(c[0], c[1], c[2], c[3]).setUv(u * 0.53F, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LIGHT).setNormal(0, 1, 0);
     }
 }

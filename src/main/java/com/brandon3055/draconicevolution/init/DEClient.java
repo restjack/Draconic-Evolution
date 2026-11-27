@@ -75,6 +75,9 @@ public class DEClient {
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent event) ->
                 event.register(net.minecraft.resources.Identifier.fromNamespaceAndPath(MODID, "energy_crystal"),
                         com.brandon3055.draconicevolution.client.render.item.DESpecialItemRenderers.EnergyCrystalUnbaked.MAP_CODEC));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent event) ->
+                event.register(net.minecraft.resources.Identifier.fromNamespaceAndPath(MODID, "fusion_conductor"),
+                        com.brandon3055.draconicevolution.client.render.item.DESpecialItemRenderers.FusionConductorUnbaked.MAP_CODEC));
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterItemModelsEvent event) ->
                 event.register(net.minecraft.resources.Identifier.fromNamespaceAndPath(MODID, "machine_item"),
                         com.brandon3055.draconicevolution.client.render.item.MachineItemModel.Unbaked.MAP_CODEC));

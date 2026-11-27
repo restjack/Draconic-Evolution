@@ -35,7 +35,7 @@ import static com.brandon3055.draconicevolution.client.render.tile.RenderTileEne
 public class RenderItemEnergyCrystal implements DEItemRenderer {
     public static final RenderType crystalBaseType = net.minecraft.client.renderer.rendertype.RenderTypes.entitySolid(Identifier.fromNamespaceAndPath(DraconicEvolution.MODID, "textures/models/crystal_base.png"));
 
-    private static final RenderType CRYSTAL = DEShaders.ENERGY_CRYSTAL.renderType("de_energy_crystal_item", null, com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS);
+    static final RenderType CRYSTAL = DEShaders.ENERGY_CRYSTAL.renderType("de_energy_crystal_item", null, com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS);
 
     private final CrystalType type;
     private final TechLevel techLevel;

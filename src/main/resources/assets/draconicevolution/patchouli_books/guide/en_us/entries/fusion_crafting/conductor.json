@@ -47,7 +47,7 @@
     {
       "type": "patchouli:text",
       "title": "Power",
-      "text": "With $(l)Power injectors$() on (the lightning button) it charges the injectors itself from its energy buffer, with purple beams. Feed it OP, RF or FE from any side.$(br2)Turn it off to use your own crystals or pylons on the injectors instead."
+      "text": "With $(l)Power injectors$() on (the lightning button) it charges the injectors itself from its energy buffer, with ice-blue beams. Feed it OP, RF or FE from any side.$(br2)Turn it off to use your own crystals or pylons on the injectors instead."
     },
     {
       "type": "patchouli:text",
