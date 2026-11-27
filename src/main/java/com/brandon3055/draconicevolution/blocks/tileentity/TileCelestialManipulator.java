@@ -137,6 +137,8 @@ public class TileCelestialManipulator extends TileBCore implements IChangeListen
     public final ManagedLong runCost = register(new ManagedLong("run_cost", DataFlags.SAVE_NBT));
     public final ManagedLong targetTime = register(new ManagedLong("target_time", DataFlags.SAVE_NBT_SYNC_TILE));
     public final ManagedLong runLength = register(new ManagedLong("run_length", DataFlags.SAVE_NBT_SYNC_TILE));
+    /** Game time the current run started; the screen's progress uses it (the plain `timer` only counts on a client that saw the start). */
+    public final ManagedLong runStart = register(new ManagedLong("run_start", DataFlags.SAVE_NBT_SYNC_TILE));
 
     public final ManagedUUID owner = register(new ManagedUUID("owner", (java.util.UUID) null, DataFlags.SAVE_NBT_SYNC_TILE));
     public final ManagedString ownerName = register(new ManagedString("owner_name", "", DataFlags.SAVE_NBT_SYNC_TILE));
@@ -267,6 +269,7 @@ public class TileCelestialManipulator extends TileBCore implements IChangeListen
         runAction.set((byte) action);
         runBy.set(by);
         runCost.set(WEATHER_COST[action]);
+        runStart.set(level.getGameTime());
         timer = 0;
         weatherToggleRunning.set(true);
         active.set(true);
@@ -301,6 +304,7 @@ public class TileCelestialManipulator extends TileBCore implements IChangeListen
         runBy.set(by);
         runLength.set(length);
         targetTime.set(level.getOverworldClockTime() + length);
+        runStart.set(level.getGameTime());
         timer = 0;
         timeWarpRunning.set(true);
         active.set(true);

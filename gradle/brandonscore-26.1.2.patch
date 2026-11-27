@@ -25,7 +25,7 @@ index 9125669..e27f205 100644
 -mod_version=3.2.1+26.1.2-port.1
 +mod_version=3.2.1+26.1.2-port.5
 diff --git a/src/main/java/com/brandon3055/brandonscore/blocks/TileBCore.java b/src/main/java/com/brandon3055/brandonscore/blocks/TileBCore.java
-index 227c374..f884c2b 100644
+index 227c374..7dcad72 100644
 --- a/src/main/java/com/brandon3055/brandonscore/blocks/TileBCore.java
 +++ b/src/main/java/com/brandon3055/brandonscore/blocks/TileBCore.java
 @@ -360,7 +360,7 @@ public class TileBCore extends BlockEntity implements com.brandon3055.brandonsco
@@ -46,6 +46,37 @@ index 227c374..f884c2b 100644
          readExtraNBT(tag);
          onTileLoaded();
      }
+@@ -497,18 +497,19 @@ public class TileBCore extends BlockEntity implements com.brandon3055.brandonsco
+         if (itemHandler instanceof TileItemStackHandler) {
+             ((TileItemStackHandler) itemHandler).setSlotValidator(slot, stack -> (chargeItem.get() ? EnergyUtils.canReceiveEnergy(stack) : EnergyUtils.canExtractEnergy(stack)));
+         }
+-        if (EffectiveSide.get().isServer()) {
+-            addTickable(() -> {
+-                ItemStack stack = itemHandler.getStackInSlot(slot);
+-                if (!stack.isEmpty()) {
+-                    if (chargeItem.get()) {
+-                        EnergyUtils.transferEnergy(storage, stack);
+-                    } else {
+-                        EnergyUtils.transferEnergy(stack, storage);
+-                    }
++        // Side is checked each tick, not here: tiles loaded from a save are built on chunk-loading worker threads, where
++        // EffectiveSide reports the client, so the slot never charged or discharged after a reload.
++        addTickable(() -> {
++            if (level == null || level.isClientSide()) return;
++            ItemStack stack = itemHandler.getStackInSlot(slot);
++            if (!stack.isEmpty()) {
++                if (chargeItem.get()) {
++                    EnergyUtils.transferEnergy(storage, stack);
++                } else {
++                    EnergyUtils.transferEnergy(stack, storage);
+                 }
+-            });
+-        }
++            }
++        });
+     }
+ 
+ 
 diff --git a/src/main/java/com/brandon3055/brandonscore/blocks/TileCapabilityManager.java b/src/main/java/com/brandon3055/brandonscore/blocks/TileCapabilityManager.java
 index 7fb8860..0551119 100644
 --- a/src/main/java/com/brandon3055/brandonscore/blocks/TileCapabilityManager.java

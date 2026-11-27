@@ -108,11 +108,13 @@ public abstract class DETileMenu<T extends TileBCore> extends ContainerBCTile<T>
      * 26.1.2 port fix: the player is added to the tile's accessing-player set in the menu constructor, but
      * TileBCore.getAccessingPlayers() prunes anyone whose containerMenu isn't this menu yet, and that runs before
      * ServerPlayer.openMenu assigns containerMenu. The set stayed empty, so syncContainer() data (e.g. the energy
-     * core's stored OP and I/O) never reached the open screen. Re-register the viewer each sync (idempotent set add).
+     * core's stored OP and I/O) never reached the open screen. Re-register the viewer when it is missing.
+     * unofficial-1.39: only when missing. Calling onPlayerOpenContainer every tick made the energy core resend its
+     * rate graph and the grinder / entity detector their filter to every viewer every tick.
      */
     @Override
     public void broadcastChanges() {
-        if (tile != null && player != null && player.containerMenu == this) {
+        if (tile != null && player != null && player.containerMenu == this && !tile.getAccessingPlayers().contains(player)) {
             tile.onPlayerOpenContainer(player);
         }
         super.broadcastChanges();

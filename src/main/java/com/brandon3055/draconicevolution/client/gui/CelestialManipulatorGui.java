@@ -345,11 +345,12 @@ public class CelestialManipulatorGui extends ContainerGuiProvider<CelestialManip
         @Nullable
         private Component progress() {
             int a = tile.runAction.get();
+            long elapsed = Math.max(0, tile.getLevel().getGameTime() - tile.runStart.get()); // synced start, right after a rejoin too
             if (tile.weatherToggleRunning.get()) {
-                return TileCelestialManipulator.label(a).copy().append(" " + Math.min(99, tile.timer * 100 / 230) + "%");
+                return TileCelestialManipulator.label(a).copy().append(" " + Math.min(99, elapsed * 100 / 230) + "%");
             }
             if (tile.timeWarpRunning.get()) {
-                if (tile.timer <= 100) return TOOLKIT.translate("spinning");
+                if (elapsed <= 100) return TOOLKIT.translate("spinning");
                 long len = Math.max(1, tile.runLength.get()), left = tile.targetTime.get() - tile.getLevel().getOverworldClockTime();
                 return TileCelestialManipulator.label(a).copy().append(" " + Math.max(0, Math.min(99, (int) (100 - left * 100 / len))) + "%");
             }
