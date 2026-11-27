@@ -131,6 +131,15 @@ public abstract class TileCrystalBase extends TileBCore implements ITilePlaceLis
         capManager.setInternalManaged("energy", CapabilityOP.OP, opStorage).saveBoth().syncContainer();
     }
 
+    @Override
+    public void setLevel(net.minecraft.world.level.Level level) {
+        super.setLevel(level);
+        // Pick the effect handler by the level's side. The constructor guesses with EffectiveSide, which reports
+        // "client" on chunk-loading worker threads, so crystals loaded from a save got the client handler on the
+        // server and never sent flow updates: no flow beams (they only showed with the binder).
+        fxHandler = level.isClientSide() ? createClientFXHandler() : createServerFXHandler();
+    }
+
     //region Energy Balance
 
     @Override
