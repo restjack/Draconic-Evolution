@@ -113,6 +113,17 @@ public class Magnet extends Item /*implements IBauble*/ {
     }
 
     @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip, TooltipFlag flag) {
+        tooltip.accept(net.minecraft.network.chat.Component.translatable("item.draconicevolution.magnet.range", range).withStyle(net.minecraft.ChatFormatting.GRAY));
+        boolean on = isEnabled(stack);
+        tooltip.accept(net.minecraft.network.chat.Component.translatable("item.draconicevolution.magnet.status",
+                net.minecraft.network.chat.Component.translatable(on ? "item.draconicevolution.magnet.on" : "item.draconicevolution.magnet.off")
+                        .withStyle(on ? net.minecraft.ChatFormatting.GREEN : net.minecraft.ChatFormatting.RED)).withStyle(net.minecraft.ChatFormatting.GRAY));
+        tooltip.accept(net.minecraft.network.chat.Component.translatable("item.draconicevolution.magnet.toggle").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
+        tooltip.accept(net.minecraft.network.chat.Component.translatable("item.draconicevolution.magnet.sneak").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
+    }
+
+    @Override
     public boolean isFoil(ItemStack stack) {
         return isEnabled(stack);
     }

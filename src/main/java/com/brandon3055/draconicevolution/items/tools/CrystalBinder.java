@@ -31,6 +31,19 @@ public class CrystalBinder extends Item implements ICrystalBinder {
 
 
     @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        net.minecraft.core.GlobalPos bound = stack.get(com.brandon3055.draconicevolution.init.ItemData.BINDER_POS);
+        if (bound != null) {
+            BlockPos p = bound.pos();
+            tooltip.accept(net.minecraft.network.chat.Component.translatable("item.draconicevolution.crystal_binder.bound",
+                    p.getX() + " " + p.getY() + " " + p.getZ(), bound.dimension().identifier().toString()).withStyle(net.minecraft.ChatFormatting.GREEN));
+        }
+        for (String k : new String[]{"link", "monitor", "rotate"}) {
+            tooltip.accept(net.minecraft.network.chat.Component.translatable("item.draconicevolution.crystal_binder." + k).withStyle(net.minecraft.ChatFormatting.GRAY));
+        }
+    }
+
+    @Override
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
         BlockState state = context.getLevel().getBlockState(context.getClickedPos());
         Level world = context.getLevel();
