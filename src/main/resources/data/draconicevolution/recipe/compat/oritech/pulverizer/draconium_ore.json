@@ -1,0 +1,23 @@
+{
+  "type": "oritech:pulverizer",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "draconicevolution"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "oritech"
+    }
+  ],
+  "itemInputs": [
+    "#c:ores/draconium"
+  ],
+  "itemResults": [
+    {
+      "count": 3,
+      "id": "draconicevolution:draconium_dust"
+    }
+  ],
+  "time": 50
+}

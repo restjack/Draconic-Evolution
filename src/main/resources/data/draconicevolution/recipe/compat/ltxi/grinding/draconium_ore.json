@@ -1,0 +1,24 @@
+{
+  "type": "ltxi:grinding",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "draconicevolution"
+    },
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "ltxi"
+    }
+  ],
+  "item_inputs": [
+    {
+      "ingredient": "#c:ores/draconium"
+    }
+  ],
+  "item_results": [
+    {
+      "count": 3,
+      "id": "draconicevolution:draconium_dust"
+    }
+  ]
+}
