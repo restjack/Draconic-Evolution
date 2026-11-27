@@ -56,6 +56,7 @@ public class DEJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(Tooltip.INSTANCE, EnergyCoreStabilizer.class);
         registration.registerBlockComponent(Tooltip.INSTANCE, EnergyPylon.class);
         registration.registerBlockComponent(Tooltip.INSTANCE, StructureBlock.class);
+        registration.registerBlockComponent(Tooltip.INSTANCE, com.brandon3055.draconicevolution.blocks.machines.CraftingInjector.class);
     }
 
     /** The block the player looks at, resolved through structure blocks (pylon spheres, core shells, big stabilizers) to its controller. */
@@ -115,6 +116,11 @@ public class DEJadePlugin implements IWailaPlugin {
         @Override
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
             BlockEntity tile = resolve(accessor.getBlockEntity());
+            if (tile instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileFusionCraftingInjector inj) {
+                tooltip.add(com.brandon3055.draconicevolution.blocks.machines.CraftingInjector.modeText(inj.singleItem.get()));
+                if (accessor.showDetails()) tooltip.add(com.brandon3055.draconicevolution.blocks.machines.CraftingInjector.MODE_INFO[2]);
+                return;
+            }
             if (tile instanceof TileEnergyPylon pylon) {
                 tooltip.add(TileEnergyPylon.modeText(pylon.ioMode.get()));
                 if (pylon.coreOffset.isNull()) tooltip.add(Component.literal("Not linked to a core").withStyle(ChatFormatting.RED));

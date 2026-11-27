@@ -82,6 +82,25 @@ public class CraftingInjector extends EntityBlockBCore implements IHudBlock {
     private static VoxelShape SHAPE_EAST = Shapes.box(0, 0.0625, 0.0625, 0.625, 0.9375, 0.9375);
     private final TechLevel techLevel;
 
+    /** "Mode: Single item" / "Mode: Stack", coloured. */
+    public static Component modeText(boolean single) {
+        return Component.translatable("fusion_inj.draconicevolution.mode",
+                Component.translatable("fusion_inj.draconicevolution." + (single ? "single_item" : "multi_item"))
+                        .withStyle(single ? ChatFormatting.AQUA : ChatFormatting.GOLD)).withStyle(ChatFormatting.GRAY);
+    }
+
+    public static final Component[] MODE_INFO = {
+            Component.translatable("fusion_inj.draconicevolution.info.single").withStyle(ChatFormatting.GRAY),
+            Component.translatable("fusion_inj.draconicevolution.info.stack").withStyle(ChatFormatting.GRAY),
+            Component.translatable("fusion_inj.draconicevolution.info.switch").withStyle(ChatFormatting.DARK_GRAY)
+    };
+
+    @Override
+    public void appendHoverText(ItemStack stack, List<Component> tooltip) {
+        java.util.Collections.addAll(tooltip, MODE_INFO);
+        super.appendHoverText(stack, tooltip);
+    }
+
     public CraftingInjector(Properties properties, TechLevel techLevel) {
         super(properties);
         this.techLevel = techLevel;
@@ -125,7 +144,7 @@ public class CraftingInjector extends EntityBlockBCore implements IHudBlock {
 
         if (player.isShiftKeyDown()) {
             craftingPedestal.singleItem.set(!craftingPedestal.singleItem.get());
-            ChatHelper.sendIndexed(player, Component.translatable("fusion_inj.draconicevolution." + (craftingPedestal.singleItem.get() ? "single_item" : "multi_item")), MSG_ID);
+            ChatHelper.sendIndexed(player, modeText(craftingPedestal.singleItem.get()), MSG_ID);
             craftingPedestal.getDataManager().detectAndSendChanges();
             return InteractionResult.SUCCESS;
         }
@@ -171,7 +190,7 @@ public class CraftingInjector extends EntityBlockBCore implements IHudBlock {
         BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof TileFusionCraftingInjector) {
             boolean single = ((TileFusionCraftingInjector) te).singleItem.get();
-            displayList.add(Component.translatable("fusion_inj.draconicevolution." + (single ? "single_item" : "multi_item")).withStyle(ChatFormatting.ITALIC, ChatFormatting.GOLD));
+            displayList.add(modeText(single));
         }
     }
 }
