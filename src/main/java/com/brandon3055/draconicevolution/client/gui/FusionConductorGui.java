@@ -473,7 +473,7 @@ public class FusionConductorGui extends ContainerGuiProvider<FusionConductorMenu
             double r = Math.min(xSize(), ySize()) / 2 - 5;
             render.drawString("N", cx + n[0] * r - 2, cy + n[1] * r - 3, 0xFF8A8A8A, false);
             TileFusionCraftingCore core = tile.getCore();
-            render.rect(cx - 3.5, cy - 3.5, 7, 7, core != null && core.isCrafting() ? COL_CORE_CRAFTING : COL_CORE_IDLE);
+            render.rect(cx - 3.5, cy - 3.5, 7, 7, core == null ? COL_EMPTY : core.isCrafting() ? COL_CORE_CRAFTING : COL_CORE_IDLE);
             for (Marker m : markers()) {
                 int count = m.list().size();
                 double top = m.y() - m.h() / 2, sh = m.h() / count;
