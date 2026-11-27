@@ -116,8 +116,8 @@ public class FusionCraftingCoreGui extends ContainerGuiProvider<FusionCraftingCo
         GuiText statusLabel = new GuiText(catalyst, tile.userStatus::get)
                 .constrain(TOP, relative(heading.get(BOTTOM), 4))
                 .constrain(BOTTOM, relative(catalyst.get(TOP), -4))
-                .constrain(LEFT, relative(catalyst.get(LEFT), -32))
-                .constrain(RIGHT, relative(catalyst.get(RIGHT), 32))
+                .constrain(LEFT, relative(catalyst.get(LEFT), -64))
+                .constrain(RIGHT, relative(catalyst.get(RIGHT), 64))
                 .setWrap(true)
                 .setEnabled(() -> tile.userStatus.get() != null);
 

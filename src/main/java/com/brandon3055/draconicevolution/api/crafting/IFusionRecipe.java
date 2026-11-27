@@ -151,7 +151,13 @@ public interface IFusionRecipe extends Recipe<IFusionInventory> {
                         .stream()
                         .mapToLong(IFusionInjector::getInjectorEnergy)
                         .sum();
-                stateMachine.setFusionStatus((double) totalCharge / getEnergyCost(), Component.translatable("fusion_status.draconicevolution.charging", Math.round(((double) totalCharge / getEnergyCost()) * 1000) / 10D).withStyle(ChatFormatting.GREEN));
+                long perItem = (getEnergyCost() / fusionIngredients().size()) + inv.getInjectors().size();
+                long maxRate = inv.getInjectors().stream().filter(e -> !e.getInjectorStack().isEmpty())
+                        .mapToLong(e -> perItem / DEConfig.fusionChargeTime.get(e.getInjectorTier().index)).sum();
+                String unit = " " + DEConfig.energyUnit();
+                stateMachine.setFusionStatus((double) totalCharge / getEnergyCost(), Component.translatable("fusion_status.draconicevolution.charging", Math.round(((double) totalCharge / getEnergyCost()) * 1000) / 10D).withStyle(ChatFormatting.GREEN)
+                        .append(Component.literal("\n" + com.brandon3055.brandonscore.utils.Utils.formatNumber(Math.min(totalCharge, getEnergyCost())) + " / " + com.brandon3055.brandonscore.utils.Utils.formatNumber(getEnergyCost()) + unit
+                                + ", " + com.brandon3055.brandonscore.utils.Utils.formatNumber(maxRate) + "/t").withStyle(ChatFormatting.GRAY)));
                 if (totalCharge >= getEnergyCost()) {
                     stateMachine.setFusionStatus(0, Component.translatable("fusion_status.draconicevolution.crafting", 0).withStyle(ChatFormatting.GREEN));
                     stateMachine.setCounter(0);
@@ -259,7 +265,8 @@ public interface IFusionRecipe extends Recipe<IFusionInventory> {
         }
 
         if (userStatus != null) {
-            userStatus.accept(Component.translatable("fusion_status.draconicevolution.ready").withStyle(ChatFormatting.GREEN));
+            userStatus.accept(Component.translatable("fusion_status.draconicevolution.ready").withStyle(ChatFormatting.GREEN)
+                    .append(Component.literal("\nNeeds " + com.brandon3055.brandonscore.utils.Utils.formatNumber(getEnergyCost()) + " " + DEConfig.energyUnit()).withStyle(ChatFormatting.GRAY)));
         }
         return true;
     }
