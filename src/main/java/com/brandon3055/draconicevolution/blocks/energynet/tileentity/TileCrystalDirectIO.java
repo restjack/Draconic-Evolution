@@ -104,16 +104,18 @@ public class TileCrystalDirectIO extends TileCrystalBase   {
 
     @Override
     public InteractionResult onBlockUse(BlockState state, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (player instanceof ServerPlayer && player.isShiftKeyDown()) {
+        if (!player.isShiftKeyDown()) return InteractionResult.PASS;
+        // SUCCESS on both sides: a client PASS made vanilla retry with the off hand, so the server got a second click
+        // and switched the mode straight back (the chat line then showed the old mode). Only the main hand switches.
+        if (player instanceof ServerPlayer && hand == InteractionHand.MAIN_HAND) {
             outputMode.invert();
             updateRotation(facing.get());
             // No other feedback until the HUD box draws text: say which way it now works.
             com.brandon3055.brandonscore.lib.ChatHelper.sendIndexed(player, Component.translatable("gui.draconicevolution.energy_net.io_mode").append(" ")
                     .append(Component.translatable("gui.draconicevolution.energy_net.io_output_" + outputMode.get())
                             .withStyle(outputMode.get() ? ChatFormatting.GOLD : ChatFormatting.DARK_AQUA)), MSG_ID);
-            return InteractionResult.SUCCESS;
         }
-        return InteractionResult.PASS;
+        return InteractionResult.SUCCESS;
     }
 
     //region Rendering
