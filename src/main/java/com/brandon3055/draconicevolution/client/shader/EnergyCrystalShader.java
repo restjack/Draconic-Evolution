@@ -19,6 +19,17 @@ public final class EnergyCrystalShader extends BCShader<EnergyCrystalShader> {
     }
     public void setColour(float r, float g, float b) { uniform(64).glUniform4f(r, g, b, 1); }
     public void setMipmap(float value) { uniform(100).glUniform1f(value); }
+    /**
+     * I/O crystal flow (unofficial-1.37): dir +1 = Input (bands rise away from the block), -1 = Output (bands run into
+     * it), 0 = off. (nx, ny, nz) = unit vector from the crystal to the block it sits on. Rides in BCParams' unused
+     * Transition / Hue / Yaw / Pitch slots.
+     */
+    public void setFlow(float dir, float nx, float ny, float nz) {
+        uniform(104).glUniform1f(dir);
+        uniform(108).glUniform1f(nx);
+        uniform(112).glUniform1f(ny);
+        uniform(116).glUniform1f(nz);
+    }
     @Override
     public RenderPipeline pipeline(VertexFormat.Mode mode) {
         return pipelines.computeIfAbsent(mode, m -> RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)

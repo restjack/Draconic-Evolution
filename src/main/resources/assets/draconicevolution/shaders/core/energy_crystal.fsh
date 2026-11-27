@@ -9,6 +9,7 @@
 
 in vec2 texCoord0;
 in vec3 fPos;
+in float flowH;
 
 out vec4 fragColor;
 
@@ -31,5 +32,19 @@ void main() {
     brightness = ((1 - Mipmap) * brightness) + (Mipmap * 1.2) ;//max(brightness, mipmap);
 
     vec4 colour = vec4(brightness * Colour.r, pow(brightness, 2.0) * Colour.g, pow(brightness ,3.0) * Colour.b, 1.0);
+
+    // I/O crystal mode (Transition = +1 Input, -1 Output, 0 none): bright bands travel away from the block on Input
+    // and into it on Output, tinted aqua / gold like the wrench message; brighter toward the tip (Input) or the base
+    // (Output) so a still frame still shows the way. Fades out with distance like the noise.
+    float dir = Transition;
+    if (dir != 0.0) {
+        float amt = 1.0 - Mipmap;
+        float h = clamp(flowH, 0.0, 1.0);
+        float band = pow(0.5 + 0.5 * sin(6.2832 * (h * 1.6 - dir * Time * 0.55)), 6.0);
+        float grad = dir > 0.0 ? h : 1.0 - h;
+        vec3 tint = dir > 0.0 ? vec3(0.15, 0.8, 0.85) : vec3(1.0, 0.72, 0.2);
+        colour.rgb *= mix(1.0, 0.55 + 0.9 * grad, amt);
+        colour.rgb += amt * band * tint * (0.6 + 0.9 * grad);
+    }
     fragColor = colour;
 }

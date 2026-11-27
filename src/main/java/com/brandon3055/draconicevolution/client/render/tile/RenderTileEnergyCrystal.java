@@ -106,6 +106,12 @@ public class RenderTileEnergyCrystal implements BlockEntityRenderer<TileCrystalB
         ccrs.baseColour = 0xFFFFFFFF;
         DEShaders.ENERGY_CRYSTAL.setMipmap((float) mm);
         DEShaders.ENERGY_CRYSTAL.setColour(COLOURS[tier][0], COLOURS[tier][1], COLOURS[tier][2]);
+        if (te instanceof TileCrystalDirectIO io) { // Eli's pick (option A): shader flow shows Input vs Output
+            net.minecraft.core.Direction f = io.facing.get();
+            DEShaders.ENERGY_CRYSTAL.setFlow(io.outputMode.get() ? -1F : 1F, f.getStepX(), f.getStepY(), f.getStepZ());
+        } else {
+            DEShaders.ENERGY_CRYSTAL.setFlow(0F, 0F, 1F, 0F);
+        }
 //        DEShaders.energyCrystalAngle.glUniform2f(xrot / -3.125F, yrot / 3.125F);
 
         if (te instanceof TileCrystalDirectIO) {
@@ -139,8 +145,8 @@ public class RenderTileEnergyCrystal implements BlockEntityRenderer<TileCrystalB
                 ccrs.baseColour = -1;
             }
         }
-
-
+        // Reset, so other users of this shader (item renderer, Conductor, add-ons) never inherit an I/O flow.
+        DEShaders.ENERGY_CRYSTAL.setFlow(0F, 0F, 1F, 0F);
     }
 
     private static float[] r = {0.0F, 0.55F, 1.0F, 0.75F};
