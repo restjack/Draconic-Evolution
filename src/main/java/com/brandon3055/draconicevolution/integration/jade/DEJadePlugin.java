@@ -104,8 +104,6 @@ public class DEJadePlugin implements IWailaPlugin {
             tag.putLong("stored", core.injectorFeed.getOPStored());
             tag.putLong("needed", core.injectorFeed.getMaxOPStored());
             tag.putBoolean("output", !core.getOutputStack().isEmpty());
-            tag.putBoolean("auto", core.autoCraft.get());
-            tag.putBoolean("push", core.pushOutput.get());
             data.put(FUSION_KEY, tag);
         }
 
@@ -187,7 +185,6 @@ public class DEJadePlugin implements IWailaPlugin {
                     tooltip.add(Component.literal(f.getBooleanOr("output", false) ? "Output ready" : "Idle").withStyle(ChatFormatting.GRAY));
                 }
                 if (((com.brandon3055.draconicevolution.blocks.tileentity.TileFusionCraftingCore) tile).hasConductor()) tooltip.add(Component.literal("Run by the Fusion Conductor above").withStyle(ChatFormatting.LIGHT_PURPLE));
-                else tooltip.add(Component.literal("Auto-craft: " + (f.getBooleanOr("auto", false) ? "on" : "off") + ", push output: " + (f.getBooleanOr("push", false) ? "on" : "off")).withStyle(ChatFormatting.DARK_GRAY));
                 return;
             }
             if (tile instanceof com.brandon3055.draconicevolution.blocks.tileentity.TileFusionConductor) {

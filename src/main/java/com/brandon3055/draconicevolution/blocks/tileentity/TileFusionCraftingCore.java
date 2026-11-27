@@ -180,9 +180,7 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
 
     public com.brandon3055.draconicevolution.inventory.FusionItemHandler itemHandler = new com.brandon3055.draconicevolution.inventory.FusionItemHandler(this);
     public ITileFXHandler fxHandler;
-    // QoL (our additions): start by itself, push the result out, one energy feed for every injector.
-    public final com.brandon3055.brandonscore.lib.datamanager.ManagedBool autoCraft = register(new com.brandon3055.brandonscore.lib.datamanager.ManagedBool("auto_craft", com.brandon3055.brandonscore.lib.datamanager.DataFlags.SAVE_NBT_SYNC_TILE, com.brandon3055.brandonscore.lib.datamanager.DataFlags.CLIENT_CONTROL));
-    public final com.brandon3055.brandonscore.lib.datamanager.ManagedBool pushOutput = register(new com.brandon3055.brandonscore.lib.datamanager.ManagedBool("push_output", com.brandon3055.brandonscore.lib.datamanager.DataFlags.SAVE_NBT_SYNC_TILE, com.brandon3055.brandonscore.lib.datamanager.DataFlags.CLIENT_CONTROL));
+    // QoL (our additions): one energy feed for every injector (auto-craft + push output moved to the Fusion Conductor).
     private int lastComparator = -2;
 
     /** Energy given to the core goes straight into the injectors of the running craft (each still capped by its charge rate). */
@@ -330,11 +328,6 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
         }
         if (!level.isClientSide()) {
             long t = level.getGameTime();
-            if (autoCraft.get() && !crafting.get() && t % 20 == 0 && !getCatalystStack().isEmpty() && !hasConductor()) {
-                RecipeHolder<IFusionRecipe> recipe = findRecipe();
-                if (recipe != null && recipe.value().canStartCraft(this, level, null)) startCraft();
-            }
-            if (pushOutput.get() && t % 10 == 0 && !getOutputStack().isEmpty() && !hasConductor()) pushOutputItems();
             if (t % 10 == 0) {
                 // Progress does not mark the block changed, so tell comparators ourselves.
                 int key = crafting.get() ? getComparatorOutput() : getOutputStack().isEmpty() ? -1 : 15;
@@ -571,7 +564,7 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
         craftAnimLength.set((short) length);
     }
 
-    /** A Fusion Conductor on top takes over auto-craft, output and the screen toggles. */
+    /** A Fusion Conductor on top runs this core (auto-craft, output, injector toggles live on its screen). */
     public boolean hasConductor() {
         return level != null && level.getBlockEntity(worldPosition.above()) instanceof TileFusionConductor;
     }
@@ -579,24 +572,6 @@ public class TileFusionCraftingCore extends TileBCore implements IFusionInventor
     /** Read-only view of the linked injector positions (client uses it for the highlight button). */
     public List<BlockPos> getInjectorPositions() {
         return java.util.Collections.unmodifiableList(injectorPositions);
-    }
-
-    private void pushOutputItems() {
-        for (Direction dir : Direction.values()) {
-            ItemStack out = getOutputStack();
-            if (out.isEmpty()) return;
-            BlockPos np = worldPosition.relative(dir);
-            if (level.getBlockEntity(np) instanceof TileFusionCraftingInjector) continue;
-            var handler = level.getCapability(Capabilities.Item.BLOCK, np, dir.getOpposite());
-            if (handler == null) continue;
-            try (var tx = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
-                int moved = handler.insert(net.neoforged.neoforge.transfer.item.ItemResource.of(out), out.getCount(), tx);
-                if (moved > 0) {
-                    tx.commit();
-                    setOutputStack(out.getCount() == moved ? ItemStack.EMPTY : out.copyWithCount(out.getCount() - moved));
-                }
-            }
-        }
     }
 
     /** "Missing: A, B +2" for the closest recipe with this catalyst, or nothing. */

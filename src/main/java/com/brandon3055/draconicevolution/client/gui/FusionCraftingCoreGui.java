@@ -20,7 +20,6 @@ import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.Direction;
 
 import com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GuiParent;
 
-import com.brandon3055.brandonscore.client.gui.modulargui.templates.ButtonRow;
 
 import com.brandon3055.draconicevolution.api.DraconicAPI;
 
@@ -90,26 +89,7 @@ public class FusionCraftingCoreGui extends ContainerGuiProvider<FusionCraftingCo
 
         hideRecipes = () -> tile.getActiveRecipe() != null;
 
-        ButtonRow buttonRow = ButtonRow.topRightInside(root, Direction.DOWN, 3, 3).setSpacing(1);
-        buttonRow.addButton(TOOLKIT::createThemeButton);
-        buttonRow.addButton(e -> conductorHides(tile, iconButton(e, net.minecraft.world.item.Items.REDSTONE_TORCH, tile.autoCraft::invert, tile.autoCraft::get,
-                "gui.draconicevolution.fusion_craft.auto_craft")));
-        buttonRow.addButton(e -> conductorHides(tile, iconButton(e, net.minecraft.world.item.Items.HOPPER, tile.pushOutput::invert, tile.pushOutput::get,
-                "gui.draconicevolution.fusion_craft.push_output")));
-        buttonRow.addButton(e -> conductorHides(tile, iconButton(e, net.minecraft.world.item.Items.ENDER_EYE, () -> toggleHighlight(tile), () -> highlightOn(tile),
-                "gui.draconicevolution.fusion_craft.show_injectors")));
-        buttonRow.addButton(e -> {
-            GuiButton b = TOOLKIT.createFlat3DButton(e, () -> Component.literal(allSingle(tile) ? "1" : "64"))
-                    .setTooltip(() -> java.util.List.of(Component.translatable("gui.draconicevolution.fusion_craft.injector_mode"),
-                            com.brandon3055.draconicevolution.blocks.machines.CraftingInjector.modeText(allSingle(tile)),
-                            Component.translatable("gui.draconicevolution.fusion_craft.injector_mode.info")))
-                    .onPress(() -> {
-                        boolean single = !allSingle(tile);
-                        tile.sendPacketToServer(out -> out.writeBoolean(single), 3);
-                    });
-            Constraints.size(b, 12, 12);
-            return conductorHides(tile, b);
-        });
+        // Auto-craft, push output, show injectors, injector mode and theme live on the Fusion Conductor screen (Eli 2026-11-26).
 
         var playInv = GuiSlots.playerAllSlots(root, screenAccess, menu.main, menu.hotBar, menu.armor, menu.offhand);
         playInv.stream().forEach(e -> e.setSlotTexture(slot -> BCGuiTextures.getThemed("slot")));
@@ -163,28 +143,6 @@ public class FusionCraftingCoreGui extends ContainerGuiProvider<FusionCraftingCo
         });
     }
 
-
-    private static GuiButton iconButton(GuiElement<?> parent, net.minecraft.world.item.Item icon, Runnable press, java.util.function.Supplier<Boolean> state, String key) {
-        GuiButton button = TOOLKIT.createFlat3DButton(parent, null)
-                .setTooltip(() -> java.util.List.of(Component.translatable(key),
-                        Component.translatable(state.get() ? "gui.draconicevolution.toggle.on" : "gui.draconicevolution.toggle.off")
-                                .withStyle(state.get() ? net.minecraft.ChatFormatting.GREEN : net.minecraft.ChatFormatting.RED),
-                        Component.translatable(key + ".info")))
-                .onPress(press)
-                .setToggleMode(state);
-        Constraints.size(button, 12, 12);
-        // Green while on, plus an On/Off line, so the state is obvious (the pressed shading alone was not).
-        new GuiRectangle(button).fill(0xB040C040).setEnabled(state)
-                .constrain(LEFT, relative(button.get(LEFT), 1)).constrain(TOP, relative(button.get(TOP), 1))
-                .constrain(RIGHT, relative(button.get(RIGHT), -1)).constrain(BOTTOM, relative(button.get(BOTTOM), -1));
-        Constraints.bind(new GuiItemStack(button, new ItemStack(icon)).enableStackToolTip(false), button, 1);
-        return button;
-    }
-
-    /** A Fusion Conductor on top takes these toggles over (they move to its screen). */
-    private static GuiButton conductorHides(TileFusionCraftingCore tile, GuiButton button) {
-        return button.setEnabled(() -> !tile.hasConductor());
-    }
 
     /** True when every linked injector is in single item mode (the client has their synced mode). */
     static boolean allSingle(TileFusionCraftingCore tile) {
