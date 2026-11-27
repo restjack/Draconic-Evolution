@@ -19,7 +19,7 @@ LIBRARIES = (
     ("CodeChickenLib", "d1a10f75ce09af2ffe23783d860ee3e282a72d91",
      "codechickenlib-4.7.0+26.1.2-port.2.jar"),
     ("BrandonsCore", "6ca5911187d8c071d0596b668a2bd7d144b7cdc2",
-     "BrandonsCore-3.2.1+26.1.2-port.4.jar"),
+     "BrandonsCore-3.2.1+26.1.2-port.5.jar"),
 )
 
 

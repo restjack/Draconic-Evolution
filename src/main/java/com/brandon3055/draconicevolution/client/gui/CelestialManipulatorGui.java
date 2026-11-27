@@ -62,7 +62,7 @@ public class CelestialManipulatorGui extends ContainerGuiProvider<CelestialManip
 
         com.brandon3055.brandonscore.client.gui.InfoPanel info = com.brandon3055.brandonscore.client.gui.InfoPanel.create(root);
         info.labeledValue(TOOLKIT.translate("info.owner").withStyle(ChatFormatting.GOLD), () -> Component.literal(tile.ownerName.get().isEmpty() ? "-" : tile.ownerName.get()).withStyle(ChatFormatting.GRAY));
-        info.labeledValue(TOOLKIT.translate("info.feed").withStyle(ChatFormatting.GOLD), () -> tile.feed.get() <= 0 ? TOOLKIT.translate("no_power").withStyle(ChatFormatting.RED) : Component.literal(TileCelestialManipulator.fmt(tile.feed.get()) + " OP/t").withStyle(ChatFormatting.GRAY));
+        info.labeledValue(TOOLKIT.translate("info.feed").withStyle(ChatFormatting.GOLD), () -> tile.feed.get() > 0 ? Component.literal(TileCelestialManipulator.fmt(tile.feed.get()) + " OP/t").withStyle(ChatFormatting.GRAY) : fed(tile));
         info.labeledValue(TOOLKIT.translate("info.last").withStyle(ChatFormatting.GOLD), () -> lastRun(tile));
         ButtonRow buttons = ButtonRow.topRightInside(root, Direction.DOWN, 3, 3).setSpacing(1);
         buttons.addButton(TOOLKIT::createThemeButton);
@@ -224,15 +224,18 @@ public class CelestialManipulatorGui extends ContainerGuiProvider<CelestialManip
                 .withStyle(on ? ChatFormatting.GREEN : ChatFormatting.RED));
     }
 
-    /** "RS: Off  Fed: 32k OP/t", or "No power" in red while nothing feeds it. */
+    /** "RS: Off  Fed: 32k OP/t"; with nothing coming in: "Full" (green) when the buffer is full, "No power" (red) when empty. */
     private static Component summaryModes(TileCelestialManipulator tile) {
         return TOOLKIT.translate("summary.rs", rsName(tile.rsAction.get())).append("  ")
                 .append(fed(tile));
     }
 
     private static Component fed(TileCelestialManipulator tile) {
-        return tile.feed.get() <= 0 ? TOOLKIT.translate("no_power").withStyle(ChatFormatting.RED)
-                : TOOLKIT.translate("summary.fed", TileCelestialManipulator.fmt(tile.feed.get()));
+        if (tile.feed.get() > 0) return TOOLKIT.translate("summary.fed", TileCelestialManipulator.fmt(tile.feed.get()));
+        long stored = tile.opStorage.getOPStored();
+        if (stored > 0 && stored >= tile.opStorage.getMaxOPStored()) return TOOLKIT.translate("full").withStyle(ChatFormatting.GREEN);
+        if (stored <= 0) return TOOLKIT.translate("no_power").withStyle(ChatFormatting.RED);
+        return TOOLKIT.translate("summary.fed", "0");
     }
 
     private static Component rsName(int a) {

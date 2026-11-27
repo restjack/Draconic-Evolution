@@ -15,7 +15,7 @@ index 5e68ef0..1813d65 100644
      mavenLocal()
      maven { url "https://maven.covers1624.net/" }
 diff --git a/gradle.properties b/gradle.properties
-index 9125669..a5f90a2 100644
+index 9125669..e27f205 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -12,4 +12,4 @@ neo_version_range=[26.1.2.122,26.2)
@@ -23,7 +23,7 @@ index 9125669..a5f90a2 100644
  
  mod_id=brandonscore
 -mod_version=3.2.1+26.1.2-port.1
-+mod_version=3.2.1+26.1.2-port.4
++mod_version=3.2.1+26.1.2-port.5
 diff --git a/src/main/java/com/brandon3055/brandonscore/blocks/TileBCore.java b/src/main/java/com/brandon3055/brandonscore/blocks/TileBCore.java
 index 227c374..f884c2b 100644
 --- a/src/main/java/com/brandon3055/brandonscore/blocks/TileBCore.java
@@ -46,6 +46,30 @@ index 227c374..f884c2b 100644
          readExtraNBT(tag);
          onTileLoaded();
      }
+diff --git a/src/main/java/com/brandon3055/brandonscore/blocks/TileCapabilityManager.java b/src/main/java/com/brandon3055/brandonscore/blocks/TileCapabilityManager.java
+index 7fb8860..0551119 100644
+--- a/src/main/java/com/brandon3055/brandonscore/blocks/TileCapabilityManager.java
++++ b/src/main/java/com/brandon3055/brandonscore/blocks/TileCapabilityManager.java
+@@ -205,6 +205,19 @@ public class TileCapabilityManager implements BCapabilityProvider {
+         }
+     }
+ 
++    /**
++     * Send every container-synced capability to one player, whether it changed or not. Change detection is shared by
++     * all viewers, so without this a player opening the screen of a block whose value has not changed since the last
++     * sync (a full energy buffer, say) never receives it and sees 0.
++     */
++    public void forcePlayerSync(ServerPlayer player) {
++        if (tile.getLevel() == null || tile.getLevel().isClientSide()) return;
++        for (int i = 0; i < indexedDataList.size(); i++) {
++            SerializationFlags<?> helper = indexedDataList.get(i);
++            if (helper.syncContainer) createCapPacket(helper, i).sendToPlayer(player);
++        }
++    }
++
+     public void detectAndSendChangesToListeners(Collection<Player> listeners) {
+         for (int i = 0; i < indexedDataList.size(); i++) {
+             SerializationFlags<?> helper = indexedDataList.get(i);
 diff --git a/src/main/java/com/brandon3055/brandonscore/capability/OPWrappers.java b/src/main/java/com/brandon3055/brandonscore/capability/OPWrappers.java
 index 87da753..42dff4d 100644
 --- a/src/main/java/com/brandon3055/brandonscore/capability/OPWrappers.java
@@ -220,6 +244,23 @@ index 812b918..2f43d62 100644
      }
  
      public static class ModResourceManager implements ResourceManager {
+diff --git a/src/main/java/com/brandon3055/brandonscore/inventory/ContainerBCTile.java b/src/main/java/com/brandon3055/brandonscore/inventory/ContainerBCTile.java
+index d2e7110..a65ea6e 100644
+--- a/src/main/java/com/brandon3055/brandonscore/inventory/ContainerBCTile.java
++++ b/src/main/java/com/brandon3055/brandonscore/inventory/ContainerBCTile.java
+@@ -43,6 +43,12 @@ public abstract class ContainerBCTile<T extends TileBCore> extends ModularGuiCon
+         this.player = playerInv.player;
+         this.tile = tile;
+         this.tile.onPlayerOpenContainer(playerInv.player);
++        // 26.1 passes ServerPlayer.containerListener (not the player) to addSlotListener, so the force sync there
++        // never ran. Send the screen's current data and capabilities when the server builds the menu instead.
++        if (playerInv.player instanceof ServerPlayer sp) {
++            tile.getDataManager().forcePlayerSync(sp);
++            tile.getCapManager().forcePlayerSync(sp);
++        }
+     }
+ 
+     @Override
 diff --git a/src/main/java/com/brandon3055/brandonscore/lib/datamanager/IManagedData.java b/src/main/java/com/brandon3055/brandonscore/lib/datamanager/IManagedData.java
 index ff1c795..4882883 100644
 --- a/src/main/java/com/brandon3055/brandonscore/lib/datamanager/IManagedData.java

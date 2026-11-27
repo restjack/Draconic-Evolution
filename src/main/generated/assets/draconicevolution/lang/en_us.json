@@ -150,6 +150,7 @@
   "gui.draconicevolution.celestial_manipulator.summary.notice": "Notify",
   "gui.draconicevolution.celestial_manipulator.summary.quiet": "Quiet",
   "gui.draconicevolution.celestial_manipulator.no_power": "No power",
+  "gui.draconicevolution.celestial_manipulator.full": "Full",
   "gui.draconicevolution.celestial_manipulator.summary.rs": "RS: %s",
   "gui.draconicevolution.celestial_manipulator.summary.fed": "Fed: %s OP/t",
   "gui.draconicevolution.celestial_manipulator.info.owner": "Owner",
