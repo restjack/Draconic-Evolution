@@ -20,7 +20,7 @@
     {
       "type": "patchouli:text",
       "title": "Blocking it",
-      "text": "The $(item)Dislocation Normalization Field Projector$() stops magnets taking items inside a box around it: 3, 5, 8, 12 or 16 blocks, set in its screen (shift-right-click cycles the range). In All magnets mode it also stops most other mods' magnets. No power needed; it can follow redstone. Put one next to farms, mob drops or item displays."
+      "text": "The $(item)Dislocation Normalization Field Projector$() stops magnets taking items inside a box around it (size and offset per axis in its screen; shift-right-click steps a cube from 3 to 16). Stop XP holds XP orbs too. In All magnets mode it also stops most other mods' magnets. No power needed; it can follow redstone. Put one next to farms, mob drops or item displays."
     },
     {
       "type": "patchouli:crafting",

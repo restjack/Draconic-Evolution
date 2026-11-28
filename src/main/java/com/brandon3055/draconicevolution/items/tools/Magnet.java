@@ -209,6 +209,11 @@ public class Magnet extends Item /*implements IBauble*/ {
 
             for (ExperienceOrb orb : xp) {
                 if (!world.isClientSide() && orb.isAlive()) {
+                    // unofficial-1.40: projectors with "Stop XP" on keep orbs in their box (and the tag is respected like on items).
+                    if (orb.getPersistentData().contains("PreventRemoteMovement")
+                            || com.brandon3055.draconicevolution.blocks.tileentity.TileDislocationInhibitor.isInhibited(world, orb)) {
+                        continue;
+                    }
                     PlayerXpEvent.PickupXp event = NeoForge.EVENT_BUS.post(new PlayerXpEvent.PickupXp(player, orb));
                     if (event.isCanceled()) {
                         continue;

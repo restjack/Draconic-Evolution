@@ -22,6 +22,6 @@ It pauses while you sneak, leaves alone items that another player is standing cl
 
 ## Blocking it
 
-The **Dislocation Normalization Field Projector** stops magnets taking items inside a box around it: 3, 5, 8, 12 or 16 blocks, set in its screen (shift-right-click cycles the range). In All magnets mode it also stops most other mods' magnets. No power needed; it can follow redstone. Put one next to farms, mob drops or item displays.
+The **Dislocation Normalization Field Projector** stops magnets taking items inside a box around it (size and offset per axis in its screen; shift-right-click steps a cube from 3 to 16). Stop XP holds XP orbs too. In All magnets mode it also stops most other mods' magnets. No power needed; it can follow redstone. Put one next to farms, mob drops or item displays.
 
 <Recipe id="draconicevolution:dislocation_inhibitor" />

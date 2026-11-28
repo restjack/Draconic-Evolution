@@ -53,6 +53,7 @@ public class DraconicEvolution {
                 e.sendRecipes(DraconicAPI.FUSION_RECIPE_TYPE.get()));
         // unofficial-1.30: drop stale "don't pull" tags our Dislocation Inhibitor left on items saved to disk.
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(com.brandon3055.draconicevolution.blocks.tileentity.TileDislocationInhibitor::onEntityJoin);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, com.brandon3055.draconicevolution.blocks.tileentity.TileDislocationInhibitor::onPickupXp);
 
         // port-26.1.2: BC Utils.loadOptionalMod удалён -> ModList.get().isLoaded
         if (ModList.get().isLoaded("computercraft")) {

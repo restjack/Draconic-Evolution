@@ -31,7 +31,7 @@ import static com.brandon3055.brandonscore.client.gui.modular.lib.geometry.GeoPa
  * Dislocation Normalization Field Projector screen, Fusion Conductor style (restjack fork; mockup
  * https://claude.ai/artifact/QMWoAA3VJbaUbia96fuap3), laid out like the Evo Tweaks Field Crystal screen since
  * unofficial-1.34: area grid (Rad / Off rows, X Y Z columns, -/+ with Shift for 10) on top, toggle row (show area,
- * Draconic-only / all magnets, redstone) under it, status box below. Every click flashes a 2 s line in the status box.
+ * Draconic-only / all magnets, stop XP (1.40), redstone) under it, status box below. Every click flashes a 2 s line in the status box.
  * 236 x 118, fits 320 x 240.
  * Icons: Nextcloud Projects/Draconic-Evolution/tools/make_inhibitor_icons.py -> textures/gui/dislocation_inhibitor/.
  */
@@ -83,7 +83,7 @@ public class DislocationInhibitorGui extends ContainerGuiProvider<DislocationInh
             }
             set(tile, TileDislocationInhibitor.SET_ALL, 0);
             flash.show(TOOLKIT.translate("flash.de"));
-        }, "de_only"), root, 30, 56, 16, 16);
+        }, "de_only"), root, 26, 56, 16, 16);
         place(toggle(root, "mag_all", tile.allMagnets::get, () -> {
             if (tile.allMagnets.get()) {
                 flash.show(TOOLKIT.translate("flash.all_same"));
@@ -91,7 +91,12 @@ public class DislocationInhibitorGui extends ContainerGuiProvider<DislocationInh
             }
             set(tile, TileDislocationInhibitor.SET_ALL, 1);
             flash.show(TOOLKIT.translate("flash.all"));
-        }, "all"), root, 48, 56, 16, 16);
+        }, "all"), root, 44, 56, 16, 16);
+        place(toggle(root, "xp", tile.stopXp::get, () -> {
+            boolean v = !tile.stopXp.get();
+            set(tile, TileDislocationInhibitor.SET_XP, v ? 1 : 0);
+            flash.show(TOOLKIT.translate(v ? "flash.xp_on" : "flash.xp_off"));
+        }, "xp"), root, 64, 56, 16, 16);
         GuiButton rs = TOOLKIT.createFlat3DButton(root, null)
                 .setTooltip(() -> List.of(TOOLKIT.translate("redstone"),
                         TOOLKIT.translate("redstone." + RS_KEYS[tile.redstone()]).withStyle(ChatFormatting.GOLD),
@@ -99,11 +104,12 @@ public class DislocationInhibitorGui extends ContainerGuiProvider<DislocationInh
                 .onPress(() -> cycleRs(tile, flash, 1), GuiButton.LEFT_CLICK)
                 .onPress(() -> cycleRs(tile, flash, 2), GuiButton.RIGHT_CLICK);
         Constraints.bind(new GuiTexture(rs, DEGuiTextures.getter(() -> "dislocation_inhibitor/red_" + tile.redstone())), rs);
-        place(rs, root, 72, 56, 16, 16);
-        place(new GuiText(root, () -> TOOLKIT.translate("stops_mode", TOOLKIT.translate(tile.allMagnets.get() ? "mode.all" : "mode.de_only")))
+        place(rs, root, 84, 56, 16, 16);
+        place(new GuiText(root, () -> TOOLKIT.translate("stops_mode", TOOLKIT.translate(tile.allMagnets.get() ? "mode.all" : "mode.de_only")
+                        .append(tile.stopXp.get() ? TOOLKIT.translate("mode.xp") : Component.empty())))
                 .setTextColour(Palette.BG::text).setShadow(false).setAlignment(Align.LEFT).setTrim(true)
                 .setTooltip(() -> List.of(TOOLKIT.translate(tile.allMagnets.get() ? "toggle.all.info" : "toggle.de_only.info").withStyle(ChatFormatting.GRAY))),
-                root, 94, 60, W - 100, 9);
+                root, 104, 60, W - 110, 9);
 
         // Status box: flash or field state, then range + mode, then outline + redstone
         GuiRectangle status = new GuiRectangle(root)
